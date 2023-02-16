@@ -1,5 +1,8 @@
 {
     "name": "igc2kmz",
     "version": "1.0.0",
-    "author": "Sylvain Pasutto <sylvainpasutto@gmail.com>"
+    "author": "Sylvain Pasutto <sylvainpasutto@gmail.com>",
+    "dependencies": {
+        "esbuild": "0.17.8"
+    }
 }

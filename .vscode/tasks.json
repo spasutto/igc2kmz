@@ -23,16 +23,16 @@
 			"group": "build",
 			"label": "tsc: watch - tsconfig.json"
 		},
-        {
+        {/*tsc --strict --lib DOM,DOM.Iterable,ES6 --target ES6 your_file.ts && esbuild your_file.js --minify --outfile=your_file.min.js*/
             "label": "Minify",
-            "command": "minify",
+            "command": "./node_modules/.bin/esbuild",
             "type": "shell",
-            "args": [ "dist/igc2kmz.js", ">", "dist/igc2kmz.min.js" ],
+            "args": [ "dist/igc2kmz.js", "--minify", "--outfile=dist/igc2kmz.min.js" ],
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }/*,
-            "dependsOn":["tsc: build - tsconfig.json"]*/
+            },
+            "dependsOn":["tsc: build - tsconfig.json"]
         }
 	]
 }
