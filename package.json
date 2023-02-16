@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "author": "Sylvain Pasutto <sylvainpasutto@gmail.com>",
     "dependencies": {
-        "esbuild": "0.17.8"
+        "esbuild": "0.17.8",
+        "igc-parser": "^1.1.0"
     }
 }
