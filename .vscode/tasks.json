@@ -1,0 +1,38 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "typescript",
+			"tsconfig": "tsconfig.json",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "tsc: build - tsconfig.json"
+		},
+		{
+			"type": "typescript",
+			"tsconfig": "tsconfig.json",
+			"option": "watch",
+			"problemMatcher": [
+				"$tsc-watch"
+			],
+			"group": "build",
+			"label": "tsc: watch - tsconfig.json"
+		},
+        {
+            "label": "Minify",
+            "command": "minify",
+            "type": "shell",
+            "args": [ "dist/igc2kmz.js", ">", "dist/igc2kmz.min.js" ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }/*,
+            "dependsOn":["tsc: build - tsconfig.json"]*/
+        }
+	]
+}
