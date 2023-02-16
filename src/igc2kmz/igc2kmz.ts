@@ -7,7 +7,7 @@
 import IGCParser = require("igc-parser")
 import {IGCFile} from 'igc-parser'
 
-function sayHello(name: string, content: string): IGCFile {
+export function sayHello(name: string, content: string): IGCFile {
     console.log(`Hello ${name}!`);
     let pouet = IGCParser.parse(content);
     return pouet;

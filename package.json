@@ -5,5 +5,8 @@
     "dependencies": {
         "esbuild": "0.17.8",
         "igc-parser": "^1.1.0"
+    },
+    "scripts": {
+      "build": "esbuild dist/igc2kmz.js --bundle --minify --outfile=dist/igc2kmz.min.js"
     }
 }
