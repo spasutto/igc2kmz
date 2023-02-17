@@ -7,6 +7,7 @@
         "igc-parser": "^1.1.0"
     },
     "scripts": {
-      "build": "esbuild dist/igc2kmz.js --bundle --minify --outfile=dist/igc2kmz.min.js"
+        "build": "esbuild src/igc2kmz/wrapper.ts --bundle --outfile=dist/igc2kmz.min.js",
+        "minify": "esbuild src/igc2kmz/wrapper.ts --bundle --minify --outfile=dist/igc2kmz.min.js"
     }
 }

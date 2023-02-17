@@ -7,11 +7,6 @@
     <div id="container" style="height: 500px; min-width: 500px"></div>
     
     <script>
-        window.onload = function() {
-            debugger;
-            const user = require('./igc2kmz');
-            console.log(`User: ${user.getName()}`);
-        };
 function handleFileSelect(evt)
 {
     var files = evt.target.files; // FileList object
@@ -28,7 +23,9 @@ function handleFileSelect(evt)
                 var contents = reader.result;
                 //var lines = contents.split('\n');
                 //////
-                document.getElementById('container').innerHTML=sayHello("Bob", contents);
+                var result = sayHello("Bob", contents);
+                console.log(result);
+                document.getElementById('container').innerHTML=result;
             }
         })(reader);
 
