@@ -5,11 +5,16 @@
 
 
 import IGCParser = require("igc-parser")
-import {IGCFile} from 'igc-parser'
+import { IGCFile } from 'igc-parser'
+import { KMZ } from "./kmz";
 
 export function sayHello(name: string, content: string): IGCFile {
-    console.log(`Hello ${name}!`);
-    let pouet = IGCParser.parse(content);
-    return pouet;
+  console.log(`Hello ${name}!`);
+  let pouet = IGCParser.parse(content);
+  let kmz: KMZ = new KMZ();
+  let zip = kmz.getKMZ();
+  console.log(zip);
+  kmz.download(zip);
+  return pouet;
 }
 

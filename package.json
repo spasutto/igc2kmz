@@ -3,8 +3,11 @@
     "version": "1.0.0",
     "author": "Sylvain Pasutto <sylvainpasutto@gmail.com>",
     "dependencies": {
+        "@types/file-saver": "^2.0.5",
         "esbuild": "0.17.8",
-        "igc-parser": "^1.1.0"
+        "file-saver": "^2.0.5",
+        "igc-parser": "^1.1.0",
+        "jszip": "^3.10.1"
     },
     "scripts": {
         "build": "esbuild igc2kmz/wrapper.ts --bundle --outfile=dist/igc2kmz.js",
