@@ -1,10 +1,10 @@
 
-import { sayHello } from "./igc2kmz";
+import { igc2kmz } from "./igc2kmz";
 
-export {sayHello}
+export {igc2kmz}
 
 declare global {
-    interface Window { sayHello: any; }
+    interface Window { igc2kmz: any; }
 }
 
-window.sayHello = sayHello;
+window.igc2kmz = igc2kmz;

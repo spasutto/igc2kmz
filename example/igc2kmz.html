@@ -5,7 +5,7 @@
 
     <input type="file" id="files" name="file" />
     <div id="container" style="height: 500px; min-width: 500px"></div>
-    
+
     <script>
 function handleFileSelect(evt)
 {
@@ -21,9 +21,7 @@ function handleFileSelect(evt)
             return function()
             {
                 var contents = reader.result;
-                //var lines = contents.split('\n');
-                //////
-                var result = sayHello("Bob", contents);
+                var result = igc2kmz(contents);
                 console.log(result);
                 document.getElementById('container').innerHTML=result;
             }
@@ -32,9 +30,9 @@ function handleFileSelect(evt)
         reader.readAsText(f);
     }
 }
-    
+
       document.getElementById('files').addEventListener('change', handleFileSelect, false);
     </script>
 
 </body>
-</html> 
+</html>
