@@ -6,8 +6,6 @@
     <script>
       function convertigc(igcontent) {
         var result = igc2kmz(igcontent);
-        console.log(result);
-        document.getElementById('container').innerHTML=result;
       }
       function handleFileSelect(evt) {
         var files = evt.target.files;
@@ -2102,7 +2100,6 @@
 
     </textarea><BR>
       <input type="button" onclick="convertigc(document.getElementById('igccont').value)" value="Convert">
-    <div id="container" style="height: 500px; min-width: 500px"></div>
 
 </body>
 </html>

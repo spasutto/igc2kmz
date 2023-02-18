@@ -16,7 +16,6 @@ export function igc2kmz(igccontent: string): KMZ {
   console.log(flight);
   let kmz: KMZ = new KMZ();
   let zip = kmz.getKMZ();
-  console.log(zip);
   kmz.download(zip);
   return kmz;
 }
