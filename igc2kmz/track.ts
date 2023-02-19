@@ -1,6 +1,13 @@
 import { IGCFile, RecordExtensions } from "igc-parser";
 import { Coord } from "./coord";
-import { Bounds, BoundSet } from "./util";
+import { Bounds, BoundSet, Utils, Slice } from "./util";
+
+enum FlyingState {
+  UNKNOWN = 0,
+  THERMAL = 1,
+  GLIDE = 2,
+  DIVE = 3
+}
 
 export class Track {
   flight: IGCFile;
@@ -20,6 +27,9 @@ export class Track {
   climb: number[] = [];
   tec: number[] = [];
   progress: number[] = [];
+  thermals: Slice[] = [];
+  glides: Slice[] = [];
+  dives: Slice[] = [];
   //extensions: Record<string, string[]> = {};
   constructor(flight: IGCFile) {
     this.flight = flight;
@@ -131,5 +141,59 @@ export class Track {
     this.bounds["speed"] = Bounds.createbounds(this.speed);
     this.bounds["climb"] = Bounds.createbounds(this.climb);
     this.bounds["tec"] = Bounds.createbounds(this.tec);
+    let state: FlyingState[] = Array(n - 1).fill(FlyingState.UNKNOWN);
+    let glide = this.progress.map(p => p >= 0.9);
+    let sl: Slice;
+    let indexes = Utils.condense(Utils.runs_where(glide), this.t, 60);
+    for (let i = 0; i < indexes.length; i++) {
+      sl = indexes[i];
+      for (let j = sl.start; j < sl.stop; j++) {
+        state[j] = FlyingState.GLIDE;
+      }
+    }
+    let dive = Array.from(Array(n - 1)).map((v, i) => this.progress[i] < 0.9 && this.climb[i] < 1);
+    indexes = Utils.condense(Utils.runs_where(dive), this.t, 30);
+    for (let i = 0; i < indexes.length; i++) {
+      sl = indexes[i];
+      if (this.coords[sl.stop].ele - this.coords[sl.start].ele >= -100)
+        continue;
+      for (let j = sl.start; j < sl.stop; j++) {
+        state[j] = FlyingState.DIVE;
+      }
+    }
+    let thermal = Array.from(Array(n - 1)).map((v, i) =>
+      (this.progress[i] < 0.9 && this.climb[i] > 0) ||
+      (this.speed[i] < 10 && this.climb[i] > 0) ||
+      this.climb[i] > 1);
+    indexes = Utils.condense(Utils.runs_where(thermal), this.t, 60);
+    for (let i = 0; i < indexes.length; i++) {
+      sl = indexes[i];
+      for (let j = sl.start; j < sl.stop; j++) {
+        state[j] = FlyingState.THERMAL;
+      }
+    }
+    indexes = Utils.runs(state);
+    for (let i = 0; i < indexes.length; i++) {
+      sl = indexes[i];
+      dt = this.t[sl.stop] - this.t[sl.start];
+      dz = this.coords[sl.stop].ele - this.coords[sl.start].ele;
+      switch (state[sl.start]) {
+        case FlyingState.THERMAL:
+          if (dt >= 60 && dz > 50) {
+            this.thermals.push(sl);
+          }
+          break;
+        case FlyingState.DIVE:
+          if (dt >= 30 && dz / dt < -2) {
+            this.dives.push(sl);
+          }
+          break;
+        case FlyingState.GLIDE:
+          if (dt >= 120) {
+            this.glides.push(sl);
+          }
+          break;
+      }
+    }
   }
 }
