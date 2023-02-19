@@ -1,21 +1,41 @@
-import { IGCFile } from "igc-parser";
+import { IGCFile, RecordExtensions } from "igc-parser";
 import { Coord } from "./coord";
 import { Bounds, BoundSet } from "./util";
 
 export class Track {
   flight: IGCFile;
   coords: Coord[];
+  t: number[];
   pilot_name: string;
   glider_type: string;
   glider_id: string;
   bounds: BoundSet = {};
+  elevation_data: boolean = false;
+  s: number[] = [0];
+  ele: number[] = [];
+  total_dz_positive: number = 0;
+  max_dz_positive: number = 0;
+  min_ele: number = 0;
+  speed: number[] = [];
+  climb: number[] = [];
+  tec: number[] = [];
+  progress: number[] = [];
+  //extensions: Record<string, string[]> = {};
   constructor(flight: IGCFile) {
     this.flight = flight;
     this.coords = Track.filter(flight.fixes.map(f => Coord.deg(f.latitude, f.longitude, (f.pressureAltitude ?? f.gpsAltitude) || 0, new Date(f.timestamp))));
+    this.t = this.coords.map(c => c.dt.getTime() / 1000);
     this.pilot_name = flight.pilot || "";
     this.glider_type = flight.gliderType || "";
     this.glider_id = flight.registration || "";
-    // TODO parse I records
+    /*for (let i = 0; i < flight.fixes.length; i++) {
+      for (const ext in flight.fixes[i].extensions) {
+        if (this.extensions.hasOwnProperty(ext))
+          this.extensions[ext].push(flight.fixes[i].extensions[ext]);
+        else
+          this.extensions[ext] = [flight.fixes[i].extensions[ext]];
+      }
+    }*/
     // TODO parse C records (propriété task à convertir dans propriété declaration)
     this.analyse(20);
   }
@@ -47,7 +67,69 @@ export class Track {
     let period = ((this.coords[n - 1].dt.getTime() - this.coords[0].dt.getTime()) / 1000) / n;
     if (dt < 2 * period)
       dt = 2 * period;
-    this.bounds["ele"] = new Bounds(this.coords.map(c => c.ele));
-    this.bounds["time"] = new Bounds([this.coords[0].dt, this.coords[n - 1].dt]);
+    this.bounds["ele"] = Bounds.createbounds(this.coords.map(c => c.ele));
+    this.bounds["time"] = Bounds.createbounds([this.coords[0].dt, this.coords[n - 1].dt]);
+    this.bounds["t"] = Bounds.createbounds([this.t[0], this.t[n - 1]]);
+    this.bounds["tas"] = Bounds.createbounds(this.flight.fixes.filter(f => f.extensions.hasOwnProperty('TAS')).map(f => parseInt(f.extensions['TAS'])));
+    if (this.bounds["ele"] && (this.bounds["ele"].min != 0 || this.bounds["ele"].max != 0))
+      this.elevation_data = true;
+    this.min_ele = this.coords[0].ele;
+    let dz = 0;
+    for (let i = 1; i < n; i++) {
+      this.s.push(this.s[i - 1] + this.coords[i - 1].distance_to(this.coords[i]));
+      this.ele.push((this.coords[i - 1].ele + this.coords[i - 1].ele) / 2);
+      dz = this.coords[i].ele - this.coords[i - 1].ele;
+      if (dz > 0) this.total_dz_positive += dz;
+      if (this.coords[i].ele < this.min_ele)
+        this.min_ele = this.coords[i].ele;
+      else if (this.coords[i].ele - this.min_ele > this.max_dz_positive)
+        this.max_dz_positive = this.coords[i].ele - this.min_ele;
+    }
+    let i0 = 0, i1 = 0, t0 = 0, t1 = 0, s0 = 0, s1 = 0, delta0 = 0, delta1 = 0, ds = 0, ds2 = 0, dp = 0, progress = 0;
+    let coord0: Coord, coord1: Coord;
+    for (let i = 1; i < n; i++) {
+      t0 = (this.t[i - 1] + this.t[i]) / 2 - dt / 2;
+      while (this.t[i0] <= t0) {
+        i0++;
+      }
+      if (i0 == 0) {
+        coord0 = this.coords[0];
+        s0 = this.s[0];
+      } else {
+        delta0 = (t0 - this.t[i0 - 1]) / (this.t[i0] - this.t[i0 - 1]);
+        coord0 = this.coords[i0 - 1].interpolate(this.coords[i0], delta0);
+        s0 = (1 - delta0) * this.s[i0 - 1] + delta0 * this.s[i0];
+      }
+      t1 = t0 + dt;
+      while (i1 < n && this.t[i1] < t1) {
+        i1++;
+      }
+      if (i1 == n) {
+        coord1 = this.coords[n - 1];
+        s1 = this.s[n - 1];
+      } else {
+        delta1 = (t1 - this.t[i1 - 1]) / (this.t[i1] - this.t[i1 - 1]);
+        coord1 = this.coords[i1 - 1].interpolate(this.coords[i1], delta1);
+        s1 = (1 - delta1) * this.s[i1 - 1] + delta1 * this.s[i1];
+      }
+      ds = s1 - s0;
+      ds2 = s1 * s1 - s0 * s0;
+      dz = coord1.ele - coord0.ele;
+      dp = coord0.distance_to(coord1);
+      if (ds == 0) {
+        progress = 0;
+      } else if (dp > ds) {
+        progress = 1;
+      } else {
+        progress = dp / ds;
+      }
+      this.speed.push(3.6 * ds / dt);
+      this.climb.push(dz / dt);
+      this.tec.push(dz / dt + ds2 / (2 * 9.80665));
+      this.progress.push(progress);
+    }
+    this.bounds["speed"] = Bounds.createbounds(this.speed);
+    this.bounds["climb"] = Bounds.createbounds(this.climb);
+    this.bounds["tec"] = Bounds.createbounds(this.tec);
   }
 }

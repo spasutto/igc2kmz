@@ -26,6 +26,15 @@ export class Bounds {
     }
   }
 
+  static createbounds(value: any[] | any): Bounds | null {
+    if (value instanceof Array && value.length == 0) {
+      return null;
+    } else if (value == null) {
+      return null;
+    }
+    return new Bounds(value);
+  }
+
   update(value: Bounds | any) {
     if (value instanceof Bounds) {
       if (value.min < this.min)
@@ -45,19 +54,4 @@ export class Bounds {
   }
 }
 
-export type BoundSet = Record<string, Bounds>;
-/*
-export class BoundSet<T> {
-  attr: Record<string, Bounds<T>> = {};
-  update(other: BoundSet<T>) {
-    let otherkeys = Object.keys(other.attr);
-    for (let i = 0; i < otherkeys.length; i++) {
-      let key = otherkeys[i];
-      if (key in this.attr)
-        this.attr[key].update(other.attr[key]);
-      else
-        this.attr[key] = new Bounds<T>(other.attr[key].tuple())
-    }
-  }
-}
-*/
+export type BoundSet = Record<string, Bounds|null>;
