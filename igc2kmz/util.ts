@@ -1,12 +1,13 @@
-export class OpenStruct {
-  public a: string = "bonjour";
-}
 
 export class Bounds {
   min: any;
   max: any;
-  constructor(value: any[] | any) {
-    if (value instanceof Array) {
+
+  constructor(value: Bounds | any[] | any) {
+    if (value instanceof Bounds) {
+      this.min = value.min;
+      this.max = value.max;
+    } else if (value instanceof Array) {
       if (value.length == 2) {
         this.min = value[0];
         this.max = value[1];
@@ -54,8 +55,20 @@ export class Bounds {
   }
 }
 
-export type BoundSet = Record<string, Bounds|null>;
+export type BoundSet = Record<string, Bounds | null>;
 
+export function bsupdate(bs: BoundSet, other: BoundSet) {
+  for (let key in other) {
+    //console.log(key);
+    if (bs.hasOwnProperty(key)) {
+      bs[key]?.update(other[key]);
+    } else {
+      bs[key] = new Bounds(other[key]);
+    }
+  }
+}
+
+export type OpenStruct = Record<string, any | null>;
 
 export interface Slice {
   start: number;

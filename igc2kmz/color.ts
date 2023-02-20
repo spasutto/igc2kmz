@@ -1,0 +1,118 @@
+
+export interface RGBA {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+
+function h_to_value(p: number, q: number, t: number): number {
+  if (t < 0) {
+    t++;
+  } else if (1 < t) {
+    t--;
+  }
+  if (t < 1 / 6) {
+    return p + 6 * (q - p) * t;
+  } else if (t < 0.5) {
+    return q;
+  } else if (t < 2 / 3) {
+    return p + 6 * (q - p) * (2 / 3 - t);
+  } else {
+    return p;
+  }
+}
+
+function hsl_to_rgba(h: number, s: number, l: number, a: number = 1): RGBA {
+  if (s == 0) {
+    return { r: 1, g: 1, b: 1, a: a };
+  }
+  let q: number;
+  if (l<0.5) {
+    q = l * (s + 1);
+  } else {
+    q = l + s - l * s;
+  }
+  let p = 2.0 * l - q;
+  let r = h_to_value(p, q, h + 1.0 / 3.0);
+  let g = h_to_value(p, q, h);
+  let b = h_to_value(p, q, h - 1.0 / 3.0);
+  return { r, g, b, a };
+}
+
+function hsv_to_rgb(h: number, s: number, v: number, a: number = 1): RGBA {
+  let hi = Math.trunc(h);
+  let f = h - hi;
+  let p = v * (1 - f);
+  let q = v * (1 - f * s);
+  let t = v * (1 - (1 - f) * s);
+  if (hi == 0) {
+    return { r: v, g: t, b: p, a: 0 };
+  } else if (hi == 1) {
+    return { r: q, g: v, b: p, a: 0 };
+  } else if (hi == 2) {
+    return { r: p, g: v, b: t, a: 0 };
+  } else if (hi == 3) {
+    return { r: p, g: q, b: v, a: 0 };
+  } else if (hi == 4) {
+    return { r: t, g: p, b: v, a: 0 };
+  } else {
+    return { r: v, g: p, b: q, a: 0 };
+  }
+}
+
+export type Gradient = (n: number) => RGBA;
+
+/**
+ * Return a gradient from black to white.
+ * @param value
+ * @returns
+ */
+export function grayscale_gradient(value: number): RGBA {
+  let h: number;
+  if (value < 0) {
+    return { r: 0, g: 0, b: 0, a: 1 };
+  } else if (1 <= value) {
+    return { r: 1, g: 1, b: 1, a: 1 };
+  } else {
+    return { r: value, g: value, b: value, a: 1 };
+  }
+}
+
+/**
+ * Return a gradient from blue to green to red.
+ * @param value
+ * @returns
+ */
+export function default_gradient(value: number): RGBA {
+  let h: number;
+  if (value < 0) {
+    return hsl_to_rgba(2 / 3, 1, 0.5);
+  } else if (1 <= value) {
+    return hsl_to_rgba(0, 1, 0.5);
+  } else {
+    h = 2 * (1 - value) / 3;
+    return hsl_to_rgba(h, 1, 0.5);
+  }
+}
+
+/**
+ * Return a bilinear gradient from blue to green to red.
+ * @param value
+ * @returns
+ */
+export function bilinear_gradient(value: number): RGBA {
+  let h: number;
+  if (value < 0) {
+    h = 2 / 3;
+  } else if (value < 0.5) {
+    h = (6 - 4 * value) / 9;
+  } else if (value == 0.5) {
+    h = 1 / 3;
+  } else if (value < 1) {
+    h = (4 - 4 * value) / 9;
+  } else {
+    h = 0;
+  }
+  return hsl_to_rgba(h, 1, 0.5);
+}
