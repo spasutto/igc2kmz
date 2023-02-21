@@ -116,21 +116,23 @@ export class Utils {
 
   static condense<T>(ranges: Slice[], t: number[], delta: number): Slice[] {
     let indexes: Slice[] = [];
-    let sl = ranges[0];
-    let start = sl.start;
-    let stop = sl.stop;
-    for (let i = 0; i < ranges.length; i++) {
-      sl = ranges[i];
-      if (t[sl.start] - t[stop] < delta) {
-        stop = sl.stop;
+    if (ranges.length > 0) {
+      let sl = ranges[0];
+      let start = sl.start;
+      let stop = sl.stop;
+      for (let i = 0; i < ranges.length; i++) {
+        sl = ranges[i];
+        if (t[sl.start] - t[stop] < delta) {
+          stop = sl.stop;
+        }
+        else {
+          indexes.push({ start, stop });
+          start = sl.start;
+          stop = sl.stop;
+        }
       }
-      else {
-        indexes.push({ start, stop });
-        start = sl.start;
-        stop = sl.stop;
-      }
+      indexes.push({ start, stop });
     }
-    indexes.push({ start, stop });
     return indexes;
   }
 }

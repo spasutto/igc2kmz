@@ -4,8 +4,8 @@
     <script src="../dist/igc2kmz.js"></script>
 
     <script>
-      function convertigc(igcontent) {
-        var result = igc2kmz(igcontent);
+      function convertigc() {
+        var result = igc2kmz(document.getElementById('igccont').value);
       }
       function handleFileSelect(evt) {
         var files = evt.target.files;
@@ -16,8 +16,7 @@
           {
             return function()
             {
-              var contents = reader.result;
-              convertigc(contents);
+              document.getElementById('igccont').value = reader.result;
             }
           })(reader);
 
@@ -2099,7 +2098,7 @@
       GBFE4314AAACF3613DB13003F789BC1AE4C81A9B928F0EF88905D619316568F28
 
     </textarea><BR>
-      <input type="button" onclick="convertigc(document.getElementById('igccont').value)" value="Convert">
+      <input type="button" onclick="convertigc()" value="Convert">
 
 </body>
 </html>

@@ -52,7 +52,9 @@ export class FlightConvert {
       if (task) {
         this.task = task;
       }
-      this.scales["altitude"] = new Scale(this.bounds["ele"], "altitude", default_gradient);
+      if (this.bounds["ele"]) {
+        this.scales["altitude"] = new Scale(this.bounds["ele"], "altitude", default_gradient);
+      }
     }
   }
 }
