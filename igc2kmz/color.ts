@@ -1,9 +1,18 @@
 
-export interface RGBA {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
+export class RGBA {
+  r: number = 0;
+  g: number = 0;
+  b: number = 0;
+  a: number = 0;
+  constructor(r: number, g: number, b: number, a: number) {
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    this.a = a;
+  }
+  toHexString() {
+    return ("0" + this.r.toString(16)).substr(-2) + ("0" + this.g.toString(16)).substr(-2) + ("0" + this.b.toString(16)).substr(-2) + ("0" + this.a.toString(16)).substr(-2);
+  }
 }
 
 function h_to_value(p: number, q: number, t: number): number {
@@ -25,7 +34,7 @@ function h_to_value(p: number, q: number, t: number): number {
 
 function hsl_to_rgba(h: number, s: number, l: number, a: number = 1): RGBA {
   if (s == 0) {
-    return { r: 1, g: 1, b: 1, a: a };
+    return new RGBA(1, 1, 1, a);
   }
   let q: number;
   if (l<0.5) {
@@ -37,7 +46,7 @@ function hsl_to_rgba(h: number, s: number, l: number, a: number = 1): RGBA {
   let r = h_to_value(p, q, h + 1.0 / 3.0);
   let g = h_to_value(p, q, h);
   let b = h_to_value(p, q, h - 1.0 / 3.0);
-  return { r, g, b, a };
+  return new RGBA(r, g, b, a);
 }
 
 function hsv_to_rgb(h: number, s: number, v: number, a: number = 1): RGBA {
@@ -47,21 +56,21 @@ function hsv_to_rgb(h: number, s: number, v: number, a: number = 1): RGBA {
   let q = v * (1 - f * s);
   let t = v * (1 - (1 - f) * s);
   if (hi == 0) {
-    return { r: v, g: t, b: p, a: 0 };
+    return new RGBA(v, t, p, 1);
   } else if (hi == 1) {
-    return { r: q, g: v, b: p, a: 0 };
+    return new RGBA(q, v, p, 1);
   } else if (hi == 2) {
-    return { r: p, g: v, b: t, a: 0 };
+    return new RGBA(p, v, t, 1);
   } else if (hi == 3) {
-    return { r: p, g: q, b: v, a: 0 };
+    return new RGBA(p, q, v, 1);
   } else if (hi == 4) {
-    return { r: t, g: p, b: v, a: 0 };
+    return new RGBA(t, p, v, 1);
   } else {
-    return { r: v, g: p, b: q, a: 0 };
+    return new RGBA(v, p, q, 1);
   }
 }
 
-export type Gradient = (n: number) => RGBA;
+export type GradientCbk = (n: number) => RGBA;
 
 /**
  * Return a gradient from black to white.
@@ -71,11 +80,11 @@ export type Gradient = (n: number) => RGBA;
 export function grayscale_gradient(value: number): RGBA {
   let h: number;
   if (value < 0) {
-    return { r: 0, g: 0, b: 0, a: 1 };
+    return new RGBA(0, 0, 0, 1);
   } else if (1 <= value) {
-    return { r: 1, g: 1, b: 1, a: 1 };
+    return new RGBA(1, 1, 1, 1);
   } else {
-    return { r: value, g: value, b: value, a: 1 };
+    return new RGBA(value, value, value, 1);
   }
 }
 

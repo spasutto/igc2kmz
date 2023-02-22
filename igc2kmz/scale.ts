@@ -1,17 +1,17 @@
-import { Gradient, RGBA } from "./color";
+import { GradientCbk, RGBA } from "./color";
 import { Bounds } from "./util";
 
 export class Scale {
   range: Bounds;
   title: string;
-  gradient: Gradient;
+  cbgradient: GradientCbk;
   gridstep: number = 0;
   step: number;
 
-  constructor(range: Bounds, title: string, gradient: Gradient, step:number=1, max_divisions:number=16) {
+  constructor(range: Bounds, title: string, cbgradient: GradientCbk, step:number=1, max_divisions:number=16) {
     this.range = range;
     this.title = title;
-    this.gradient = gradient;
+    this.cbgradient = cbgradient;
     this.step = step;
     if (step > 0) {
       let i = 0;
@@ -46,6 +46,23 @@ export class Scale {
         }
       }
     }
+  }
+
+  normalize(value: number): number {
+    if (value < this.range.min) {
+      return 0;
+    } else if (this.range.max <= value) {
+      return 1;
+    }
+    return (value - this.range.min) / (this.range.max - this.range.min);
+  }
+
+  color(value: number): RGBA {
+    return this.cbgradient(this.normalize(value));
+  }
+
+  colors(n: number = 32): RGBA[] {
+    return Array.from(Array(n - 1)).map((v, i) => this.cbgradient(i / (n - 1)));
   }
 }
 

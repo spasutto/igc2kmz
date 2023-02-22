@@ -1,8 +1,14 @@
 
 import * as JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { KML } from './kml';
 
 export class KMZ {
+  kml: KML.KML;
+  constructor(kml: KML.KML) {
+    this.kml = kml;
+   }
+
   getKMZ(): JSZip {
     const j: JSZip = new (<any>JSZip).default();
 
