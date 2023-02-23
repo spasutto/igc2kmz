@@ -7,4 +7,6 @@ declare global {
     interface Window { igc2kmz: any; }
 }
 
-window.igc2kmz = igc2kmz;
+if (typeof window === 'object') {
+  window.igc2kmz = igc2kmz;
+}
