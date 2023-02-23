@@ -1,17 +1,25 @@
 
-export class RGBA {
+export class RGB {
   r: number = 0;
   g: number = 0;
   b: number = 0;
-  a: number = 0;
-  constructor(r: number, g: number, b: number, a: number) {
+  constructor(r: number, g: number, b: number) {
     this.r = r;
     this.g = g;
     this.b = b;
-    this.a = a;
   }
   toHexString() {
-    return ("0" + this.r.toString(16)).substr(-2) + ("0" + this.g.toString(16)).substr(-2) + ("0" + this.b.toString(16)).substr(-2) + ("0" + this.a.toString(16)).substr(-2);
+    return ("0" + this.r.toString(16)).substr(-2) + ("0" + this.g.toString(16)).substr(-2) + ("0" + this.b.toString(16)).substr(-2);
+  }
+}
+export class RGBA extends RGB {
+  a: number = 0;
+  constructor(r: number, g: number, b: number, a: number) {
+    super(r,g,b);
+    this.a = a;
+  }
+  override toHexString() {
+    return super.toHexString() + ("0" + this.a.toString(16)).substr(-2);
   }
 }
 
@@ -49,24 +57,24 @@ function hsl_to_rgba(h: number, s: number, l: number, a: number = 1): RGBA {
   return new RGBA(r, g, b, a);
 }
 
-function hsv_to_rgb(h: number, s: number, v: number, a: number = 1): RGBA {
+function hsv_to_rgb(h: number, s: number, v: number, a: number = 1): RGB {
   let hi = Math.trunc(h);
   let f = h - hi;
   let p = v * (1 - f);
   let q = v * (1 - f * s);
   let t = v * (1 - (1 - f) * s);
   if (hi == 0) {
-    return new RGBA(v, t, p, 1);
+    return new RGB(v, t, p);
   } else if (hi == 1) {
-    return new RGBA(q, v, p, 1);
+    return new RGB(q, v, p);
   } else if (hi == 2) {
-    return new RGBA(p, v, t, 1);
+    return new RGB(p, v, t);
   } else if (hi == 3) {
-    return new RGBA(p, q, v, 1);
+    return new RGB(p, q, v);
   } else if (hi == 4) {
-    return new RGBA(t, p, v, 1);
+    return new RGB(t, p, v);
   } else {
-    return new RGBA(v, p, q, 1);
+    return new RGB(v, p, q);
   }
 }
 
