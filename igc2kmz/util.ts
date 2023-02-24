@@ -142,6 +142,29 @@ export class Utils {
       h = Math.imul(31, h) + value.charCodeAt(i) | 0;
     return h;
   }
+
+  static datediffsecs(dt1:Date, dt2:Date):number {
+    if (dt1 > dt2) {
+      return (dt1.getTime() - dt2.getTime()) / 1000;
+    } else {
+      return (dt1.getTime() + 86400000 - dt2.getTime()) / 1000;
+    }
+  }
+
+  static datetime_floor(dt: Date, delta: number): Date {
+    dt = new Date(dt.getTime());
+    if (delta >= 3600) {
+      dt.setMinutes(0);
+      dt.setSeconds(0);
+      return new Date(dt.getTime() - (3600000 * (dt.getHours() % Math.trunc(delta / 3600))));
+    } else if (delta >= 60) {
+      dt.setSeconds(0);
+      return new Date(dt.getTime() - (60000 * (dt.getMinutes() % Math.trunc(delta / 60))));
+    } else if (delta >= 1) {
+      return new Date(dt.getTime() - (1000 * (dt.getSeconds() % Math.trunc(delta))));
+    }
+    return dt;
+  }
 }
 
 export class RandomIdGenerator {

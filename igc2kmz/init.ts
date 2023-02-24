@@ -1,8 +1,8 @@
 
-import { default_gradient } from "./color";
+import { bilinear_gradient, default_gradient } from "./color";
 import { KML } from "./kml";
 import { KMZ } from "./kmz";
-import { Scale } from "./scale";
+import { Scale, TimeScale, ZeroCenteredScale } from "./scale";
 import { Task } from "./task";
 import { Track } from "./track";
 import { BoundSet, bsupdate, OpenStruct, RandomIdGenerator } from "./util";
@@ -53,36 +53,44 @@ export class FlightConvert {
     flights.forEach(flight => {
       bsupdate(this.bounds, flight.track.bounds);
     });
+    let gradient = bilinear_gradient;
     if (this.bounds["climb"] != null) {
       if (this.bounds["climb"].min < -5) {
         this.bounds["climb"].min = -5;
       } else if (this.bounds["climb"].max > 5) {
         this.bounds["climb"].max = 5;
       }
-      this.tz_offset = tz_offset * 3600;
-      if (task) {
-        this.task = task;
-      }
-      if (this.bounds["ele"]) {
-        this.scales["altitude"] = new Scale(this.bounds["ele"], "altitude", default_gradient);
-        for (let i = 0; i < 3; i++) {
-          let altitude_styles:KML.Style[] = [];
-          let cs = this.scales["altitude"].colors();
-          for (let j = 0, c = cs[j]; j < cs.length; j++, c = cs[j]) {
-            let ballon_style = new KML.BalloonStyle([new KML.SimpleElement('text', '$[description]')]);
-            let icon_style = new KML.IconStyle([this.stock.icons[i], new KML.SimpleElement('color', c.toHexString()), new KML.SimpleElement('scale', this.stock.icon_scales[i].toString())]);
-            let label_style = new KML.LabelStyle([new KML.SimpleElement('color', c.toHexString()), new KML.SimpleElement('scale', this.stock.label_scales[i].toString())]);
-            altitude_styles.push(new KML.Style([ballon_style, icon_style, label_style]));
-          }
-          altitude_styles.forEach(s => this.altitude_styles.push(s));
+      this.scales["climb"] = new ZeroCenteredScale(this.bounds["climb"], 'climb', 0.1, gradient);
+    }
+    if (this.bounds["speed"] != null) {
+      this.scales["speed"] = new Scale(this.bounds["speed"], 'ground speed');
+    }
+    if (this.bounds["time"] != null) {
+      this.scales["time"] = new TimeScale(this.bounds["time"], 'ground speed', 1, default_gradient, 16, this.tz_offset);
+    }
+    this.tz_offset = tz_offset * 3600;
+    if (task) {
+      this.task = task;
+    }
+    if (this.bounds["ele"]) {
+      this.scales["altitude"] = new Scale(this.bounds["ele"], "altitude");
+      for (let i = 0; i < 3; i++) {
+        let altitude_styles: KML.Style[] = [];
+        let cs = this.scales["altitude"].colors();
+        for (let j = 0, c = cs[j]; j < cs.length; j++, c = cs[j]) {
+          let ballon_style = new KML.BalloonStyle([new KML.SimpleElement('text', '$[description]')]);
+          let icon_style = new KML.IconStyle([this.stock.icons[i], new KML.SimpleElement('color', c.toHexString()), new KML.SimpleElement('scale', this.stock.icon_scales[i].toString())]);
+          let label_style = new KML.LabelStyle([new KML.SimpleElement('color', c.toHexString()), new KML.SimpleElement('scale', this.stock.label_scales[i].toString())]);
+          altitude_styles.push(new KML.Style([ballon_style, icon_style, label_style]));
         }
+        altitude_styles.forEach(s => this.altitude_styles.push(s));
       }
     }
 
     let kml: KML.KML = new KML.KML(this.altitude_styles);
-    console.log(kml.serialize());
+    /*console.log(kml.serialize());
     let pouet = new KML.BalloonStyle([new KML.SimpleElement('text', '$[description]')]);
-    console.log(pouet.serialize());
+    console.log(pouet.serialize());*/
     /*
     let ids = [];
     const nbrtot = 7000;
