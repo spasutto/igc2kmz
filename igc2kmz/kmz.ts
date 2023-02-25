@@ -4,9 +4,9 @@ import { saveAs } from 'file-saver';
 import { KML } from './kml';
 
 export class KMZ {
-  elements: KML.CompoundElement[] = [];
+  elements: KML.Element[] = [];
   roots: KML.Element[];
-  constructor(elements?: KML.CompoundElement[]) {
+  constructor(elements?: KML.Element[]) {
     if (elements) {
       this.elements = elements;
     }
@@ -23,14 +23,16 @@ export class KMZ {
     return this;
   }
 
-  add(args: (KML.Element|KMZ)[]):KMZ {
+  add(args: (KML.Element | KMZ)[]): KMZ {
     args.forEach(arg => {
-      if (arg instanceof KMZ) {
-        arg.elements.forEach(elm => this.elements[0].add(elm));
-        this.add_roots(arg.roots);
-        // TODO ajout files
-      } else {
-        this.elements[0].add(arg);
+      if (this.elements[0] instanceof KML.CompoundElement) {
+        if (arg instanceof KMZ) {
+          arg.elements.forEach(elm => (this.elements[0] as KML.CompoundElement).add(elm));
+          this.add_roots(arg.roots);
+          // TODO ajout files
+        } else {
+          this.elements[0].add(arg);
+        }
       }
     });
     return this;

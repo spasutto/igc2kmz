@@ -165,6 +165,15 @@ export class Utils {
     }
     return dt;
   }
+
+  static make_table(rows: string[][], bgcolors: string[] = ['#dddddd', '#ffffff']): string {
+    let result = '<table cellpadding="1" cellspacing="1">';
+    rows.forEach((row, i) => {
+      result += `<tr bgcolor="${bgcolors[i % 2]}"><th align="right">${row[0]}</th><td>${row[1]}</td></tr>`;
+    });
+    result += '</table>';
+    return result;
+  }
 }
 
 export class RandomIdGenerator {

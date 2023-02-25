@@ -33,6 +33,8 @@ export namespace KML {
   export class Element {
     protected namespaces: Record<string, Namespace> = {};
     protected name: string = "";
+    protected attributes: Attribute[] = [];
+    protected id: string = "";
 
     protected constructor(name?: string,
       namespace?: Namespace) {
@@ -40,6 +42,22 @@ export namespace KML {
       if (namespace) {
         this.namespaces[namespace.name] = namespace;
       }
+    }
+
+    get Id(): string {
+      if ((this.id ?? "").trim().length > 0) {
+        return this.id;
+      }
+      this.id = RandomIdGenerator.makeid(5);
+      return this.id;
+    }
+
+    get url(): string {
+      return '#' + this.Id;
+    }
+
+    add_attr(attr: Attribute) {
+      this.attributes.push(attr);
     }
 
     protected element(): HTMLElement {
@@ -50,6 +68,9 @@ export namespace KML {
           nskey = "";
         }
         doc.documentElement.setAttribute('xmlns' + nskey, this.namespaces[key].uri);
+      }
+      for (let i = 0; i < this.attributes.length; i++) {
+        doc.documentElement.setAttribute(this.attributes[i].name, this.attributes[i].value);
       }
       return doc.documentElement;
     }
@@ -63,7 +84,6 @@ export namespace KML {
 
   export class CompoundElement extends Element {
     protected childs: Element[] = [];
-    protected attributes: Attribute[] = [];
     constructor(childs:Element[] = []) {
       super();
       this.childs = childs;
@@ -73,17 +93,10 @@ export namespace KML {
       this.childs.push(child);
     }
 
-    add_attr(attr: Attribute) {
-      this.attributes.push(attr);
-    }
-
     protected override element(): HTMLElement {
       let root = super.element();
       for (let i = 0; i < this.childs.length; i++) {
         root.appendChild(this.childs[i].element());
-      }
-      for (let i = 0; i < this.attributes.length; i++) {
-        root.setAttribute(this.attributes[i].name, this.attributes[i].value);
       }
       return root;
     }
@@ -191,23 +204,33 @@ export namespace KML {
   export class longitude extends SimpleElement { }
   export class MultiGeometry extends CompoundElement { }
   export class name extends SimpleElement { }
-  export class open extends SimpleElement { }
-  export class overlayXY extends SimpleElement { }
+  export class open extends SimpleElement {
+    constructor(isopen: boolean) {
+      super(undefined, isopen ? '1' : '0');
+    }
+  }
+  export class overlayXY extends SimpleElement {
+    constructor(x: number, xunits: string, y: number, yunits: string) {
+      super();
+      this.add_attr(new Attribute('x', x.toString()));
+      this.add_attr(new Attribute('y', x.toString()));
+      this.add_attr(new Attribute('xunits', xunits));
+      this.add_attr(new Attribute('yunits', yunits));
+    }
+  }
   export class Placemark extends CompoundElement { }
   export class Point extends CompoundElement { }
   export class PolyStyle extends CompoundElement { }
   export class roll extends SimpleElement { }
   export class scale extends SimpleElement { }
   export class ScreenOverlay extends CompoundElement { }
-  export class screenXY extends SimpleElement { }
-  export class size extends SimpleElement { }
+  export class screenXY extends overlayXY { }
+  export class size extends overlayXY { }
   export class Snippet extends SimpleElement { }
   export class Style extends CompoundElement {
-    id: string;
     constructor(childs:Element[]) {
       super(childs);
-      this.id = RandomIdGenerator.makeid(5);
-      this.add_attr(new Attribute("id", this.id));
+      this.add_attr(new Attribute("id", this.Id));
     }
   }
 

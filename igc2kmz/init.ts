@@ -5,7 +5,7 @@ import { KMZ } from "./kmz";
 import { Scale, TimeScale, ZeroCenteredScale } from "./scale";
 import { Task } from "./task";
 import { Track } from "./track";
-import { BoundSet, bsupdate, OpenStruct, RandomIdGenerator } from "./util";
+import { BoundSet, bsupdate, OpenStruct, RandomIdGenerator, Utils } from "./util";
 
 export class Flight {
   track: Track;
@@ -17,6 +17,7 @@ export class Flight {
   glider_id: string;
   photos: string[] = [];
   url: string = "";
+  time_positions: number[] = [];
 
   constructor(track: Track) {
     this.track = track;
@@ -26,6 +27,41 @@ export class Flight {
     this.pilot_name = track.pilot_name;
     this.glider_type = track.glider_type;
     this.glider_id = track.glider_id;
+  }
+
+  make_description(globals: FlightConvert): KMZ {
+    let rows = [];
+    if (this.pilot_name) {
+      rows.push(['Pilot name', this.pilot_name]);
+    }
+    if (this.glider_type) {
+      rows.push(['Glider type', this.glider_type]);
+    }
+    if (this.glider_id) {
+      rows.push(['Glider ID', this.glider_id]);
+    }
+    let take_off_time = new Date(this.track.bounds["time"]?.min.getTime() + globals.tz_offset * 1000); //TOCHECK temps UTC
+    rows.push(['Take-off time', take_off_time.toISOString().substring(11, 19)]);
+    let landing_time = new Date(this.track.bounds["time"]?.max.getTime() + globals.tz_offset * 1000); //TOCHECK temps UTC
+    rows.push(['Landing time', landing_time.toISOString().substring(11, 19)]);
+    let duration = (this.track.bounds["time"]?.max.getTime() - this.track.bounds["time"]?.min.getTime()) / 1000;
+    let hour = Math.trunc(duration / 3600);
+    let seconds = duration % 3600;
+    let minute = Math.trunc(seconds / 60);
+    let second = Math.trunc(seconds % 60);
+    //("0" + hour.toString()).substr(-2)
+    rows.push(['Duration', `${hour}h ${("0" + minute.toString()).substr(-2)}m ${("0" + second.toString()).substr(-2)}s`]);
+    let table = Utils.make_table(rows);
+    return new KMZ([new KML.CDATA('description', table)]);
+  }
+
+  to_kmz(globals: FlightConvert): KMZ {
+    if (globals.scales["time"] != null) {
+      this.time_positions = this.track.t.map(t => globals.graph_width * (t - globals.scales["time"]?.range.min) / (globals.scales["time"]?.range.max - globals.scales["time"]?.range.min));
+    }
+    let folder = new KMZ([new KML.Folder([new KML.SimpleElement('name', this.track.filename), new KML.open(true)])]);
+    folder.add([this.make_description(globals)]);
+    return folder;
   }
 }
 
@@ -39,6 +75,14 @@ class Stock {
   thermal_style: KML.Style;
   dive_style: KML.Style;
   glide_style: KML.Style;
+  time_mark_styles: KML.Style[];
+  photo_style: KML.Style;
+  xc_style: KML.Style;
+  xc_style2: KML.Style;
+  pixel_url: string;
+  visible_none_folder: KML.Folder;
+  invisible_none_folder: KML.Folder;
+  animation_icon: KML.Icon;
 
   constructor() {
     this.kmz = new KMZ();
@@ -107,25 +151,63 @@ class Stock {
     this.glide_style = this.make_analysis_style('cc33ff33', bgcolors, rows);
     this.kmz.add_root(this.glide_style);
     // #
+    this.time_mark_styles = [];
+    for (let i = 0; i < this.icons.length; i++) {
+      let icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('scale', this.icon_scales[i].toString())]);
+      let label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'cc33ffff'), new KML.SimpleElement('scale', this.label_scales[i].toString())]);
+      this.time_mark_styles.push(new KML.Style([icon_style, label_style]));
+    }
+    this.kmz.add_roots(this.time_mark_styles);
+    // #
+    let balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '$[description]')]);
+    let icon_style = new KML.IconStyle([KML.Icon.palette(4, 46), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
+    let label_style = new KML.LabelStyle([new KML.SimpleElement('scale', this.label_scales[0].toString())]);
+    this.photo_style = new KML.Style([balloon_style, icon_style, label_style]);
+    this.kmz.add_root(this.photo_style);
+    // #
+    balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '<h3>$[name]</h3>$[description]')]);
+    icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
+    label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('scale', this.label_scales[0].toString())]);
+    let line_style = new KML.LineStyle([new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('width', '2')]);
+    this.xc_style = new KML.Style([balloon_style, icon_style, label_style, line_style]);
+    this.kmz.add_root(this.xc_style);
+    // #
+    balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '<h3>$[name]</h3>$[description]')]);
+    icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
+    label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'ccff33ff')]);
+    line_style = new KML.LineStyle([new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('width', '2')]);
+    this.xc_style2 = new KML.Style([balloon_style, icon_style, label_style, line_style]);
+    this.kmz.add_root(this.xc_style2);
+    // #
+    this.pixel_url = 'images/pixel.png';
+    // TODO chargment et ajout au zip de pixel_url
+    // #
+    this.visible_none_folder = this.make_none_folder(1);
+    this.invisible_none_folder = this.make_none_folder(0);
+    // #
+    let animation_icon_url = 'images/paraglider.png';
+    this.animation_icon = new KML.Icon([new KML.SimpleElement('href', animation_icon_url)]);
+    // TODO chargment et ajout au zip de animation_icon_url
+  }
+
+  make_none_folder(visibility: number): KML.Folder {
+    let icon = new KML.Icon([new KML.SimpleElement('href', this.pixel_url)]);
+    let overlay_xy = new KML.overlayXY(0, 'fraction', 0, 'fraction');
+    let screen_xy = new KML.screenXY(0, 'fraction', 0, 'fraction');
+    let size = new KML.size(0, 'fraction', 0, 'fraction');
+    let screen_overlay = new KML.ScreenOverlay([icon, overlay_xy, screen_xy, size, new KML.SimpleElement('visibility', visibility.toString())]);
+    let style_url: string = this.check_hide_children_style.url;
+    return new KML.Folder([screen_overlay, new KML.SimpleElement('name', 'None'), new KML.SimpleElement('styleUrl', style_url)]);
   }
 
   make_analysis_style(color: string, bgcolors: string[], rows: string[][]): KML.Style {
-    let text = '<h3>$[name]</h3>$[description]' + this.make_table(rows, bgcolors);
+    let text = '<h3>$[name]</h3>$[description]' + Utils.make_table(rows, bgcolors);
     let bg_color = 'ff' + [...bgcolors[1].substring(1).matchAll(/../g)].reverse().join('');
     let balloon_style = new KML.BalloonStyle([new KML.CDATA('text', text), new KML.SimpleElement('bgColor', bg_color)]);
     let icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', color), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
-    let label_style = new KML.LabelStyle([new KML.SimpleElement('color', color), new KML.SimpleElement('scale', this.label_scales[0].toString())])
+    let label_style = new KML.LabelStyle([new KML.SimpleElement('color', color), new KML.SimpleElement('scale', this.label_scales[0].toString())]);
     let line_style = new KML.LineStyle([new KML.SimpleElement('color', color), new KML.SimpleElement('width', '4')]);
     return new KML.Style([balloon_style, icon_style, label_style, line_style]);
-  }
-
-  make_table(rows: string[][], bgcolors: string[] = ['#dddddd', '#ffffff']): string {
-    let result = '<table cellpadding="1" cellspacing="1">';
-    rows.forEach((row, i) => {
-      result += `<tr bgcolor="${bgcolors[i % 2]}"><th align="right">${row[0]}</th><td>${row[1]}</td></tr>`;
-    });
-    result += '</table>';
-    return result;
   }
 }
 
@@ -200,6 +282,9 @@ export class FlightConvert {
     result.add_siblings([this.stock.kmz]);
     //TODO ROOTS result.add_roots()
     // TODO tasks
+    flights.forEach(flight => {
+      result.add_siblings([flight.to_kmz(this)]);
+    })
     return result;
 
     //let kml: KML.KML = new KML.KML(this.altitude_styles);

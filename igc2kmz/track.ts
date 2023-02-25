@@ -10,6 +10,8 @@ enum FlyingState {
 }
 
 export class Track {
+
+  filename: string;
   flight: IGCFile;
   coords: Coord[];
   t: number[];
@@ -31,8 +33,9 @@ export class Track {
   glides: Slice[] = [];
   dives: Slice[] = [];
   //extensions: Record<string, string[]> = {};
-  constructor(flight: IGCFile) {
+  constructor(flight: IGCFile, filename?: string) {
     this.flight = flight;
+    this.filename = filename ?? ""; //TODO
     this.coords = Track.filter(flight.fixes.map(f => Coord.deg(f.latitude, f.longitude, (f.pressureAltitude ?? f.gpsAltitude) || 0, new Date(f.timestamp))));
     this.t = this.coords.map(c => c.dt.getTime() / 1000);
     this.pilot_name = flight.pilot || "";
