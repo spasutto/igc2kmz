@@ -5,7 +5,7 @@ import { KMZ } from "./kmz";
 import { Scale, TimeScale, ZeroCenteredScale } from "./scale";
 import { Task } from "./task";
 import { Track } from "./track";
-import { BoundSet, bsupdate, OpenStruct, RandomIdGenerator, Utils } from "./util";
+import { BoundSet, bsupdate, OpenStruct, RandomIdGenerator, Slice, Utils } from "./util";
 
 export class Flight {
   track: Track;
@@ -51,8 +51,108 @@ export class Flight {
     let second = Math.trunc(seconds % 60);
     //("0" + hour.toString()).substr(-2)
     rows.push(['Duration', `${hour}h ${("0" + minute.toString()).substr(-2)}m ${("0" + second.toString()).substr(-2)}s`]);
+    if (this.track.elevation_data) {
+      rows.push(['Take-off altitude', this.track.coords[0].ele + 'm']);
+      rows.push(['Maximum altitude', this.track.bounds["ele"]?.max + 'm']);
+      rows.push(['Minimum altitude', this.track.bounds["ele"]?.min + 'm']);
+      rows.push(['Landing altitude', this.track.coords[this.track.coords.length - 1].ele + 'm']);
+      rows.push(['Total altitude gain', this.track.total_dz_positive + 'm']);
+      rows.push(['Maximum altitude gain', this.track.max_dz_positive + 'm']);
+      rows.push(['Maximum climb', Math.round(this.track.bounds["climb"]?.max * 10) / 10 + 'm/s']);
+      rows.push(['Maximum sink', Math.round(this.track.bounds["climb"]?.min * 10) / 10 + 'm/s']);
+    }
+    rows.push(['Maximum speed', Math.round(this.track.bounds["speed"]?.max * 10) / 10 + 'km/h']);
+    if (this.url) {
+      let url = new URL(this.url);
+      rows.push(['Flight URL', `<a href="${this.url}">${url.hostname}</a>`]);
+    }
     let table = Utils.make_table(rows);
     return new KMZ([new KML.CDATA('description', table)]);
+  }
+
+  make_snippet(globals: FlightConvert): KMZ {
+    //TODO
+    return new KMZ([new KML.Snippet('A FAIRE')]);
+  }
+
+  make_task_folder(globals: FlightConvert, task: Task): KMZ {
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  }
+
+  make_solid_track(globals: FlightConvert, style: KML.Style, altitude_mode: string, name: string, visibility: boolean, extrude: boolean = false): KMZ {
+    this.track.coords
+    let line_string = new KML.LineString(this.track.coords, altitude_mode);
+    if (extrude) {
+      line_string.add(new KML.SimpleElement('extrude', '1'));
+    }
+    let placemark = new KML.Placemark([style, line_string]);
+    let style_url = globals.stock.check_hide_children_style.url;
+    return new KMZ([new KML.Folder([placemark, new KML.SimpleElement('styleUrl', style_url)])]);
+  }
+
+  make_colored_track(globals: FlightConvert, values: number[], scale: Scale | null, altitude_mode: string, visibility: boolean, scale_chart:boolean = true): KMZ {
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  }
+
+  make_track_folder(globals: FlightConvert): KMZ {
+    let style_url = globals.stock.radio_folder_style.url;
+    let folder = new KMZ([new KML.Folder([new KML.SimpleElement('name', 'Track'), new KML.open(true), new KML.SimpleElement('styleUrl', style_url)])]);
+    folder.add([globals.stock.invisible_none_folder]);
+    let visibility: boolean;
+    if (this.track.elevation_data) {
+      visibility = globals.default_track == 'climb';
+      folder.add([this.make_colored_track(globals, this.track.climb, globals.scales["climb"], 'absolute', visibility)]);
+      visibility = globals.default_track == 'altitude';
+      folder.add([this.make_colored_track(globals, this.track.ele, globals.scales["altitude"], 'absolute', visibility)]);
+      visibility = globals.default_track == 'tec';
+      folder.add([this.make_colored_track(globals, this.track.tec, globals.scales["tec"], 'absolute', visibility)]);
+    }
+    visibility = globals.default_track == 'speed';
+    folder.add([this.make_colored_track(globals, this.track.speed, globals.scales["speed"], this.altitude_mode, visibility)]);
+    // TODO
+    /*if (this.track.bounds["tas"] != null) {
+      visibility = globals.default_track == 'tas';
+      folder.add([this.make_colored_track(globals, this.track.tas, globals.scales["tas"], this.altitude_mode, visibility)]);
+    }*/
+    visibility = globals.default_track == 'time';
+    folder.add([this.make_colored_track(globals, this.track.t, globals.scales["t"], this.altitude_mode, visibility, false)]);
+    visibility = globals.default_track == 'solid_color';
+    let style = new KML.Style([new KML.LineStyle([new KML.SimpleElement('color', this.color), new KML.SimpleElement('width', this.width.toString())])]);
+    folder.add([this.make_solid_track(globals, style, this.altitude_mode, 'Solid color', visibility)]);
+    return folder;
+  }
+
+  make_shadow_folder(globals: FlightConvert): KMZ {
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  }
+
+  make_animation(globals: FlightConvert): KMZ {
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  }
+
+  make_photos_folder(globals: FlightConvert): KMZ {
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  }
+
+  make_xc_folder(globals: FlightConvert): KMZ {
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  }
+
+  make_altitude_marks_folder(globals: FlightConvert): KMZ {
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  }
+
+  make_graph(globals: FlightConvert, values: number[], scale?: Scale | null): KMZ {
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  }
+
+  make_analysis_folder(globals: FlightConvert, title: string, slices: Slice[], style_url: string): KMZ {
+
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  }
+
+  make_time_marks_folder(globals: FlightConvert): KMZ {
+    return new KMZ([new KML.CDATA('empty', 'TODO')]);
   }
 
   to_kmz(globals: FlightConvert): KMZ {
@@ -61,6 +161,24 @@ export class Flight {
     }
     let folder = new KMZ([new KML.Folder([new KML.SimpleElement('name', this.track.filename), new KML.open(true)])]);
     folder.add([this.make_description(globals)]);
+    folder.add([this.make_snippet(globals)]);
+    if (this.track.declaration) {
+      folder.add([this.make_task_folder(globals, this.track.declaration)]);
+    }
+    folder.add([this.make_track_folder(globals)]);
+    folder.add([this.make_shadow_folder(globals)]);
+    folder.add([this.make_animation(globals)]);
+    folder.add([this.make_photos_folder(globals)]);
+    folder.add([this.make_xc_folder(globals)]);
+    folder.add([this.make_altitude_marks_folder(globals)]);
+    if (this.track.elevation_data) {
+      let eles: number[] = this.track.coords.map(c => c.ele);
+      folder.add([this.make_graph(globals, eles, globals.scales["altitude"])]);
+    }
+    folder.add([this.make_analysis_folder(globals, 'thermal', this.track.thermals, globals.stock.thermal_style.url)]);
+    folder.add([this.make_analysis_folder(globals, 'glide', this.track.glides, globals.stock.glide_style.url)]);
+    folder.add([this.make_analysis_folder(globals, 'dive', this.track.dives, globals.stock.dive_style.url)]);
+    folder.add([this.make_time_marks_folder(globals)]);
     return folder;
   }
 }

@@ -1,4 +1,4 @@
-import { IGCFile, RecordExtensions } from "igc-parser";
+import { IGCFile, RecordExtensions, Task } from "igc-parser";
 import { Coord } from "./coord";
 import { Bounds, BoundSet, Utils, Slice } from "./util";
 
@@ -32,6 +32,7 @@ export class Track {
   thermals: Slice[] = [];
   glides: Slice[] = [];
   dives: Slice[] = [];
+  declaration: Task | null = null;
   //extensions: Record<string, string[]> = {};
   constructor(flight: IGCFile, filename?: string) {
     this.flight = flight;

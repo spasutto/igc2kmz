@@ -2,6 +2,7 @@
 //regex   : class ([^(\s]+)\(_?([^)]+)\): pass\n
 //replace : export class $1 extends $2 { }\n
 import { RGBA } from "./color";
+import { Coord } from "./coord";
 import { RandomIdGenerator } from "./util";
 
 export namespace KML {
@@ -113,6 +114,9 @@ export namespace KML {
       let doc = document.implementation.createDocument(null, this.name, null);
       let nodename = doc.createTextNode(this.content);
       doc.documentElement.appendChild(nodename);
+      for (let i = 0; i < this.attributes.length; i++) {
+        doc.documentElement.setAttribute(this.attributes[i].name, this.attributes[i].value);
+      }
       return doc.documentElement;
     }
   }
@@ -197,7 +201,14 @@ export namespace KML {
 
   export class LabelStyle extends CompoundElement { }
   export class latitude extends SimpleElement { }
-  export class LineString extends CompoundElement { }
+  export class LineString extends CompoundElement {
+    constructor(coordinates: Coord[], altitude_mode: string) {
+      super();
+      this.add(new SimpleElement('altitudeMode', altitude_mode));
+      let coords = coordinates.map(c => `${c.lon_deg},${c.lat_deg},${c.ele}`).join(' ');
+      this.add(new SimpleElement('coordinates', coords));
+    }
+  }
   export class LineStyle extends CompoundElement { }
   export class ListStyle extends CompoundElement { }
   export class listItemType extends SimpleElement { }
@@ -206,7 +217,7 @@ export namespace KML {
   export class name extends SimpleElement { }
   export class open extends SimpleElement {
     constructor(isopen: boolean) {
-      super(undefined, isopen ? '1' : '0');
+      super('open', isopen ? '1' : '0');
     }
   }
   export class overlayXY extends SimpleElement {
@@ -226,7 +237,11 @@ export namespace KML {
   export class ScreenOverlay extends CompoundElement { }
   export class screenXY extends overlayXY { }
   export class size extends overlayXY { }
-  export class Snippet extends SimpleElement { }
+  export class Snippet extends SimpleElement {
+    constructor(text: string) {
+      super(undefined, text);
+    }
+  }
   export class Style extends CompoundElement {
     constructor(childs:Element[]) {
       super(childs);

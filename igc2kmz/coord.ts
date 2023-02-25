@@ -18,6 +18,14 @@ export class Coord {
     return new Coord(Math.PI*lat/180, Math.PI*lon/180, ele, dt)
   }
 
+  get lat_deg(): number {
+    return 180 * this.lat / Math.PI;
+  }
+
+  get lon_deg(): number {
+    return 180 * this.lon / Math.PI;
+  }
+
   /**
    * Return the distance from self to other.
    * @param other
