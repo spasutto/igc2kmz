@@ -57,6 +57,16 @@ export class Scale {
     return (value - this.range.min) / (this.range.max - this.range.min);
   }
 
+  discretize(value: number, n: number = 32): number {
+    if (value < this.range.min) {
+      return 0;
+    } else if (this.range.max <= value) {
+      return n - 1;
+    }
+    let result = Math.trunc(n * this.normalize(value));
+    return (result > n - 1) ? n - 1 : result;
+  }
+
   color(value: number): RGBA {
     return this.cbgradient(this.normalize(value));
   }

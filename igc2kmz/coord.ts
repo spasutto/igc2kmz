@@ -53,4 +53,11 @@ export class Coord {
     let ele = (1 - delta) * this.ele + delta * other.ele;
     return new Coord(lat, lon, ele);
   }
+
+  coord_at(theta: number, d: number): Coord {
+    let lat = Math.asin(Math.sin(this.lat) * Math.cos(d / R) + Math.cos(this.lat) * Math.sin(d / R) * Math.cos(theta));
+    let lon = this.lon + Math.atan2(Math.sin(theta) * Math.sin(d / R) * Math.cos(this.lat), Math.cos(d / R) - Math.sin(this.lat) * Math.sin(this.lat));
+    let ele = this.ele;
+    return new Coord(lat, lon, ele);
+  }
 }

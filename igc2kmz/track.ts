@@ -76,6 +76,22 @@ export class Track {
     return result;
   }
 
+  coord_at(dt: Date): Coord {
+    let t = dt.getTime() / 1000;
+    if (t < this.t[0]) {
+      return this.coords[0];
+    } else if (this.t[this.t.length - 1] <= t) {
+      return this.coords[this.coords.length - 1];
+    }
+    let index = Utils.find_first_ge(this.t, t) ?? 0;
+    if (index && this.t[index] == t) {
+      return this.coords[index];
+    } else {
+      let delta = (t - this.t[index - 1]) / (this.t[index] - this.t[index - 1]);
+      return this.coords[index - 1].interpolate(this.coords[index], delta);
+    }
+  }
+
   analyse(dt: number) {
     let n = this.coords.length;
     let period = ((this.coords[n - 1].dt.getTime() - this.coords[0].dt.getTime()) / 1000) / n;

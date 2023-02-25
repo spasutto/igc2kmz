@@ -1,5 +1,7 @@
 
 import { bilinear_gradient, default_gradient } from "./color";
+import { Coord } from "./coord";
+import { GoogleChart } from "./googlechart";
 import { KML } from "./kml";
 import { KMZ } from "./kmz";
 import { Scale, TimeScale, ZeroCenteredScale } from "./scale";
@@ -80,18 +82,43 @@ export class Flight {
   }
 
   make_solid_track(globals: FlightConvert, style: KML.Style, altitude_mode: string, name: string, visibility: boolean, extrude: boolean = false): KMZ {
-    this.track.coords
     let line_string = new KML.LineString(this.track.coords, altitude_mode);
     if (extrude) {
       line_string.add(new KML.SimpleElement('extrude', '1'));
     }
     let placemark = new KML.Placemark([style, line_string]);
     let style_url = globals.stock.check_hide_children_style.url;
-    return new KMZ([new KML.Folder([placemark, new KML.SimpleElement('styleUrl', style_url)])]);
+    return new KMZ([new KML.Folder([new KML.SimpleElement('name', name), placemark, new KML.SimpleElement('styleUrl', style_url)]), new KML.visibility(visibility)]);
   }
 
-  make_colored_track(globals: FlightConvert, values: number[], scale: Scale | null, altitude_mode: string, visibility: boolean, scale_chart:boolean = true): KMZ {
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  make_colored_track(globals: FlightConvert, values: number[], scale: Scale | null, altitude_mode: string, visibility: boolean, scale_chart: boolean = true): KMZ {
+    let style_url = new KML.styleUrl(globals.stock.check_hide_children_style.url);
+    let folder = new KML.Folder([new KML.SimpleElement('name', 'Colored by ' + scale?.title), style_url, new KML.visibility(visibility)]);
+    let styles = scale?.colors().map(c => new KML.Style([new KML.LineStyle([new KML.SimpleElement('color', c.toHexString()), new KML.SimpleElement('width', this.width.toString())])])) ?? [];
+    let discrete_values: number[] = values.map(v => scale?.discretize(v) ?? 0);
+    let indexes = Utils.runs(discrete_values);
+    for (let i = 0, sl = indexes[0]; i < indexes.length; i++, sl = indexes[i]) {
+      let coordinates = this.track.coords.slice(sl.start, sl.stop + 1);
+      let line_string = new KML.LineString(coordinates, this.altitude_mode); //TOFIX : pourquoi pas le param altitude_mode?
+      if (!styles[discrete_values[sl.start]]) debugger;
+      style_url = new KML.styleUrl(styles[discrete_values[sl.start]].url);
+      let placemark = new KML.Placemark([style_url, line_string]);
+      folder.add(placemark);
+    }
+    if (scale_chart) {
+      let href = this.make_scale_chart(globals, scale).get_url();
+      let icon = new KML.Icon([new KML.CDATA('href', href)]);
+      let overlay_xy = new KML.overlayXY(0, 'fraction', 1, 'fraction');
+      let screen_xy = new KML.screenXY(0, 'fraction', 1, 'fraction');
+      let size = new KML.size(0, 'fraction', 0, 'fraction');
+      let screen_overlay = new KML.ScreenOverlay([icon, overlay_xy, screen_xy, size]);
+      folder.add(screen_overlay);
+    }
+    return new KMZ([folder]);
+  }
+
+  make_scale_chart(globals: FlightConvert, scale: Scale | null):GoogleChart {
+    return new GoogleChart();//TODO
   }
 
   make_track_folder(globals: FlightConvert): KMZ {
@@ -151,8 +178,40 @@ export class Flight {
     return new KMZ([new KML.CDATA('empty', 'TODO')]);
   }
 
-  make_time_marks_folder(globals: FlightConvert): KMZ {
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  make_time_mark(globals: FlightConvert, coord: Coord, dt: Date, style_url: string): KML.Element {
+    let point = new KML.Point(coord, this.altitude_mode);
+    let name = new Date(dt.getTime() + globals.tz_offset * 1000).toISOString().substring(11, 16);
+    return new KML.Placemark([point, new KML.SimpleElement('name', name), new KML.SimpleElement('styleUrl', style_url)]);
+  }
+
+  make_time_marks_folder(globals: FlightConvert, step: number=300): KML.Folder {
+    let style_url = globals.stock.check_hide_children_style.url;
+    let folder = new KML.Folder([new KML.SimpleElement('name', 'Time marks'), new KML.SimpleElement('styleUrl', style_url), new KML.SimpleElement('visibility', '0')]);
+    let coord = this.track.coords[0];
+    style_url = globals.stock.time_mark_styles[0].url;
+    folder.add(this.make_time_mark(globals, coord, coord.dt, style_url));
+    let dt = Utils.datetime_floor(this.track.coords[0].dt, step);
+    while (dt <= this.track.coords[0].dt) {
+      dt = new Date(dt.getTime() + step * 1000);
+    }
+    while (dt < this.track.coords[this.track.coords.length - 1].dt) {
+      coord = this.track.coord_at(dt);
+      let style_index = 3;
+      if (dt.getMinutes() == 0) {
+        style_index = 0;
+      } else if (dt.getMinutes() == 30) {
+        style_index = 1;
+      } else if (dt.getMinutes() == 15 || dt.getMinutes() == 45) {
+        style_index = 2;
+      }
+      style_url = globals.stock.time_mark_styles[style_index].url;
+      folder.add(this.make_time_mark(globals, coord, dt, style_url));
+      dt = new Date(dt.getTime() + step * 1000);
+    }
+    coord = this.track.coords[this.track.coords.length - 1];
+    style_url = globals.stock.time_mark_styles[0].url;
+    folder.add(this.make_time_mark(globals, coord, coord.dt, style_url));
+    return folder;
   }
 
   to_kmz(globals: FlightConvert): KMZ {

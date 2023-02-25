@@ -230,7 +230,14 @@ export namespace KML {
     }
   }
   export class Placemark extends CompoundElement { }
-  export class Point extends CompoundElement { }
+  export class Point extends CompoundElement {
+    constructor(coordinates: Coord, altitude_mode: string) {
+      super();
+      this.add(new SimpleElement('altitudeMode', altitude_mode));
+      let coords = `${coordinates.lon_deg},${coordinates.lat_deg},${coordinates.ele}`;
+      this.add(new SimpleElement('coordinates', coords));
+    }
+  }
   export class PolyStyle extends CompoundElement { }
   export class roll extends SimpleElement { }
   export class scale extends SimpleElement { }
@@ -249,7 +256,10 @@ export namespace KML {
     }
   }
 
-   export class styleUrl extends SimpleElement { }
+   export class styleUrl extends SimpleElement {
+    constructor(text:string) {
+      super(undefined, text);
+    }}
    export class tessellate extends SimpleElement { }
    export class text extends SimpleElement { }
    export class tilt extends SimpleElement { }
@@ -259,7 +269,10 @@ export namespace KML {
     }
   }
    export class value extends SimpleElement { }
-   export class visibility extends SimpleElement { }
+   export class visibility extends SimpleElement {
+    constructor(visibility: boolean) {
+      super(undefined, visibility ? '1' : '0');
+    }}
    export class when extends SimpleElement { }
    export class width extends SimpleElement { }
 
