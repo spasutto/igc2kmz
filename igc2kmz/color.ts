@@ -9,7 +9,7 @@ export class RGB {
     this.b = b;
   }
   toHexString() {
-    return ("0" + this.r.toString(16)).substr(-2) + ("0" + this.g.toString(16)).substr(-2) + ("0" + this.b.toString(16)).substr(-2);
+    return ("0" + Math.trunc(255*this.r).toString(16)).substr(-2) + ("0" + Math.trunc(255*this.g).toString(16)).substr(-2) + ("0" + Math.trunc(255*this.b).toString(16)).substr(-2);//TODO trunc nécessaire?
   }
 }
 export class RGBA extends RGB {
@@ -19,7 +19,7 @@ export class RGBA extends RGB {
     this.a = a;
   }
   override toHexString() {
-    return super.toHexString() + ("0" + this.a.toString(16)).substr(-2);
+    return super.toHexString() + ("0" + Math.trunc(255*this.a).toString(16)).substr(-2);//TODO trunc nécessaire?
   }
 }
 

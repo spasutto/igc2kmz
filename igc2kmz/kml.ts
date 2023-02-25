@@ -1,4 +1,7 @@
 
+//regex   : class ([^(\s]+)\(_?([^)]+)\): pass\n
+//replace : export class $1 extends $2 { }\n
+import { RGBA } from "./color";
 import { RandomIdGenerator } from "./util";
 
 export namespace KML {
@@ -25,7 +28,7 @@ export namespace KML {
     }
   }
 
-  const DEFAULT_KML_NAMESPACE = new Namespace(null, "http://earth.google.com/kml/2.2"); // TODO version
+  const DEFAULT_KML_NAMESPACE = "http://earth.google.com/kml/";
 
   export class Element {
     protected namespaces: Record<string, Namespace> = {};
@@ -88,9 +91,9 @@ export namespace KML {
 
   export class SimpleElement extends Element {
     content: string;
-    constructor(name:string, content: string) {
+    constructor(name?:string, content?: string) {
       super(name);
-      this.content = content;
+      this.content = content ?? '';
     }
 
     protected override element(): HTMLElement {
@@ -100,17 +103,51 @@ export namespace KML {
       return doc.documentElement;
     }
   }
+  export class CDATA extends SimpleElement {
+    constructor(name?:string, content?: string) {
+      super(name, content);
+    }
 
-  export class KML extends CompoundElement {
-    root: Element;
-    constructor(childs:Element[]) {
-      super(childs);//"kml", DEFAULT_KML_NAMESPACE
-      this.name = "kml";
-      this.namespaces["default"] = DEFAULT_KML_NAMESPACE;
-      this.root = new Element("Document");
-      this.childs.push(this.root);
+    protected override element(): HTMLElement {
+      let doc = document.implementation.createDocument(null, this.name, null);
+      let nodename = doc.createCDATASection(this.content);
+      doc.documentElement.appendChild(nodename);
+      return doc.documentElement;
     }
   }
+  export class altitude extends SimpleElement { }
+  export class altitudeMode extends SimpleElement { }
+  export class BalloonStyle extends CompoundElement { }
+  export class begin extends SimpleElement { }
+  export class bgColor extends SimpleElement { }
+  export class Camera extends CompoundElement { }
+  export class color extends SimpleElement {
+    constructor(rgba: RGBA) {
+      super(undefined, rgba.toHexString());
+    }
+  }
+  export class coordinates extends SimpleElement {
+    //TODO
+  }
+  export class Data extends CompoundElement {
+    constructor(value: number) {
+      super([new SimpleElement('value', value.toString())]);
+    }
+  }
+
+  export class description extends SimpleElement { }
+  export class Document extends CompoundElement { }
+  export class end extends SimpleElement { }
+  export class ExtendedData extends CompoundElement {
+    constructor(dict: Record<string, number>) {
+      super([]);
+      for (let prop in dict) this.add(new Data(dict[prop]));
+    }
+  }
+  export class extrude extends SimpleElement { }
+  export class Folder extends CompoundElement { }
+  export class heading extends SimpleElement { }
+  export class href extends SimpleElement { }
 
   export class Icon extends CompoundElement {
     /*
@@ -135,8 +172,16 @@ export namespace KML {
     }
   }
 
-  export class BalloonStyle extends CompoundElement { }
   export class IconStyle extends CompoundElement { }
+
+  export class KML extends CompoundElement {
+    constructor(version: number, child:Element) {
+      super([child]);//"kml", DEFAULT_KML_NAMESPACE
+      this.name = "kml";
+      this.namespaces["default"] = new Namespace(null, DEFAULT_KML_NAMESPACE + version.toString());
+    }
+  }
+
   export class LabelStyle extends CompoundElement { }
   export class latitude extends SimpleElement { }
   export class LineString extends CompoundElement { }
@@ -161,7 +206,7 @@ export namespace KML {
     id: string;
     constructor(childs:Element[]) {
       super(childs);
-      this.id = RandomIdGenerator.makeid();
+      this.id = RandomIdGenerator.makeid(5);
       this.add_attr(new Attribute("id", this.id));
     }
   }
@@ -170,7 +215,11 @@ export namespace KML {
    export class tessellate extends SimpleElement { }
    export class text extends SimpleElement { }
    export class tilt extends SimpleElement { }
-   export class TimeSpan extends CompoundElement { }
+   export class TimeSpan extends CompoundElement {
+    constructor(begin: Date, end: Date) {
+      super([new SimpleElement("begin", begin.toISOString()), new SimpleElement("end", end.toISOString())]);
+    }
+  }
    export class value extends SimpleElement { }
    export class visibility extends SimpleElement { }
    export class when extends SimpleElement { }
