@@ -185,13 +185,24 @@ export class Flight {
     return new KMZ([new KML.CDATA('empty', 'TODO')]);
   }
 
+  make_placemark(globals: FlightConvert, coord: Coord, altitudeMode: string, name: string, style_url: string): KML.Element {
+    let point = new KML.Point(coord, altitudeMode);
+    return new KML.Placemark([point, new KML.SimpleElement('name', name), new KML.Snippet(), new KML.styleUrl(style_url)])
+  }
+
   make_altitude_marks_folder(globals: FlightConvert): KMZ {
     if (!this.track.elevation_data) {
       return new KMZ([]);
     }
     let style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder('Altitude marks', style_url, [], null, false);
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+    Utils.salient2(this.track.coords.map(c => c.ele), [100, 50, 10]).forEach((j, index) => {
+      let coord = this.track.coords[index];
+      let i: number = globals.scales.altitude?.discretize(coord.ele) ?? 0;
+      style_url = globals.altitude_styles[j][i].url;
+      folder.add(this.make_placemark(globals, coord, 'absolute', `${coord.ele}m`, style_url));
+    });
+    return new KMZ([folder]);
   }
 
   make_graph(globals: FlightConvert, values: number[], scale?: Scale | null): KMZ {
@@ -419,7 +430,7 @@ export class FlightConvert {
   stock: Stock = new Stock();
   task: Task|null = null;
   tz_offset: number = 0;
-  altitude_styles: KML.Element[] = [];
+  altitude_styles: KML.Element[][] = [];
   graph_width: number = 600;
   graph_height: number = 300;
   default_track: string = 'solid_color';
@@ -468,7 +479,7 @@ export class FlightConvert {
           let label_style = new KML.LabelStyle([new KML.SimpleElement('color', c.toHexString()), new KML.SimpleElement('scale', this.stock.label_scales[i].toString())]);
           altitude_styles.push(new KML.Style([ballon_style, icon_style, label_style]));
         }
-        altitude_styles.forEach(s => this.altitude_styles.push(s));
+        this.altitude_styles.push(altitude_styles);
       }
     }
 

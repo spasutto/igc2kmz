@@ -170,8 +170,58 @@ export class Utils {
     }
   }
 
-  static salient2() {
+  static salient2(seq: number[], epsilons: number[]): number[] {
+    let result: number[] = [];
+    let helper = (start: number, stop: number) => {
+      if (stop - start < 2) return;
+      let delta = 0;
+      let left = start, right = stop;
+      if (seq[start] <= seq[stop]) {
+        let max_index = start;
+        for (let i = start + 1; i < stop; i++) {
+          if (seq[i] > seq[max_index]) {
+            max_index = i;
+          } else if (seq[max_index] - seq[i] > delta) {
+            left = max_index;
+            right = i;
+            delta = seq[max_index] - seq[i];
+          }
+        }
+      }
+      if (seq[start] >= seq[stop]) {
+        let min_index = start;
+        for (let i = start + 1; i < stop; i++) {
+          if (seq[i] < seq[min_index]) {
+            min_index = i;
+          } else if (seq[i] - seq[min_index] > delta) {
+            left = min_index;
+            right = i;
+            delta = seq[i] - seq[min_index];
+          }
+        }
+      }
+      if (delta >= epsilons[epsilons.length - 1] && (left != start || right != stop)) {
+        for (let i = 0, epsilon = epsilons[0]; i < epsilons.length; i++, epsilon = epsilons[i]) {
+          if (delta < epsilon) continue;
+          if (!result.hasOwnProperty(left) || result[left] > i) {
+            result[left] = i;
+          }
+          if (!result.hasOwnProperty(right) || result[right] > i) {
+            result[right] = i;
+          }
+        }
+        helper(start, left);
+        helper(left, right);
+        helper(right, stop);
+      }
+    }
 
+    if (seq.length > 0) {
+      result[0] = 0;
+      result[seq.length - 1] = 0
+      helper(0, seq.length - 1);
+    }
+    return result;
   }
 
   static datetime_floor(dt: Date, delta: number): Date {

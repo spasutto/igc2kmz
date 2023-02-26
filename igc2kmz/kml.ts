@@ -269,7 +269,7 @@ export namespace KML {
   export class screenXY extends overlayXY { }
   export class size extends overlayXY { }
   export class Snippet extends SimpleElement {
-    constructor(text: string) {
+    constructor(text?: string) {
       super(undefined, text);
     }
   }
