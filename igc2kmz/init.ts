@@ -23,7 +23,11 @@ export class Flight {
 
   constructor(track: Track) {
     this.track = track;
-    this.altitude_mode = "ff0000ff";
+    if (track.elevation_data) {
+      this.altitude_mode = 'absolute';
+    } else {
+      this.altitude_mode = 'clampToGround';
+    }
     this.color = "ff0000ff";
     this.width = 2;
     this.pilot_name = track.pilot_name;
@@ -88,7 +92,7 @@ export class Flight {
     }
     let placemark = new KML.Placemark([style, line_string]);
     let style_url = globals.stock.check_hide_children_style.url;
-    return new KMZ([new KML.Folder([new KML.SimpleElement('name', name), placemark, new KML.SimpleElement('styleUrl', style_url)]), new KML.visibility(visibility)]);
+    return new KMZ([new KML.Folder([new KML.SimpleElement('name', name), placemark, new KML.SimpleElement('styleUrl', style_url), new KML.visibility(visibility)])]);
   }
 
   make_colored_track(globals: FlightConvert, values: number[], scale: Scale | null, altitude_mode: string, visibility: boolean, scale_chart: boolean = true): KMZ {
@@ -99,8 +103,7 @@ export class Flight {
     let indexes = Utils.runs(discrete_values);
     for (let i = 0, sl = indexes[0]; i < indexes.length; i++, sl = indexes[i]) {
       let coordinates = this.track.coords.slice(sl.start, sl.stop + 1);
-      let line_string = new KML.LineString(coordinates, this.altitude_mode); //TOFIX : pourquoi pas le param altitude_mode?
-      if (!styles[discrete_values[sl.start]]) debugger;
+      let line_string = new KML.LineString(coordinates, altitude_mode); //TOFIX : pourquoi pas le param altitude_mode?
       style_url = new KML.styleUrl(styles[discrete_values[sl.start]].url);
       let placemark = new KML.Placemark([style_url, line_string]);
       folder.add(placemark);
@@ -114,7 +117,7 @@ export class Flight {
       let screen_overlay = new KML.ScreenOverlay([icon, overlay_xy, screen_xy, size]);
       folder.add(screen_overlay);
     }
-    return new KMZ([folder]);
+    return new KMZ([folder]).add_roots(styles);
   }
 
   make_scale_chart(globals: FlightConvert, scale: Scale | null):GoogleChart {

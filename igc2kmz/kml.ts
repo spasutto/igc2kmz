@@ -133,7 +133,11 @@ export namespace KML {
     }
   }
   export class altitude extends SimpleElement { }
-  export class altitudeMode extends SimpleElement { }
+  export class altitudeMode extends SimpleElement {
+    constructor(altitude_mode: string) {
+      super(undefined, altitude_mode);
+    }
+  }
   export class BalloonStyle extends CompoundElement { }
   export class begin extends SimpleElement { }
   export class bgColor extends SimpleElement { }
@@ -204,7 +208,7 @@ export namespace KML {
   export class LineString extends CompoundElement {
     constructor(coordinates: Coord[], altitude_mode: string) {
       super();
-      this.add(new SimpleElement('altitudeMode', altitude_mode));
+      this.add(new altitudeMode(altitude_mode));
       let coords = coordinates.map(c => `${c.lon_deg},${c.lat_deg},${c.ele}`).join(' ');
       this.add(new SimpleElement('coordinates', coords));
     }
@@ -233,7 +237,7 @@ export namespace KML {
   export class Point extends CompoundElement {
     constructor(coordinates: Coord, altitude_mode: string) {
       super();
-      this.add(new SimpleElement('altitudeMode', altitude_mode));
+      this.add(new altitudeMode(altitude_mode));
       let coords = `${coordinates.lon_deg},${coordinates.lat_deg},${coordinates.ele}`;
       this.add(new SimpleElement('coordinates', coords));
     }
