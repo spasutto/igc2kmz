@@ -127,6 +127,10 @@ export class Flight {
     return new GoogleChart();//TODO
   }
 
+  make_graph_chart(globals: FlightConvert, values: number[], scale: Scale | null):GoogleChart {
+    return new GoogleChart();//TODO
+  }
+
   make_track_folder(globals: FlightConvert): KMZ {
     let style_url = globals.stock.radio_folder_style.url;
     let folder = new KMZ([new KML.Folder('Track', style_url, [], true)]);
@@ -205,8 +209,17 @@ export class Flight {
     return new KMZ([folder]);
   }
 
-  make_graph(globals: FlightConvert, values: number[], scale?: Scale | null): KMZ {
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  make_graph(globals: FlightConvert, values: number[], scale: Scale | null): KML.Element {
+    let href = this.make_graph_chart(globals, values, scale).get_url();
+    let icon = new KML.Icon([new KML.CDATA('href', href)]);
+    let overlay_xy = new KML.overlayXY(0, 'fraction', 0, 'fraction');
+    let screen_xy = new KML.screenXY(0, 'fraction', 16, 'pixels');
+    let size = new KML.size(0, 'fraction', 0, 'fraction');
+    let screen_overlay = new KML.ScreenOverlay([icon, overlay_xy, screen_xy, size]);
+    let name = Utils.capitalizeFirstLetter(scale?.title) + ' graph';
+    let style_url = globals.stock.check_hide_children_style.url;
+    let folder = new KML.Folder(name, style_url, [screen_overlay], null, false);
+    return folder;
   }
 
   make_analysis_folder(globals: FlightConvert, title: string, slices: Slice[], style_url: string): KMZ {
@@ -266,7 +279,7 @@ export class Flight {
     folder.add([this.make_photos_folder(globals)]);
     folder.add([this.make_xc_folder(globals)]);
     folder.add([this.make_altitude_marks_folder(globals)]);
-    if (this.track.elevation_data) {
+    if (this.track.elevation_data && globals.scales["altitude"]) {
       let eles: number[] = this.track.coords.map(c => c.ele);
       folder.add([this.make_graph(globals, eles, globals.scales["altitude"])]);
     }

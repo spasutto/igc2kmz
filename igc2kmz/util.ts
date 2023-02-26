@@ -247,6 +247,10 @@ export class Utils {
     result += '</table>';
     return result;
   }
+
+  static capitalizeFirstLetter(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
 }
 
 export class RandomIdGenerator {
