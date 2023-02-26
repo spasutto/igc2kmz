@@ -3,11 +3,12 @@ import { bilinear_gradient, default_gradient } from "./color";
 import { Coord } from "./coord";
 import { GoogleChart } from "./googlechart";
 import { KML } from "./kml";
-import { KMZ } from "./kmz";
+import { KMZ, KMZFile } from "./kmz";
 import { Scale, TimeScale, ZeroCenteredScale } from "./scale";
 import { Task } from "./task";
 import { Track } from "./track";
 import { BoundSet, bsupdate, OpenStruct, RandomIdGenerator, Slice, Utils } from "./util";
+import { saveAs } from 'file-saver';
 
 export class Flight {
   track: Track;
@@ -209,14 +210,14 @@ export class Flight {
     return new KMZ([folder]);
   }
 
-  make_graph(globals: FlightConvert, values: number[], scale: Scale | null): KML.Element {
+  make_graph(globals: FlightConvert, values: number[], scale: Scale): KML.Element {
     let href = this.make_graph_chart(globals, values, scale).get_url();
     let icon = new KML.Icon([new KML.CDATA('href', href)]);
     let overlay_xy = new KML.overlayXY(0, 'fraction', 0, 'fraction');
     let screen_xy = new KML.screenXY(0, 'fraction', 16, 'pixels');
     let size = new KML.size(0, 'fraction', 0, 'fraction');
     let screen_overlay = new KML.ScreenOverlay([icon, overlay_xy, screen_xy, size]);
-    let name = Utils.capitalizeFirstLetter(scale?.title) + ' graph';
+    let name = Utils.capitalizeFirstLetter(scale.title) + ' graph';
     let style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder(name, style_url, [screen_overlay], null, false);
     return folder;
@@ -512,22 +513,11 @@ export class FlightConvert {
       result.add_siblings([flight.to_kmz(this)]);
     })
     return result;
+  }
 
-    //let kml: KML.KML = new KML.KML(this.altitude_styles);
-    /*console.log(kml.serialize());
-    let pouet = new KML.BalloonStyle([new KML.SimpleElement('text', '$[description]')]);
-    console.log(pouet.serialize());*/
-    /*
-    let ids = [];
-    const nbrtot = 7000;
-    RandomIdGenerator.globalcounter = 0;
-    var startTime = performance.now();
-    for (let i = 0; i < nbrtot; i++)
-      ids.push(RandomIdGenerator.makeid());
-    var endTime = performance.now();
-    console.log(ids);
-    console.log(`${nbrtot} calls to RandomIdGenerator took ${Math.round((endTime - startTime) * 100) / 100} milliseconds, ${Math.round(100 * (RandomIdGenerator.globalcounter - nbrtot) / RandomIdGenerator.globalcounter)}% de tirs inutiles`);
-    return new KMZ(kml);
-    */
+  download(kmz: KMZFile): void {
+    kmz.generateAsync({ type: "blob" }).then(function (content) {
+      saveAs(content, "track.zip");
+    });
   }
 }

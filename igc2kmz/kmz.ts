@@ -1,7 +1,8 @@
 
 import * as JSZip from 'jszip';
-import { saveAs } from 'file-saver';
 import { KML } from './kml';
+
+export type KMZFile = JSZip;
 
 export class KMZ {
   elements: KML.Element[] = [];
@@ -51,7 +52,7 @@ export class KMZ {
     return this;
   }
 
-  getKMZ(version: number): JSZip {
+  getKMZ(version: number): KMZFile {
     const j: JSZip = new (<any>JSZip).default();
     let document = new KML.Document();
     this.roots.forEach(root => document.add(root));
@@ -61,13 +62,5 @@ export class KMZ {
     console.log(kml);
     j.file('doc.kml', kml.serialize());
     return j;
-  }
-
-  download(zip: JSZip): void {
-    zip.generateAsync({ type: "blob" }).then(function (content) {
-      saveAs(content, "track.zip");
-    });
-    //var blob = new Blob(["Hello, world!"], { type: "text/plain;charset=utf-8" });
-    //saveAs(blob, "hello world.txt");
   }
 }
