@@ -30,6 +30,7 @@ export namespace KML {
   }
 
   const DEFAULT_KML_NAMESPACE = "http://earth.google.com/kml/";
+  const SPACES_INDENT = 2;
 
   export class Element {
     protected namespaces: Record<string, Namespace> = {};
@@ -61,31 +62,26 @@ export namespace KML {
       this.attributes.push(attr);
     }
 
-    protected element(): HTMLElement {
-      let doc = document.implementation.createDocument(null, this.name, null);
+    serialize(indent: boolean = false, level: number = 0): string {
+      let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + this.name;
       for (let key in this.namespaces) {
         let nskey = ':' + key;
         if (this.namespaces[key].defaultns) {
           nskey = "";
         }
-        doc.documentElement.setAttribute('xmlns' + nskey, this.namespaces[key].uri);
+        result += ` xmlns${nskey}="${this.namespaces[key].uri}"`;
       }
       for (let i = 0; i < this.attributes.length; i++) {
-        doc.documentElement.setAttribute(this.attributes[i].name, this.attributes[i].value);
+        result += ` ${this.attributes[i].name}="${this.attributes[i].value}"`;
       }
-      return doc.documentElement;
-    }
-
-    serialize(): string {
-      //console.log(this.element());
-      return '<?xml version="1.0" encoding="UTF-8"?>' +
-        new XMLSerializer().serializeToString(this.element());
+      result += '></' + this.name + '>';
+      return result;
     }
   }
 
   export class CompoundElement extends Element {
     protected childs: Element[] = [];
-    constructor(childs:Element[] = []) {
+    constructor(childs: Element[] = []) {
       super();
       this.childs = childs;
     }
@@ -94,42 +90,57 @@ export namespace KML {
       this.childs.push(child);
     }
 
-    protected override element(): HTMLElement {
-      let root = super.element();
-      for (let i = 0; i < this.childs.length; i++) {
-        root.appendChild(this.childs[i].element());
+    override serialize(indent: boolean = false, level: number = 0): string {
+      let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + this.name;
+      for (let key in this.namespaces) {
+        let nskey = ':' + key;
+        if (this.namespaces[key].defaultns) {
+          nskey = "";
+        }
+        result += ` xmlns${nskey}="${this.namespaces[key].uri}"`;
       }
-      return root;
+      for (let i = 0; i < this.attributes.length; i++) {
+        result += ` ${this.attributes[i].name}="${this.attributes[i].value}"`;
+      }
+      if (this.childs.length == 0) {
+        result += '/>' + (indent ? '\n' : '');
+      } else {
+        result += '>' + (indent ? '\n' : '');
+        for (let i = 0; i < this.childs.length; i++) {
+          result += this.childs[i].serialize(indent, level + 1) + (indent ? '\n' : '');
+        }
+        result += (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '</' + this.name + '>';
+      }
+      return result;
     }
   }
 
   export class SimpleElement extends Element {
     content: string;
-    constructor(name?:string, content?: string) {
+    constructor(name?: string, content?: string) {
       super(name);
       this.content = content ?? '';
     }
 
-    protected override element(): HTMLElement {
-      let doc = document.implementation.createDocument(null, this.name, null);
-      let nodename = doc.createTextNode(this.content);
-      doc.documentElement.appendChild(nodename);
-      for (let i = 0; i < this.attributes.length; i++) {
-        doc.documentElement.setAttribute(this.attributes[i].name, this.attributes[i].value);
+    override serialize(indent: boolean = false, level: number = 0): string {
+      let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + this.name;
+      for (let key in this.namespaces) {
+        let nskey = ':' + key;
+        if (this.namespaces[key].defaultns) {
+          nskey = "";
+        }
+        result += ` xmlns${nskey}="${this.namespaces[key].uri}"`;
       }
-      return doc.documentElement;
+      for (let i = 0; i < this.attributes.length; i++) {
+        result += ` ${this.attributes[i].name}="${this.attributes[i].value}"`;
+      }
+      result += '>' + this.content + '</' + this.name + '>';
+      return result;
     }
   }
   export class CDATA extends SimpleElement {
-    constructor(name?:string, content?: string) {
-      super(name, content);
-    }
-
-    protected override element(): HTMLElement {
-      let doc = document.implementation.createDocument(null, this.name, null);
-      let nodename = doc.createCDATASection(this.content);
-      doc.documentElement.appendChild(nodename);
-      return doc.documentElement;
+    constructor(name?: string, content?: string) {
+      super(name, `<![CDATA[${content}]]>`);
     }
   }
   export class altitude extends SimpleElement { }
@@ -205,7 +216,7 @@ export namespace KML {
                % (pal, icon, extra)
         return cls(href=href)
     */
-    static palette(pal: number, icon: number, extra: string = ''):Icon {
+    static palette(pal: number, icon: number, extra: string = ''): Icon {
       return new Icon([new SimpleElement('href', `http://maps.google.com/mapfiles/kml/pal${pal}/icon${icon}${extra}.png`)]);
     }
   }
@@ -213,10 +224,13 @@ export namespace KML {
   export class IconStyle extends CompoundElement { }
 
   export class KML extends CompoundElement {
-    constructor(version: number, child:Element) {
+    constructor(version: number, child: Element) {
       super([child]);//"kml", DEFAULT_KML_NAMESPACE
       this.name = "kml";
       this.namespaces["default"] = new Namespace(null, DEFAULT_KML_NAMESPACE + version.toString());
+    }
+    override serialize(indent: boolean = false, level: number = 0): string {
+      return '<?xml version="1.0" encoding="UTF-8"?>\n' + super.serialize(indent, level);
     }
   }
 
@@ -274,30 +288,31 @@ export namespace KML {
     }
   }
   export class Style extends CompoundElement {
-    constructor(childs:Element[]) {
+    constructor(childs: Element[]) {
       super(childs);
       this.add_attr(new Attribute("id", this.Id));
     }
   }
 
-   export class styleUrl extends SimpleElement {
-    constructor(text:string) {
+  export class styleUrl extends SimpleElement {
+    constructor(text: string) {
       super(undefined, text);
-    }}
-   export class tessellate extends SimpleElement { }
-   export class text extends SimpleElement { }
-   export class tilt extends SimpleElement { }
-   export class TimeSpan extends CompoundElement {
+    }
+  }
+  export class tessellate extends SimpleElement { }
+  export class text extends SimpleElement { }
+  export class tilt extends SimpleElement { }
+  export class TimeSpan extends CompoundElement {
     constructor(begin: Date, end: Date) {
       super([new SimpleElement("begin", begin.toISOString()), new SimpleElement("end", end.toISOString())]);
     }
   }
-   export class value extends SimpleElement { }
-   export class visibility extends SimpleElement {
+  export class value extends SimpleElement { }
+  export class visibility extends SimpleElement {
     constructor(visibility: boolean) {
       super(undefined, visibility ? '1' : '0');
-    }}
-   export class when extends SimpleElement { }
-   export class width extends SimpleElement { }
-
+    }
+  }
+  export class when extends SimpleElement { }
+  export class width extends SimpleElement { }
 }
