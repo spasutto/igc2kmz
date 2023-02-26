@@ -85,26 +85,29 @@ export class Flight {
     return new KMZ([new KML.CDATA('empty', 'TODO')]);
   }
 
-  make_solid_track(globals: FlightConvert, style: KML.Style, altitude_mode: string, name: string, visibility: boolean, extrude: boolean = false): KMZ {
+  make_solid_track(globals: FlightConvert, style: KML.Style, altitude_mode: string, name: string, visibility: boolean|null = null, extrude: boolean = false): KMZ {
     let line_string = new KML.LineString(this.track.coords, altitude_mode);
     if (extrude) {
       line_string.add(new KML.SimpleElement('extrude', '1'));
     }
     let placemark = new KML.Placemark([style, line_string]);
     let style_url = globals.stock.check_hide_children_style.url;
-    return new KMZ([new KML.Folder([new KML.SimpleElement('name', name), placemark, new KML.SimpleElement('styleUrl', style_url), new KML.visibility(visibility)])]);
+    let folder = new KML.Folder(name, style_url, [placemark]);
+    if (visibility != null) {
+      folder.add(new KML.visibility(visibility));
+    }
+    return new KMZ([folder]);
   }
 
   make_colored_track(globals: FlightConvert, values: number[], scale: Scale | null, altitude_mode: string, visibility: boolean, scale_chart: boolean = true): KMZ {
-    let style_url = new KML.styleUrl(globals.stock.check_hide_children_style.url);
-    let folder = new KML.Folder([new KML.SimpleElement('name', 'Colored by ' + scale?.title), style_url, new KML.visibility(visibility)]);
-    let styles = scale?.colors().map(c => new KML.Style([new KML.LineStyle([new KML.SimpleElement('color', c.toHexString()), new KML.SimpleElement('width', this.width.toString())])])) ?? [];
+    let folder = new KML.Folder('Colored by ' + scale?.title, globals.stock.check_hide_children_style.url, null, visibility);
+    let styles = scale?.colors().map(c => new KML.Style([new KML.LineStyle(c.toHexString(), this.width.toString())])) ?? [];
     let discrete_values: number[] = values.map(v => scale?.discretize(v) ?? 0);
     let indexes = Utils.runs(discrete_values);
     for (let i = 0, sl = indexes[0]; i < indexes.length; i++, sl = indexes[i]) {
       let coordinates = this.track.coords.slice(sl.start, sl.stop + 1);
       let line_string = new KML.LineString(coordinates, altitude_mode); //TOFIX : pourquoi pas le param altitude_mode?
-      style_url = new KML.styleUrl(styles[discrete_values[sl.start]].url);
+      let style_url = new KML.styleUrl(styles[discrete_values[sl.start]].url);
       let placemark = new KML.Placemark([style_url, line_string]);
       folder.add(placemark);
     }
@@ -126,7 +129,7 @@ export class Flight {
 
   make_track_folder(globals: FlightConvert): KMZ {
     let style_url = globals.stock.radio_folder_style.url;
-    let folder = new KMZ([new KML.Folder([new KML.SimpleElement('name', 'Track'), new KML.open(true), new KML.SimpleElement('styleUrl', style_url)])]);
+    let folder = new KMZ([new KML.Folder('Track', style_url, [], true)]);
     folder.add([globals.stock.invisible_none_folder]);
     let visibility: boolean;
     if (this.track.elevation_data) {
@@ -147,13 +150,27 @@ export class Flight {
     visibility = globals.default_track == 'time';
     folder.add([this.make_colored_track(globals, this.track.t, globals.scales["t"], this.altitude_mode, visibility, false)]);
     visibility = globals.default_track == 'solid_color';
-    let style = new KML.Style([new KML.LineStyle([new KML.SimpleElement('color', this.color), new KML.SimpleElement('width', this.width.toString())])]);
+    let style = new KML.Style([new KML.LineStyle(this.color, this.width.toString())]);
     folder.add([this.make_solid_track(globals, style, this.altitude_mode, 'Solid color', visibility)]);
     return folder;
   }
 
   make_shadow_folder(globals: FlightConvert): KMZ {
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+    if (!this.track.elevation_data) {
+      return new KMZ();
+    }
+    let style_url = globals.stock.radio_folder_style.url;
+    let folder = new KMZ([new KML.Folder('Shadow', style_url, [], false)]);
+    folder.add([globals.stock.invisible_none_folder]);
+    let style = new KML.Style([new KML.LineStyle('ff000000', '1')]);
+    folder.add([this.make_solid_track(globals, style, 'clampToGround', 'Normal')]);
+    let line_style = new KML.LineStyle('00000000', '1');
+    let poly_style = new KML.PolyStyle([new KML.SimpleElement('color', '80000000'), new KML.SimpleElement('width', '1')]);
+    style = new KML.Style([line_style, poly_style]);
+    folder.add([this.make_solid_track(globals, style, 'absolute', 'Extrude', false, true)]);
+    style = new KML.Style([new KML.LineStyle(this.color, this.width.toString())]);
+    folder.add([this.make_solid_track(globals, style, 'clampToGround', 'Solid color', false)]);
+    return folder;
   }
 
   make_animation(globals: FlightConvert): KMZ {
@@ -169,6 +186,11 @@ export class Flight {
   }
 
   make_altitude_marks_folder(globals: FlightConvert): KMZ {
+    if (!this.track.elevation_data) {
+      return new KMZ([]);
+    }
+    let style_url = globals.stock.check_hide_children_style.url;
+    let folder = new KML.Folder('Altitude marks', style_url, [], null, false);
     return new KMZ([new KML.CDATA('empty', 'TODO')]);
   }
 
@@ -184,12 +206,12 @@ export class Flight {
   make_time_mark(globals: FlightConvert, coord: Coord, dt: Date, style_url: string): KML.Element {
     let point = new KML.Point(coord, this.altitude_mode);
     let name = new Date(dt.getTime() + globals.tz_offset * 1000).toISOString().substring(11, 16);
-    return new KML.Placemark([point, new KML.SimpleElement('name', name), new KML.SimpleElement('styleUrl', style_url)]);
+    return new KML.Placemark([point, new KML.SimpleElement('name', name), new KML.styleUrl(style_url)]);
   }
 
   make_time_marks_folder(globals: FlightConvert, step: number=300): KML.Folder {
     let style_url = globals.stock.check_hide_children_style.url;
-    let folder = new KML.Folder([new KML.SimpleElement('name', 'Time marks'), new KML.SimpleElement('styleUrl', style_url), new KML.SimpleElement('visibility', '0')]);
+    let folder = new KML.Folder('Time marks', style_url, [], null, false);
     let coord = this.track.coords[0];
     style_url = globals.stock.time_mark_styles[0].url;
     folder.add(this.make_time_mark(globals, coord, coord.dt, style_url));
@@ -221,7 +243,7 @@ export class Flight {
     if (globals.scales["time"] != null) {
       this.time_positions = this.track.t.map(t => globals.graph_width * (t - globals.scales["time"]?.range.min) / (globals.scales["time"]?.range.max - globals.scales["time"]?.range.min));
     }
-    let folder = new KMZ([new KML.Folder([new KML.SimpleElement('name', this.track.filename), new KML.open(true)])]);
+    let folder = new KMZ([new KML.Folder(this.track.filename, null, [], true)]);
     folder.add([this.make_description(globals)]);
     folder.add([this.make_snippet(globals)]);
     if (this.track.declaration) {
@@ -348,14 +370,14 @@ class Stock {
     balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '<h3>$[name]</h3>$[description]')]);
     icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
     label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('scale', this.label_scales[0].toString())]);
-    let line_style = new KML.LineStyle([new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('width', '2')]);
+    let line_style = new KML.LineStyle('ccff33ff', '2');
     this.xc_style = new KML.Style([balloon_style, icon_style, label_style, line_style]);
     this.kmz.add_root(this.xc_style);
     // #
     balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '<h3>$[name]</h3>$[description]')]);
     icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
     label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'ccff33ff')]);
-    line_style = new KML.LineStyle([new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('width', '2')]);
+    line_style = new KML.LineStyle('ccff33ff', '2');
     this.xc_style2 = new KML.Style([balloon_style, icon_style, label_style, line_style]);
     this.kmz.add_root(this.xc_style2);
     // #
@@ -377,7 +399,7 @@ class Stock {
     let size = new KML.size(0, 'fraction', 0, 'fraction');
     let screen_overlay = new KML.ScreenOverlay([icon, overlay_xy, screen_xy, size, new KML.SimpleElement('visibility', visibility.toString())]);
     let style_url: string = this.check_hide_children_style.url;
-    return new KML.Folder([screen_overlay, new KML.SimpleElement('name', 'None'), new KML.SimpleElement('styleUrl', style_url)]);
+    return new KML.Folder('None', style_url, [screen_overlay]);
   }
 
   make_analysis_style(color: string, bgcolors: string[], rows: string[][]): KML.Style {
@@ -386,7 +408,7 @@ class Stock {
     let balloon_style = new KML.BalloonStyle([new KML.CDATA('text', text), new KML.SimpleElement('bgColor', bg_color)]);
     let icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', color), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
     let label_style = new KML.LabelStyle([new KML.SimpleElement('color', color), new KML.SimpleElement('scale', this.label_scales[0].toString())]);
-    let line_style = new KML.LineStyle([new KML.SimpleElement('color', color), new KML.SimpleElement('width', '4')]);
+    let line_style = new KML.LineStyle(color, '4');
     return new KML.Style([balloon_style, icon_style, label_style, line_style]);
   }
 }

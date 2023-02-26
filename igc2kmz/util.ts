@@ -170,6 +170,10 @@ export class Utils {
     }
   }
 
+  static salient2() {
+
+  }
+
   static datetime_floor(dt: Date, delta: number): Date {
     dt = new Date(dt.getTime());
     if (delta >= 3600) {

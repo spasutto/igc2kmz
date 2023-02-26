@@ -166,7 +166,24 @@ export namespace KML {
     }
   }
   export class extrude extends SimpleElement { }
-  export class Folder extends CompoundElement { }
+  export class Folder extends CompoundElement {
+    constructor(name?: string, style_url: string | null = null, childs: Element[] | null = null, isopen: boolean | null = null, isvisible: boolean | null = null) {
+      childs = childs ?? [];
+      if (isopen != null) {
+        childs.unshift(new open(isopen));
+      }
+      if (isvisible != null) {
+        childs.unshift(new visibility(isvisible));
+      }
+      if (name != null) {
+        childs.unshift(new SimpleElement('name', name));
+      }
+      if (style_url != null) {
+        childs.push(new styleUrl(style_url));
+      }
+      super(childs);
+    }
+  }
   export class heading extends SimpleElement { }
   export class href extends SimpleElement { }
 
@@ -213,12 +230,15 @@ export namespace KML {
       this.add(new SimpleElement('coordinates', coords));
     }
   }
-  export class LineStyle extends CompoundElement { }
+  export class LineStyle extends CompoundElement {
+    constructor(color: string, width: string) {
+      super([new SimpleElement('color', color), new SimpleElement('width', width.toString())]);
+    }
+  }
   export class ListStyle extends CompoundElement { }
   export class listItemType extends SimpleElement { }
   export class longitude extends SimpleElement { }
   export class MultiGeometry extends CompoundElement { }
-  export class name extends SimpleElement { }
   export class open extends SimpleElement {
     constructor(isopen: boolean) {
       super('open', isopen ? '1' : '0');
