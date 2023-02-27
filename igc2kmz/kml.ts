@@ -161,8 +161,12 @@ export namespace KML {
   export class bgColor extends SimpleElement { }
   export class Camera extends CompoundElement { }
   export class color extends SimpleElement {
-    constructor(rgba: RGBA) {
-      super(undefined, rgba.toHexString());
+    constructor(rgba: RGBA | string) {
+      if (rgba instanceof RGBA) {
+        super(undefined, rgba.toHexString());
+      } else {
+        super(undefined, rgba);
+      }
     }
   }
   export class coordinates extends SimpleElement {
@@ -240,7 +244,11 @@ export namespace KML {
       super([new SimpleElement('color', color), new SimpleElement('width', width.toString())]);
     }
   }
-  export class ListStyle extends CompoundElement { }
+  export class ListStyle extends CompoundElement {
+    constructor(listItemType: string) {
+      super([new SimpleElement('listItemType', listItemType)]);
+    }
+  }
   export class listItemType extends SimpleElement { }
   export class longitude extends SimpleElement { }
   export class MultiGeometry extends CompoundElement { }
@@ -289,7 +297,11 @@ export namespace KML {
   }
   export class PolyStyle extends CompoundElement { }
   export class roll extends SimpleElement { }
-  export class scale extends SimpleElement { }
+  export class scale extends SimpleElement {
+    constructor(content?: string) {
+      super(undefined, content);
+    }
+  }
   export class ScreenOverlay extends CompoundElement { }
   export class screenXY extends overlayXY { }
   export class size extends overlayXY { }
@@ -309,8 +321,14 @@ export namespace KML {
   export class text extends SimpleElement { }
   export class tilt extends SimpleElement { }
   export class TimeSpan extends CompoundElement {
-    constructor(begin: Date, end: Date) {
-      super([new SimpleElement("begin", begin.toISOString()), new SimpleElement("end", end.toISOString())]);
+    constructor(begin: Date|null, end: Date|null) {
+      super();
+      if (begin != null) {
+        this.add(new SimpleElement("begin", begin.toISOString()));
+      }
+      if (end != null) {
+        this.add(new SimpleElement("end", end.toISOString()));
+      }
     }
   }
   export class value extends SimpleElement { }

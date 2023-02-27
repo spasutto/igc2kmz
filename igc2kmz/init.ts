@@ -178,7 +178,7 @@ export class Flight {
     return folder;
   }
 
-  make_animation(globals: FlightConvert): KML.Element {
+  make_animation_tour(globals: FlightConvert): KML.Element {
     let style_url = globals.stock.radio_folder_style.url;
     let result = new KML.Folder('Animation', style_url, [], false);
     let line_style = new KML.Style([new KML.LineStyle('bf00aaff', '2')]);
@@ -204,6 +204,28 @@ export class Flight {
     placemarks.forEach(placemark => folder.add(placemark));
     result.add(folder);
     return result;
+  }
+
+  make_animation(globals: FlightConvert): KMZ {
+    let icon_style = new KML.IconStyle([globals.stock.animation_icon, new KML.color(this.color), new KML.scale(globals.stock.icon_scales[0].toString())]);
+    let list_style = new KML.ListStyle('checkHideChildren');
+    let style = new KML.Style([icon_style, list_style]);
+    let folder = new KML.Folder('Animation', null, [style], null, false);
+    let point = new KML.Point(this.track.coords[0], this.altitude_mode);
+    let timespan = new KML.TimeSpan(null, this.track.coords[0].dt);
+    let placemark = new KML.Placemark(null, point, [], style.url);
+    folder.add(placemark);
+    for (let i = 1; i < this.track.coords.length - 1; i++){
+      let coord = this.track.coords[i - 1].halfway_to(this.track.coords[i]);
+      point = new KML.Point(coord, this.altitude_mode);
+      timespan = new KML.TimeSpan(this.track.coords[i - 1].dt, this.track.coords[i].dt);
+      placemark = new KML.Placemark(null, point, [timespan], style.url);
+      folder.add(placemark);
+    }
+    point = new KML.Point(this.track.coords[this.track.coords.length - 1], this.altitude_mode);
+    placemark = new KML.Placemark(null, point, [timespan], style.url);
+    folder.add(placemark);
+    return new KMZ([folder]);
   }
 
   make_photos_folder(globals: FlightConvert): KMZ {
@@ -342,11 +364,11 @@ class Stock {
     this.icon_scales = [0.6, 0.5, 0.4, 0.3].map(v => Math.sqrt(v));
     this.label_scales = [0.6, 0.5, 0.4, 0.3].map(v => Math.sqrt(v));
     // #
-    let list_style = new KML.ListStyle([new KML.SimpleElement('listItemType', 'radioFolder')]);
+    let list_style = new KML.ListStyle('radioFolder');
     this.radio_folder_style = new KML.Style([list_style]);
     this.kmz.add_root(this.radio_folder_style);
     // #
-    list_style = new KML.ListStyle([new KML.SimpleElement('listItemType', 'checkHideChildren')]);
+    list_style = new KML.ListStyle('checkHideChildren');
     this.check_hide_children_style = new KML.Style([list_style]);
     this.kmz.add_root(this.check_hide_children_style);
     // #
@@ -404,27 +426,27 @@ class Stock {
     // #
     this.time_mark_styles = [];
     for (let i = 0; i < this.icons.length; i++) {
-      let icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('scale', this.icon_scales[i].toString())]);
-      let label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'cc33ffff'), new KML.SimpleElement('scale', this.label_scales[i].toString())]);
+      let icon_style = new KML.IconStyle([this.icons[0], new KML.scale(this.icon_scales[i].toString())]);
+      let label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'cc33ffff'), new KML.scale(this.label_scales[i].toString())]);
       this.time_mark_styles.push(new KML.Style([icon_style, label_style]));
     }
     this.kmz.add_roots(this.time_mark_styles);
     // #
     let balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '$[description]')]);
-    let icon_style = new KML.IconStyle([KML.Icon.palette(4, 46), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
-    let label_style = new KML.LabelStyle([new KML.SimpleElement('scale', this.label_scales[0].toString())]);
+    let icon_style = new KML.IconStyle([KML.Icon.palette(4, 46), new KML.scale(this.icon_scales[0].toString())]);
+    let label_style = new KML.LabelStyle([new KML.scale(this.label_scales[0].toString())]);
     this.photo_style = new KML.Style([balloon_style, icon_style, label_style]);
     this.kmz.add_root(this.photo_style);
     // #
     balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '<h3>$[name]</h3>$[description]')]);
-    icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
-    label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('scale', this.label_scales[0].toString())]);
+    icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.scale(this.icon_scales[0].toString())]);
+    label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'ccff33ff'), new KML.scale(this.label_scales[0].toString())]);
     let line_style = new KML.LineStyle('ccff33ff', '2');
     this.xc_style = new KML.Style([balloon_style, icon_style, label_style, line_style]);
     this.kmz.add_root(this.xc_style);
     // #
     balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '<h3>$[name]</h3>$[description]')]);
-    icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
+    icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.scale(this.icon_scales[0].toString())]);
     label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'ccff33ff')]);
     line_style = new KML.LineStyle('ccff33ff', '2');
     this.xc_style2 = new KML.Style([balloon_style, icon_style, label_style, line_style]);
@@ -455,8 +477,8 @@ class Stock {
     let text = '<h3>$[name]</h3>$[description]' + Utils.make_table(rows, bgcolors);
     let bg_color = 'ff' + [...bgcolors[1].substring(1).matchAll(/../g)].reverse().join('');
     let balloon_style = new KML.BalloonStyle([new KML.CDATA('text', text), new KML.SimpleElement('bgColor', bg_color)]);
-    let icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', color), new KML.SimpleElement('scale', this.icon_scales[0].toString())]);
-    let label_style = new KML.LabelStyle([new KML.SimpleElement('color', color), new KML.SimpleElement('scale', this.label_scales[0].toString())]);
+    let icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', color), new KML.scale(this.icon_scales[0].toString())]);
+    let label_style = new KML.LabelStyle([new KML.SimpleElement('color', color), new KML.scale(this.label_scales[0].toString())]);
     let line_style = new KML.LineStyle(color, '4');
     return new KML.Style([balloon_style, icon_style, label_style, line_style]);
   }
@@ -513,8 +535,8 @@ export class FlightConvert {
         let cs = this.scales["altitude"].colors();
         for (let j = 0, c = cs[j]; j < cs.length; j++, c = cs[j]) {
           let ballon_style = new KML.BalloonStyle([new KML.SimpleElement('text', '$[description]')]);
-          let icon_style = new KML.IconStyle([this.stock.icons[i], new KML.SimpleElement('color', c.toHexString()), new KML.SimpleElement('scale', this.stock.icon_scales[i].toString())]);
-          let label_style = new KML.LabelStyle([new KML.SimpleElement('color', c.toHexString()), new KML.SimpleElement('scale', this.stock.label_scales[i].toString())]);
+          let icon_style = new KML.IconStyle([this.stock.icons[i], new KML.color(c), new KML.scale(this.stock.icon_scales[i].toString())]);
+          let label_style = new KML.LabelStyle([new KML.color(c), new KML.scale(this.stock.label_scales[i].toString())]);
           altitude_styles.push(new KML.Style([ballon_style, icon_style, label_style]));
         }
         this.altitude_styles.push(altitude_styles);
