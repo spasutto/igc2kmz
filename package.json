@@ -12,7 +12,7 @@
     "scripts": {
         "build": "esbuild igc2kmz/igc2kmz.ts --bundle --outfile=dist/igc2kmz.js --platform=node",
         "buildweb": "esbuild igc2kmz/webwrapper.ts --bundle --outfile=dist/igc2kmz.js",
-        "minify": "esbuild igc2kmz/webwrapper.ts --bundle --minify --outfile=dist/igc2kmz.min.js"
+        "minify": "esbuild igc2kmz/webwrapper.ts --bundle --minify --keep-names --outfile=dist/igc2kmz.min.js"
     },
     "devDependencies": {
         "@types/node": "^18.14.2"
