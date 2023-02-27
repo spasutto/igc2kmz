@@ -1,6 +1,8 @@
 # igc2kmz
 Typescript port of Tom Payne's python tool [igc2kmz](https://github.com/twpayne/igc2kmz)
 
+[![Visualisation example](doc/output_MtBlanc.jpg?raw=true)](doc/output_MtBlanc.jpg?raw=true)
+
 ## Build
 ```
 npm install
