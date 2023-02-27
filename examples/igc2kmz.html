@@ -2,10 +2,25 @@
 <html>
   <head>
     <script src="../dist/igc2kmz.min.js"></script>
+    <style type="text/css">
+      * {
+        font-family: sans-serif;
+      }
+    </style>
 
     <script>
+      var working = false;
       function convertigc() {
-        var result = igc2kmz(document.getElementById('igccont').value);
+        if (working) return;
+        try {
+          working = true;
+          igc2kmz(document.getElementById('igccont').value);
+          working = false;
+        } catch (err) {
+          working = false;
+          alert(err);
+          throw err;
+        }
       }
       function handleFileSelect(evt) {
         var files = evt.target.files;
@@ -33,8 +48,7 @@
   <h1>IGC to KMZ conversion</h1>
   <input type="file" id="files" name="file" /><BR>
   <h3>IGC content :</h3>
-  <textarea id="igccont"></textarea><BR>
+  <textarea id="igccont" cols="100" rows="10"></textarea><BR>
   <input type="button" onclick="convertigc()" value="Convert">
-
 </body>
 </html>
