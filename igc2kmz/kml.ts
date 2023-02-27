@@ -8,8 +8,8 @@ import { RandomIdGenerator } from "./util";
 export namespace KML {
 
   class Attribute {
-    name: string = "";
-    value: string = "";
+    name: string = '';
+    value: string = '';
     constructor(name: string, value: string) {
       this.name = name;
       this.value = value;
@@ -24,26 +24,24 @@ export namespace KML {
     }
 
     constructor(name: string | null, uri: string, defaultns: boolean = false) {
-      super(name ?? "", uri)
-      this.defaultns = name == null || this.defaultns;
+      if (defaultns === true) name = null;
+      super(name ?? '', uri);
+      this.defaultns = name == null || defaultns;
     }
   }
 
-  const DEFAULT_KML_NAMESPACE = "http://earth.google.com/kml/";
   const SPACES_INDENT = 2;
 
   export class Element {
     protected namespaces: Record<string, Namespace> = {};
-    protected name: string = "";
+    protected name: string = '';
+    nsprefix: string | null = null;
     protected attributes: Attribute[] = [];
-    protected id: string = "";
+    protected id: string = '';
 
-    protected constructor(name?: string,
-      namespace?: Namespace) {
+    protected constructor(name?: string, nsprefix: string | null = null) {
       this.name = name ?? this.constructor.name;
-      if (namespace) {
-        this.namespaces[namespace.name] = namespace;
-      }
+      this.nsprefix = nsprefix;
     }
 
     get Id(): string {
@@ -51,6 +49,7 @@ export namespace KML {
         return this.id;
       }
       this.id = RandomIdGenerator.makeid(5);
+      this.add_attr("id", this.id);
       return this.id;
     }
 
@@ -58,23 +57,29 @@ export namespace KML {
       return '#' + this.Id;
     }
 
-    add_attr(attr: Attribute) {
-      this.attributes.push(attr);
+    add_ns(name: string | null, uri: string) {
+      this.namespaces[name ?? 'default'] = new Namespace(name, uri);;
+    }
+
+    add_attr(name: string, value: string) {
+      //TODO : éventuellement contrôle de duplicité
+      this.attributes.push(new Attribute(name, value));
     }
 
     serialize(indent: boolean = false, level: number = 0): string {
-      let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + this.name;
+      let name = ((this.nsprefix ?? '').trim().length > 0 ? this.nsprefix + ':' : '') + this.name;
+      let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + name;
       for (let key in this.namespaces) {
-        let nskey = ':' + key;
-        if (this.namespaces[key].defaultns) {
-          nskey = "";
+        let nskey = '';
+        if (!this.namespaces[key].defaultns) {
+          nskey = ':' + this.namespaces[key].name;
         }
         result += ` xmlns${nskey}="${this.namespaces[key].uri}"`;
       }
       for (let i = 0; i < this.attributes.length; i++) {
         result += ` ${this.attributes[i].name}="${this.attributes[i].value}"`;
       }
-      result += '></' + this.name + '>';
+      result += '></' + name + '>';
       return result;
     }
   }
@@ -91,7 +96,8 @@ export namespace KML {
     }
 
     override serialize(indent: boolean = false, level: number = 0): string {
-      let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + this.name;
+      let name = ((this.nsprefix ?? '').trim().length > 0 ? this.nsprefix + ':' : '') + this.name;
+      let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + name;
       for (let key in this.namespaces) {
         let nskey = ':' + key;
         if (this.namespaces[key].defaultns) {
@@ -109,7 +115,7 @@ export namespace KML {
         for (let i = 0; i < this.childs.length; i++) {
           result += this.childs[i].serialize(indent, level + 1) + (indent ? '\n' : '');
         }
-        result += (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '</' + this.name + '>';
+        result += (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '</' + name + '>';
       }
       return result;
     }
@@ -123,7 +129,8 @@ export namespace KML {
     }
 
     override serialize(indent: boolean = false, level: number = 0): string {
-      let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + this.name;
+      let name = ((this.nsprefix ?? '').trim().length > 0 ? this.nsprefix + ':' : '') + this.name;
+      let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + name;
       for (let key in this.namespaces) {
         let nskey = ':' + key;
         if (this.namespaces[key].defaultns) {
@@ -134,7 +141,7 @@ export namespace KML {
       for (let i = 0; i < this.attributes.length; i++) {
         result += ` ${this.attributes[i].name}="${this.attributes[i].value}"`;
       }
-      result += '>' + this.content + '</' + this.name + '>';
+      result += '>' + this.content + '</' + name + '>';
       return result;
     }
   }
@@ -199,23 +206,6 @@ export namespace KML {
   export class href extends SimpleElement { }
 
   export class Icon extends CompoundElement {
-    /*
-    def character(cls, c, extra=''):
-        if ord('1') <= ord(c) <= ord('9'):
-            icon = (ord(c) - ord('1')) % 8 + 16 * ((ord(c) - ord('1')) / 8)
-            return cls.palette(3, icon, extra)
-        elif ord('A') <= ord(c) <= ord('Z'):
-            icon = (ord(c) - ord('A')) % 8 + 16 * ((31 - ord(c) + ord('A')) / 8)
-            return cls.palette(5, icon, extra)
-        else:
-            return cls.default()
-    */
-    /*
-    def palette(cls, pal, icon, extra=''):
-        href = 'http://maps.google.com/mapfiles/kml/pal%d/icon%d%s.png' \
-               % (pal, icon, extra)
-        return cls(href=href)
-    */
     static palette(pal: number, icon: number, extra: string = ''): Icon {
       return new Icon([new SimpleElement('href', `http://maps.google.com/mapfiles/kml/pal${pal}/icon${icon}${extra}.png`)]);
     }
@@ -225,9 +215,10 @@ export namespace KML {
 
   export class KML extends CompoundElement {
     constructor(version: number, child: Element) {
-      super([child]);//"kml", DEFAULT_KML_NAMESPACE
+      super([child]);
       this.name = "kml";
-      this.namespaces["default"] = new Namespace(null, DEFAULT_KML_NAMESPACE + version.toString());
+      this.add_ns(null, "http://earth.google.com/kml/" + version.toString());
+      this.add_ns('gx', "http://www.google.com/kml/ext/" + version.toString());
     }
     override serialize(indent: boolean = false, level: number = 0): string {
       return '<?xml version="1.0" encoding="UTF-8"?>\n' + super.serialize(indent, level);
@@ -261,13 +252,33 @@ export namespace KML {
   export class overlayXY extends SimpleElement {
     constructor(x: number, xunits: string, y: number, yunits: string) {
       super();
-      this.add_attr(new Attribute('x', x.toString()));
-      this.add_attr(new Attribute('y', x.toString()));
-      this.add_attr(new Attribute('xunits', xunits));
-      this.add_attr(new Attribute('yunits', yunits));
+      this.add_attr('x', x.toString());
+      this.add_attr('y', x.toString());
+      this.add_attr('xunits', xunits);
+      this.add_attr('yunits', yunits);
     }
   }
-  export class Placemark extends CompoundElement { }
+  export class Placemark extends CompoundElement {
+    constructor(name: string | null = null, point: Point | LineString | null = null, childs: Element[] | null = null, style_url: string | null = null, isopen: boolean | null = null, isvisible: boolean | null = null) {
+      childs = childs ?? [];
+      if (isopen != null) {
+        childs.unshift(new open(isopen));
+      }
+      if (isvisible != null) {
+        childs.unshift(new visibility(isvisible));
+      }
+      if (point) {
+        childs.unshift(point);
+      }
+      if (style_url) {
+        childs.unshift(new styleUrl(style_url));
+      }
+      if (name) {
+        childs.unshift(new SimpleElement('name', name));
+      }
+      super(childs);
+    }
+  }
   export class Point extends CompoundElement {
     constructor(coordinates: Coord, altitude_mode: string) {
       super();
@@ -287,12 +298,7 @@ export namespace KML {
       super(undefined, text);
     }
   }
-  export class Style extends CompoundElement {
-    constructor(childs: Element[]) {
-      super(childs);
-      this.add_attr(new Attribute("id", this.Id));
-    }
-  }
+  export class Style extends CompoundElement { }
 
   export class styleUrl extends SimpleElement {
     constructor(text: string) {
@@ -315,4 +321,65 @@ export namespace KML {
   }
   export class when extends SimpleElement { }
   export class width extends SimpleElement { }
+
+  export class Tour extends CompoundElement {
+    playlist: Playlist;
+    constructor(name: string | null = null, initialwait:number = 0) {
+      super();
+      this.nsprefix = 'gx';
+      if (name != null) {
+        this.add(new SimpleElement('name', name));
+      }
+      this.playlist = new Playlist(initialwait);
+      this.add(this.playlist);
+    }
+
+    add_update(targetId: string, wait: number = 0.02) {
+      this.playlist.add_update(targetId, wait);
+    }
+  }
+  export class Playlist extends CompoundElement {
+    constructor(wait:number = 0) {
+      super();
+      this.nsprefix = 'gx';
+      if (wait > 0) {
+        this.add(new Wait(wait));
+      }
+    }
+
+    add_update(targetId: string, wait: number = 0.02) {
+      this.add(new AnimatedUpdate(targetId));
+      this.add(new Wait(wait));
+    }
+  }
+  export class Wait extends CompoundElement {
+    constructor(wait: number) {
+      super([new duration(wait)]);
+      this.nsprefix = 'gx';
+    }
+  }
+  export class duration extends SimpleElement {
+    constructor(duration: number) {
+      super(undefined, duration.toString());
+      this.nsprefix = 'gx';
+    }
+  }
+  export class AnimatedUpdate extends CompoundElement {
+    constructor(targetId: string) {
+      super([new Update(targetId)]);
+      this.nsprefix = 'gx';
+    }
+  }
+  export class Update extends CompoundElement {
+    constructor(targetId: string) {
+      super([new Change(targetId)]);
+    }
+  }
+  export class Change extends CompoundElement {
+    constructor(targetId: string) {
+      let placemark = new Placemark(null, null, null, null, null, true);
+      placemark.add_attr('targetId', targetId);
+      super([placemark]);
+    }
+  }
 }

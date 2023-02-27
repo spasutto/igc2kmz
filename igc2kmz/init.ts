@@ -91,7 +91,7 @@ export class Flight {
     if (extrude) {
       line_string.add(new KML.SimpleElement('extrude', '1'));
     }
-    let placemark = new KML.Placemark([style, line_string]);
+    let placemark = new KML.Placemark(null, line_string, [style]);
     let style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder(name, style_url, [placemark]);
     if (visibility != null) {
@@ -108,8 +108,8 @@ export class Flight {
     for (let i = 0, sl = indexes[0]; i < indexes.length; i++, sl = indexes[i]) {
       let coordinates = this.track.coords.slice(sl.start, sl.stop + 1);
       let line_string = new KML.LineString(coordinates, altitude_mode); //TOFIX : pourquoi pas le param altitude_mode?
-      let style_url = new KML.styleUrl(styles[discrete_values[sl.start]].url);
-      let placemark = new KML.Placemark([style_url, line_string]);
+      let style_url = styles[discrete_values[sl.start]].url;
+      let placemark = new KML.Placemark(null, line_string, [], style_url);
       folder.add(placemark);
     }
     if (scale_chart) {
@@ -178,8 +178,32 @@ export class Flight {
     return folder;
   }
 
-  make_animation(globals: FlightConvert): KMZ {
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+  make_animation(globals: FlightConvert): KML.Element {
+    let style_url = globals.stock.radio_folder_style.url;
+    let result = new KML.Folder('Animation', style_url, [], false);
+    let line_style = new KML.Style([new KML.LineStyle('bf00aaff', '2')]);
+    result.add(line_style);
+    let tour:KML.Tour = new KML.Tour('Double-click here to start tour', 1);
+    result.add(tour);
+    style_url = globals.stock.check_hide_children_style.url;
+    let folder = new KML.Folder('Path segments', style_url, [], false);
+    let placemarks: KML.Placemark[] = [];
+    let line_string = new KML.LineString(this.track.coords.slice(0, 2), this.altitude_mode);
+    line_string.add(new KML.SimpleElement('tessellate', '1'));
+    let placemark = new KML.Placemark('1', line_string, [], line_style.url, false, false);
+    placemarks.push(placemark);
+    tour.add_update(placemark.Id);
+    for (let i = 1; i < this.track.coords.length; i++) {
+      //coord = this.track.coords[i - 1].halfway_to(this.track.coords[i]);
+      line_string = new KML.LineString(this.track.coords.slice(i, i + 2), this.altitude_mode);
+      line_string.add(new KML.SimpleElement('tessellate', '1'));
+      placemark = new KML.Placemark(null, line_string, [], line_style.url, false, false);
+      placemarks.push(placemark);
+      tour.add_update(placemark.Id);
+    }
+    placemarks.forEach(placemark => folder.add(placemark));
+    result.add(folder);
+    return result;
   }
 
   make_photos_folder(globals: FlightConvert): KMZ {
@@ -192,7 +216,7 @@ export class Flight {
 
   make_placemark(globals: FlightConvert, coord: Coord, altitudeMode: string, name: string, style_url: string): KML.Element {
     let point = new KML.Point(coord, altitudeMode);
-    return new KML.Placemark([point, new KML.SimpleElement('name', name), new KML.Snippet(), new KML.styleUrl(style_url)])
+    return new KML.Placemark(name, point, [new KML.Snippet()], style_url);
   }
 
   make_altitude_marks_folder(globals: FlightConvert): KMZ {
@@ -231,7 +255,7 @@ export class Flight {
   make_time_mark(globals: FlightConvert, coord: Coord, dt: Date, style_url: string): KML.Element {
     let point = new KML.Point(coord, this.altitude_mode);
     let name = new Date(dt.getTime() + globals.tz_offset * 1000).toISOString().substring(11, 16);
-    return new KML.Placemark([point, new KML.SimpleElement('name', name), new KML.styleUrl(style_url)]);
+    return new KML.Placemark(name, point, [], style_url);
   }
 
   make_time_marks_folder(globals: FlightConvert, step: number=300): KML.Folder {
@@ -450,6 +474,7 @@ export class FlightConvert {
   default_track: string = 'solid_color';
 
   flights2kmz(flights: Flight[], tz_offset: number = 0, task?: Task): KMZ | null {
+    //RandomIdGenerator.reset(); si on reset le generateur, il faut recréer stock
     flights.forEach(flight => {
       bsupdate(this.bounds, flight.track.bounds);
     });
@@ -457,7 +482,6 @@ export class FlightConvert {
     if (task) {
       this.task = task;
     }
-
     let gradient = bilinear_gradient;
     if (this.bounds["climb"] != null) {
       if (this.bounds["climb"].min < -5) {

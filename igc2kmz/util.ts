@@ -283,6 +283,11 @@ export class RandomIdGenerator {
     return this.factorial(n + this.len - 1) / (this.factorial(this.len) * this.factorial(n - 1));
   }
 
+  static reset(len?: number) {
+    this.len = (typeof len === 'number' && len > 0) ? len : 1;
+    this.ids = [];
+  }
+
   static makeid(len?: number): string {
     if (typeof len === 'number' && len > 0) {
       this.len = len;

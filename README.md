@@ -13,7 +13,7 @@ node dist\igc2kmz.js examples\flight.igc
 Upload to [Google Earth](https://earth.google.com/web/), voilà!
 
 ## Build
-Get sources from the repository at https://github.com/spasutto/igc2kmz and install npm dependencies
+Get [sources from the repository](https://github.com/spasutto/igc2kmz) and install npm dependencies
 ```
 git clone https://github.com/spasutto/igc2kmz.git
 cd igc2kmz
