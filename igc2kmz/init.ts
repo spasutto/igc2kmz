@@ -124,12 +124,12 @@ export class Flight {
     return new KMZ([folder]).add_roots(styles);
   }
 
-  make_scale_chart(globals: FlightConvert, scale: Scale | null):GoogleChart {
-    return new GoogleChart();//TODO
+  make_scale_chart(globals: FlightConvert, scale: Scale | null):GoogleChart.Chart {
+    return new GoogleChart.Chart();//TODO
   }
 
-  make_graph_chart(globals: FlightConvert, values: number[], scale: Scale | null):GoogleChart {
-    return new GoogleChart();//TODO
+  make_graph_chart(globals: FlightConvert, values: number[], scale: Scale | null):GoogleChart.Chart {
+    return new GoogleChart.Chart();//TODO
   }
 
   make_track_folder(globals: FlightConvert): KMZ {
