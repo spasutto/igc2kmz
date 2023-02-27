@@ -58,8 +58,8 @@ export class KMZ {
     this.roots.forEach(root => document.add(root));
     this.elements.forEach(elm => document.add(elm));
     let kml = new KML.KML(version, document);
-    console.log(kml.serialize(true));
-    console.log(kml);
+    //console.log(kml.serialize(true));
+    //console.log(kml);
     j.file('doc.kml', kml.serialize());
     return j;
   }

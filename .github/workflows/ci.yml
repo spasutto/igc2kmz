@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - run: npm ci
-      - run: npm run buildweb --if-present
+      - run: npm run build --if-present
 
   # Build job
   build_jekyll:
@@ -52,7 +52,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - run: npm ci
-      - run: npm run buildweb --if-present
+      - run: npm run minify --if-present
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:

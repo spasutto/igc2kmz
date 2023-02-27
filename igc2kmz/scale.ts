@@ -72,7 +72,7 @@ export class Scale {
   }
 
   colors(n: number = 32): RGBA[] {
-    return Array.from(Array(n - 1)).map((v, i) => this.cbgradient(i / (n - 1)));
+    return Array.from(Array(n)).map((v, i) => this.cbgradient(i / (n - 1)));
   }
 }
 
