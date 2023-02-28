@@ -10,6 +10,9 @@ import { Track } from "./track";
 import { BoundSet, bsupdate, OpenStruct, RandomIdGenerator, Slice, Utils } from "./util";
 import { saveAs } from 'file-saver';
 
+import icon_paraglider_src from '../images/paraglider.png'
+import icon_pixel_src from '../images/pixel.png'
+
 export class Flight {
   track: Track;
   altitude_mode: string;
@@ -460,14 +463,16 @@ class Stock {
     this.kmz.add_root(this.xc_style2);
     // #
     this.pixel_url = 'images/pixel.png';
-    // TODO chargment et ajout au zip de pixel_url
+    let pixel = icon_pixel_src.substring(icon_pixel_src.indexOf('base64,') + 'base64,'.length);
+    this.kmz.add_file(this.pixel_url, pixel);
     // #
     this.visible_none_folder = this.make_none_folder(1);
     this.invisible_none_folder = this.make_none_folder(0);
     // #
     let animation_icon_url = 'images/paraglider.png';
     this.animation_icon = new KML.Icon([new KML.SimpleElement('href', animation_icon_url)]);
-    // TODO chargment et ajout au zip de animation_icon_url
+    let animation_icon = icon_paraglider_src.substring(icon_paraglider_src.indexOf('base64,') + 'base64,'.length);
+    this.kmz.add_file(animation_icon_url, animation_icon);
   }
 
   make_none_folder(visibility: number): KML.Folder {
@@ -568,9 +573,9 @@ export class FlightConvert {
     return result;
   }
 
-  download(kmz: KMZFile): void {
+  download(kmz: KMZFile, filename?: string): void {
     kmz.generateAsync({ type: "blob" }).then(function (content) {
-      saveAs(content, "track.zip");
+      saveAs(content, filename ?? "track.kmz");
     });
   }
 }

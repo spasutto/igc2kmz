@@ -9,12 +9,13 @@
     </style>
 
     <script>
+      var filename = "track.igc";
       var working = false;
       function convertigc() {
         if (working) return;
         try {
           working = true;
-          igc2kmz(document.getElementById('igccont').value);
+          igc2kmz(document.getElementById('igccont').value, filename);
           working = false;
         } catch (err) {
           working = false;
@@ -24,8 +25,8 @@
       }
       function handleFileSelect(evt) {
         var files = evt.target.files;
-        for (var i = 0, f; f = files[i]; i++)
-        {
+        if (files.length > 0) {
+          filename = files[0].name ?? filename
           var reader = new FileReader();
           reader.onload = (function(reader)
           {
@@ -35,7 +36,7 @@
             }
           })(reader);
 
-          reader.readAsText(f);
+          reader.readAsText(files[0]);
         }
       }
 

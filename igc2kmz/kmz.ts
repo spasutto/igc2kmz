@@ -4,9 +4,19 @@ import { KML } from './kml';
 
 export type KMZFile = JSZip;
 
+export class KMZResource {
+  path: string;
+  content: string;
+  constructor(path: string, content: string) {
+    this.path = path;
+    this.content = content;
+  }
+}
+
 export class KMZ {
   elements: KML.Element[] = [];
   roots: KML.Element[];
+  files: KMZResource[] = [];
   constructor(elements?: KML.Element[]) {
     if (elements) {
       this.elements = elements;
@@ -14,13 +24,23 @@ export class KMZ {
     this.roots = [];
   }
 
-  add_roots(roots: KML.Element[]):KMZ {
+  add_roots(roots: KML.Element[]): KMZ {
     roots.forEach(root => this.roots.push(root));
     return this;
   }
 
-  add_root(root: KML.Element):KMZ {
+  add_root(root: KML.Element): KMZ {
     this.roots.push(root);
+    return this;
+  }
+
+  add_file(filename: string, content: string): KMZ {
+    this.files.push(new KMZResource(filename, content));
+    return this;
+  }
+
+  add_files(files: KMZResource[]): KMZ {
+    files.forEach(f => this.files.push(f));
     return this;
   }
 
@@ -30,7 +50,7 @@ export class KMZ {
         if (arg instanceof KMZ) {
           arg.elements.forEach(elm => (this.elements[0] as KML.CompoundElement).add(elm));
           this.add_roots(arg.roots);
-          // TODO ajout files
+          this.add_files(arg.files);
         } else {
           this.elements[0].add(arg);
         }
@@ -39,12 +59,12 @@ export class KMZ {
     return this;
   }
 
-  add_siblings(args: (KML.CompoundElement|KMZ)[]):KMZ {
+  add_siblings(args: (KML.CompoundElement | KMZ)[]): KMZ {
     args.forEach(arg => {
       if (arg instanceof KMZ) {
         arg.elements.forEach(elm => this.elements.push(elm));
         this.add_roots(arg.roots);
-        // TODO ajout files
+        this.add_files(arg.files);
       } else {
         this.elements.push(arg);
       }
@@ -61,6 +81,9 @@ export class KMZ {
     //console.log(kml.serialize(true));
     //console.log(kml);
     j.file('doc.kml', kml.serialize());
+    for (let i = 0; i < this.files.length; i++) {
+      j.file(this.files[i].path, this.files[i].content, { base64: true });
+    }
     return j;
   }
 }
