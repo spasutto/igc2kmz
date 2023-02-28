@@ -11,6 +11,7 @@ See [examples/igc2kmz.html](examples/igc2kmz.html)
 node dist\igc2kmz.js examples\flight.igc
 ```
 Upload to [Google Earth](https://earth.google.com/web/), voilà!
+:information_source: *Note* : animations don't seem to work on web version of earth, but are ok on desktop version...
 
 ## Build
 Get [sources from the repository](https://github.com/spasutto/igc2kmz) and install npm dependencies
@@ -25,3 +26,14 @@ npm run build      # for command line usage
 #  or
 npm run buildweb   # for web
 ```
+
+## Bugs/todo
+ - tests
+ - versioning
+ - overlayXY scale chart incorrect value
+ - charts (google)
+ - png icons
+ - command line usage
+   - photos
+   - tasks
+ - hide past/futur point in animation?

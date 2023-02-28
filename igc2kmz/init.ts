@@ -79,11 +79,12 @@ export class Flight {
 
   make_snippet(globals: FlightConvert): KMZ {
     //TODO
-    return new KMZ([new KML.Snippet('A FAIRE')]);
+    return new KMZ([]);
   }
 
   make_task_folder(globals: FlightConvert, task: Task): KMZ {
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+    //TODO
+    return new KMZ([]);
   }
 
   make_solid_track(globals: FlightConvert, style: KML.Style, altitude_mode: string, name: string, visibility: boolean|null = null, extrude: boolean = false): KMZ {
@@ -112,6 +113,7 @@ export class Flight {
       let placemark = new KML.Placemark(null, line_string, [], style_url);
       folder.add(placemark);
     }
+    //TODO
     if (false && scale_chart) {
       let href = this.make_scale_chart(globals, scale).get_url();
       let icon = new KML.Icon([new KML.CDATA('href', href)]);
@@ -230,11 +232,13 @@ export class Flight {
   }
 
   make_photos_folder(globals: FlightConvert): KMZ {
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+    //TODO
+    return new KMZ();
   }
 
   make_xc_folder(globals: FlightConvert): KMZ {
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+    //TODO
+    return new KMZ();
   }
 
   make_placemark(globals: FlightConvert, coord: Coord, altitudeMode: string, name: string, style_url: string): KML.Element {
@@ -244,7 +248,7 @@ export class Flight {
 
   make_altitude_marks_folder(globals: FlightConvert): KMZ {
     if (!this.track.elevation_data) {
-      return new KMZ([]);
+      return new KMZ();
     }
     let style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder('Altitude marks', style_url, [], null, false);
@@ -272,8 +276,8 @@ export class Flight {
   }
 
   make_analysis_folder(globals: FlightConvert, title: string, slices: Slice[], style_url: string): KMZ {
-
-    return new KMZ([new KML.CDATA('empty', 'TODO')]);
+    //TODO
+    return new KMZ();
   }
 
   make_time_mark(globals: FlightConvert, coord: Coord, dt: Date, style_url: string): KML.Element {
