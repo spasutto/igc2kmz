@@ -101,7 +101,7 @@ export class Flight {
   }
 
   make_colored_track(globals: FlightConvert, values: number[], scale: Scale | null, altitude_mode: string, visibility: boolean, scale_chart: boolean = true): KMZ {
-    let folder = new KML.Folder('Colored by ' + scale?.title, globals.stock.check_hide_children_style.url, null, visibility);
+    let folder = new KML.Folder('Colored by ' + scale?.title, globals.stock.check_hide_children_style.url, [], null, visibility);
     let styles = scale?.colors().map(c => new KML.Style([new KML.LineStyle(c.toHexString(), this.width.toString())])) ?? [];
     let discrete_values: number[] = values.map(v => scale?.discretize(v) ?? 0);
     let indexes = Utils.runs(discrete_values);
@@ -112,7 +112,7 @@ export class Flight {
       let placemark = new KML.Placemark(null, line_string, [], style_url);
       folder.add(placemark);
     }
-    if (scale_chart) {
+    if (false && scale_chart) {
       let href = this.make_scale_chart(globals, scale).get_url();
       let icon = new KML.Icon([new KML.CDATA('href', href)]);
       let overlay_xy = new KML.overlayXY(0, 'fraction', 1, 'fraction');
@@ -124,7 +124,8 @@ export class Flight {
     return new KMZ([folder]).add_roots(styles);
   }
 
-  make_scale_chart(globals: FlightConvert, scale: Scale | null):GoogleChart.Chart {
+  make_scale_chart(globals: FlightConvert, scale: Scale | null): GoogleChart.Chart {
+    //http://chart.apis.google.com/chart?cht=lc&chs=40x200&chd=e:AAAA,CACA,EAEA,GAGA,IAIA,KAKA,MAMA,OAOA,QAQA,SASA,UAUA,WAWA,YAYA,aAaA,cAcA,eAeA,gAgA,h.h.,j.j.,l.l.,n.n.,p.p.,r.r.,t.t.,v.v.,x.x.,z.z.,1.1.,3.3.,5.5.,7.7.,9.9.,....&chf=bg,s,ffffff00%7cc,s,ffffffcc&chxt=r&chxr=0,-2.5,2.5&chxs=0,ffffff&chm=b,0002ff,0,1,1%7cb,0017ff,1,2,1%7cb,002cff,2,3,1%7cb,0041ff,3,4,1%7cb,0057ff,4,5,1%7cb,006cff,5,6,1%7cb,0081ff,6,7,1%7cb,0096ff,7,8,1%7cb,00acff,8,9,1%7cb,00c1ff,9,10,1%7cb,00d6ff,10,11,1%7cb,00ebff,11,12,1%7cb,00fffc,12,13,1%7cb,00ffe7,13,14,1%7cb,00ffd2,14,15,1%7cb,00ffbd,15,16,1%7cb,acff00,16,17,1%7cb,c1ff00,17,18,1%7cb,d6ff00,18,19,1%7cb,ebff00,19,20,1%7cb,fffc00,20,21,1%7cb,ffe700,21,22,1%7cb,ffd200,22,23,1%7cb,ffbd00,23,24,1%7cb,ffa700,24,25,1%7cb,ff9200,25,26,1%7cb,ff7d00,26,27,1%7cb,ff6800,27,28,1%7cb,ff5200,28,29,1%7cb,ff3d00,29,30,1%7cb,ff2800,30,31,1%7cb,ff1300,31,32,1&chls=0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0
     return new GoogleChart.Chart();//TODO
   }
 
@@ -257,6 +258,7 @@ export class Flight {
   }
 
   make_graph(globals: FlightConvert, values: number[], scale: Scale): KML.Element {
+    return new KML.CDATA('empty', 'TODO');
     let href = this.make_graph_chart(globals, values, scale).get_url();
     let icon = new KML.Icon([new KML.CDATA('href', href)]);
     let overlay_xy = new KML.overlayXY(0, 'fraction', 0, 'fraction');
@@ -323,6 +325,7 @@ export class Flight {
     folder.add([this.make_track_folder(globals)]);
     folder.add([this.make_shadow_folder(globals)]);
     folder.add([this.make_animation(globals)]);
+    //folder.add([this.make_animation_tour(globals)]);
     folder.add([this.make_photos_folder(globals)]);
     folder.add([this.make_xc_folder(globals)]);
     folder.add([this.make_altitude_marks_folder(globals)]);

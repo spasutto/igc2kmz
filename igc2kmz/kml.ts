@@ -95,6 +95,19 @@ export namespace KML {
       this.childs.push(child);
     }
 
+    prefixes():string[] {
+      let prefixes: string[] = [];
+      if (this.childs && this.childs.length > 0) {
+        for (let i = 0; i < this.childs.length; i++) {
+          if ((this.childs[i].nsprefix ?? '').trim().length > 0 && !prefixes.some(p => p == this.childs[i].nsprefix)) prefixes.push(this.childs[i].nsprefix ?? '');
+          if (this.childs[i] instanceof CompoundElement) (this.childs[i] as CompoundElement).prefixes().forEach(p => {
+            if (!prefixes.some(p0 => p0 == p)) prefixes.push(p);
+          });
+        }
+      }
+      return prefixes;
+    }
+
     override serialize(indent: boolean = false, level: number = 0): string {
       let name = ((this.nsprefix ?? '').trim().length > 0 ? this.nsprefix + ':' : '') + this.name;
       let result: string = (indent ? ' '.repeat(level * SPACES_INDENT) : '') + '<' + name;
@@ -141,7 +154,11 @@ export namespace KML {
       for (let i = 0; i < this.attributes.length; i++) {
         result += ` ${this.attributes[i].name}="${this.attributes[i].value}"`;
       }
-      result += '>' + this.content + '</' + name + '>';
+      if ((this.content ?? '').trim().length == 0) {
+        result += '/>';
+      } else {
+        result += '>' + this.content + '</' + name + '>';
+      }
       return result;
     }
   }
@@ -225,6 +242,12 @@ export namespace KML {
       this.add_ns('gx', "http://www.google.com/kml/ext/" + version.toString());
     }
     override serialize(indent: boolean = false, level: number = 0): string {
+      // suppression des namespaces inutilisés
+      let usedprefixes = this.prefixes();
+      for (let key in this.namespaces) {
+        if (!this.namespaces[key].name) continue;
+        if (!usedprefixes.includes(this.namespaces[key].name)) delete this.namespaces[key];
+      }
       return '<?xml version="1.0" encoding="UTF-8"?>\n' + super.serialize(indent, level);
     }
   }
