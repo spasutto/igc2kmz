@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "author": "Sylvain Pasutto <sylvainpasutto@gmail.com>",
     "dependencies": {
+        "@rgrove/parse-xml": "^4.1.0",
         "@types/file-saver": "^2.0.5",
         "esbuild": "0.17.8",
         "file-saver": "^2.0.5",

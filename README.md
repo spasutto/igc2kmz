@@ -31,6 +31,7 @@ npm run buildweb   # for web
 ## Bugs/todo
  - tests
  - versioning
+ - description not displayed correctly in desktop version (snippet)
  - overlayXY scale chart incorrect value
  - charts (google)
  - png icons
