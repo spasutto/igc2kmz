@@ -1,7 +1,7 @@
 
 import { bilinear_gradient, default_gradient } from "./color";
 import { Coord } from "./coord";
-import { GoogleChart } from "./googlechart";
+import { GoogleChart } from "./chart";
 import { KML } from "./kml";
 import { KMZ, KMZFile } from "./kmz";
 import { Scale, TimeScale, ZeroCenteredScale } from "./scale";

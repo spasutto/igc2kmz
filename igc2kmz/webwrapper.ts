@@ -9,6 +9,22 @@ declare global {
 }
 
 function igc2kmz(igccontent: string, filename?: string): KMZ | null {
+  const img1 = document.createElement('canvas');
+  img1.setAttribute('width', '100');
+  img1.setAttribute('height', '100');
+  const ctx = img1.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, 0, 100, 100);
+    ctx.strokeStyle = 'blue';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(50, 50);
+    ctx.stroke();
+    console.log(img1.toDataURL());
+    document.body.append(img1);
+  }
+  return null;
   let igc = IGCParser.parse(igccontent);
   let flight = new Flight(new Track(igc, filename));
   //console.log(flight);
