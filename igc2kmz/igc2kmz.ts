@@ -33,7 +33,7 @@ class HeadlessCanvas implements SimpleCanvas {
   }
 }
 
-export function igc2kmz(igccontent: string, infilename: string, outfilename: string): Promise<KMZ> {
+export function igc2kmz(igccontent: string, infilename: string, outfilename: string): Promise<string> {
   let igc = IGCParser.parse(igccontent);
   let flight = new Flight(new Track(igc, infilename));
   //console.log(flight);
@@ -41,12 +41,9 @@ export function igc2kmz(igccontent: string, infilename: string, outfilename: str
   let fcv = new FlightConvert(cv);
   // TODO root KML
   // TODO chargement Task.from_file(open(options.task)) if options.task else None
-  return new Promise<KMZ>(res => {
+  return new Promise<string>(res => {
     fcv.flights2kmz([flight]).then(kmz => {
-      kmz.getKMZ(2.2).generateAsync({ type: "nodebuffer" }).then(function (content) {
-        fs.writeFile(outfilename, content, 'binary', _ => console.log("output to " + outfilename));
-        res(kmz);
-      });
+      fs.writeFile(outfilename, Buffer.from(kmz), 'binary', _ => console.log("output to " + outfilename));
     });
   });
 }

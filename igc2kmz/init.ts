@@ -8,7 +8,6 @@ import { Scale, TimeScale, ZeroCenteredScale } from "./scale";
 import { Task } from "./task";
 import { Track } from "./track";
 import { BoundSet, bsupdate, OpenStruct, RandomIdGenerator, Slice, Utils } from "./util";
-import { saveAs } from 'file-saver';
 
 import icon_paraglider_src from '../images/paraglider.png'
 import icon_pixel_src from '../images/pixel.png'
@@ -584,7 +583,7 @@ export class FlightConvert {
     }
   }
 
-  flights2kmz(flights: Flight[], tz_offset: number = 0, task?: Task): Promise<KMZ> {
+  flights2kmz(flights: Flight[], tz_offset: number = 0, task?: Task): Promise<ArrayBuffer> {
     //RandomIdGenerator.reset(); si on reset le generateur, il faut recréer stock
     flights.forEach(flight => {
       bsupdate(this.bounds, flight.track.bounds);
@@ -640,20 +639,16 @@ export class FlightConvert {
       }
     }
 
-    return new Promise<KMZ>((res, rej) => {
+    return new Promise<ArrayBuffer>(res => {
       let result: KMZ = new KMZ();
       result.add_siblings([this.stock.kmz]);
       //TODO ROOTS result.add_roots()
       // TODO tasks
       Promise.all(flights.map(f => f.to_kmz(this))).then(kmzs => {
         result.add_siblings(kmzs);
-      }).then(() => res(result));
-    });
-  }
-
-  download(kmz: KMZFile, filename?: string): void {
-    kmz.generateAsync({ type: "blob" }).then(function (content) {
-      saveAs(content, filename ?? "track.kmz");
+      }).then(() => {
+        result.get_data(2.2).then(res);
+      });
     });
   }
 }

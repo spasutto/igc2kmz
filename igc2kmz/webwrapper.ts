@@ -4,6 +4,7 @@ import { KMZ } from "./kmz";
 import { Flight, FlightConvert } from "./init";
 import { Track } from "./track";
 import { SimpleCanvas } from './simplecanvas';
+import { saveAs } from 'file-saver';
 
 declare global {
     interface Window { igc2kmz: any; }
@@ -29,7 +30,7 @@ class WebCanvas implements SimpleCanvas {
   }
 }
 
-function igc2kmz(igccontent: string, filename?: string): Promise<KMZ> {
+function igc2kmz(igccontent: string, filename?: string): Promise<string> {
   let igc = IGCParser.parse(igccontent);
   let flight = new Flight(new Track(igc, filename));
   //console.log(flight);
@@ -37,19 +38,21 @@ function igc2kmz(igccontent: string, filename?: string): Promise<KMZ> {
   let fcv = new FlightConvert(cv);
   // TODO root KML
   // TODO chargement Task.from_file(open(options.task)) if options.task else None
-  return new Promise<KMZ>(res => {
+  return new Promise<string>(res => {
     fcv.flights2kmz([flight]).then(kmz => {
-      let outfilename = filename;
+      let outfilename = 'track.kmz';
       if (filename) {
         let i = filename.lastIndexOf('.');
         if (i >= 0) {
           outfilename = filename.substring(0, i) + '.kmz';
+        } else {
+          outfilename = filename + '.kmz';
         }
       }
       if (kmz) {
-        fcv.download(kmz.getKMZ(2.2), outfilename);
+        saveAs(new Blob([kmz]), outfilename);
       }
-      res(kmz);
+      res(outfilename);
     });
   });
 }
