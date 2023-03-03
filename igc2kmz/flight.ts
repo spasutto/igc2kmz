@@ -3,11 +3,16 @@ import { Coord } from "./coord";
 import { Track } from "./track";
 import { KML } from "./kml";
 import { KMZ, KMZResource } from "./kmz";
-import { RandomIdGenerator, Slice, Utils } from "./util";
+import { Bounds, RandomIdGenerator, round, Slice, Utils } from "./util";
 import { FlightConvert } from "./init";
 import { Task } from "./task";
 import { Scale, TimeScale } from "./scale";
 import { SimpleCanvas } from "./simplecanvas";
+
+const RIGHTWARDS_ARROW = '->';
+const INFINITY = 'inf';
+const MULTIPLICATION_SIGN = 'x';
+const UP_TACK = 'n/a';
 
 export class Flight {
   track: Track;
@@ -376,8 +381,78 @@ export class Flight {
   }
 
   make_analysis_folder(globals: FlightConvert, title: string, slices: Slice[], style_url: string): KMZ {
-    //TODO
-    return new KMZ();
+    if (!this.track.elevation_data || slices.length <= 0) {
+      return new KMZ();
+    }
+    let folder_style_url = globals.stock.check_hide_children_style.url
+    let folder = new KML.Folder(Utils.capitalizeFirstLetter(title) + 's', folder_style_url, null, null, false);
+    for (let k = 0, sl = slices[0]; k < slices.length; k++, sl = slices[k]){
+      let coord0 = this.track.coords[sl.start];
+      let coord1 = this.track.coords[sl.stop];
+      let coord = coord0.halfway_to(coord1);
+      let point = new KML.Point(coord, 'absolute');
+      let total_dz_positive = 0, total_dz_negative = 0;
+      let peak_climb = new Bounds(0);
+      for (let i = sl.start; i < sl.stop; i++) {
+        let dz = this.track.coords[i + 1].ele - this.track.coords[i].ele;
+        let dt = this.track.t[i + 1] - this.track.t[i];
+        if (dz > 0) {
+          total_dz_positive += dz;
+        } else if (dz < 0) {
+          total_dz_negative += dz;
+        }
+        peak_climb.update(dz / dt);
+      }
+      let climb = new Bounds(this.track.climb.slice(sl.start, sl.stop));
+      let dz = this.track.coords[sl.stop].ele - this.track.coords[sl.start].ele;
+      let dt = this.track.t[sl.stop] - this.track.t[sl.start];
+      let dp = coord0.distance_to(coord1);
+      let theta = coord0.initial_bearing_to(coord1);
+      let dict: Record<string, string | number> = {};
+      dict['altitude_change'] = round(dz);
+      dict['average_climb'] = round(dz / dt, 1);
+      dict['maximum_climb'] = round(climb.max, 1);
+      dict['peak_climb'] = round(peak_climb.max, 1);
+      let divisor = dt * climb.max;
+      if (divisor == 0) {
+        dict['efficiency'] = UP_TACK;
+      } else {
+        dict['efficiency'] = round(100.0 * dz / divisor);
+      }
+      dict['distance'] = round(dp / 1000.0, 1);
+      let average_ld = dz < 0 ? round(-dp / dz, 1).toString() : INFINITY;
+      dict['average_ld'] = average_ld;
+      dict['average_speed'] = round(3.6 * dp / dt, 1);
+      dict['maximum_descent'] = round(climb.min, 1);
+      dict['peak_descent'] = round(peak_climb.min, 1);
+      dict['start_altitude'] = coord0.ele;
+      dict['finish_altitude'] = coord1.ele;
+      let start_time = new Date(coord0.dt.getTime() + globals.tz_offset * 1000);
+      dict['start_time'] = start_time.toISOString().substring(11, 19);
+      let stop_time = new Date(coord1.dt.getTime() + globals.tz_offset * 1000);
+      dict['finish_time'] = stop_time.toISOString().substring(11, 19);
+      let duration = this.track.t[sl.stop] - this.track.t[sl.start];
+      let seconds = ("0" + Math.trunc(duration % 60).toString()).substr(-2);
+      dict['duration'] = `${Math.trunc(duration/60)}m ${seconds}ds`;
+      dict['accumulated_altitude_gain'] = total_dz_positive;
+      dict['accumulated_altitude_loss'] = total_dz_negative;
+      dict['drift_direction'] = Coord.rad_to_cardinal(theta + Math.PI);
+      let extended_data = new KML.ExtendedData(dict);
+      let name: string = '';
+      if (title == 'thermal') {
+        name = `${round(dz)}m at ${round(dz/dt, 1)}m/s`;
+      } else if (title == 'glide') {
+        name = `${round(dp / 1000, 1)}km at ${average_ld}:1, ${round(3.6 * dp / dt)}km/h`;
+      } else if (title == 'dive') {
+        name = `${-1*round(-dz)}m at ${round(dz/dt, 1)}m/s`;
+      }
+      let placemark = new KML.Placemark(name, point, [extended_data], style_url);
+      folder.add(placemark);
+      let line_string = new KML.LineString([coord0, coord1], 'absolute');
+      placemark = new KML.Placemark(null, line_string, null, style_url);
+      folder.add(placemark);
+    }
+    return new KMZ([folder]);
   }
 
   make_time_mark(globals: FlightConvert, coord: Coord, dt: Date, style_url: string): KML.Element {

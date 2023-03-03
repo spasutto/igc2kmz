@@ -67,6 +67,11 @@ export function bsupdate(bs: BoundSet, other: BoundSet) {
   }
 }
 
+export function round(n: number, digits: number = 0) {
+  digits = digits ? digits * 10 : 1;
+  return Math.round(n * digits) / digits;
+}
+
 //export type OpenStruct = Record<string, any | null>;
 export type OpenStruct<T> = Record<string, T | null>;
 

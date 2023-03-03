@@ -1,5 +1,6 @@
 
 const R = 6371000;
+const cardinals = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 
 export class Coord {
   lat: number;
@@ -7,14 +8,14 @@ export class Coord {
   ele: number;
   dt: Date;
 
-  constructor(lat: number, lon: number, ele: number, dt?: Date) {
+  constructor(lat: number, lon: number, ele?: number, dt?: Date) {
     this.lat = lat;
     this.lon = lon;
     this.ele = ele ?? 0;
     this.dt = dt ?? new Date();
   }
 
-  static deg(lat: number, lon: number, ele: number, dt?: Date): Coord {
+  static deg(lat: number, lon: number, ele?: number, dt?: Date): Coord {
     return new Coord(Math.PI*lat/180, Math.PI*lon/180, ele, dt)
   }
 
@@ -24,6 +25,17 @@ export class Coord {
 
   get lon_deg(): number {
     return 180 * this.lon / Math.PI;
+  }
+
+  static todegree(n: number): number {
+    return 180 * n / Math.PI;
+  }
+
+  static rad_to_cardinal(rad: number): string {
+    while (rad < 0) {
+      rad += 2 * Math.PI;
+    }
+    return cardinals[Math.trunc(8 * rad / Math.PI + 0.5) % 16];
   }
 
   /**
@@ -38,6 +50,20 @@ export class Coord {
     let lon = this.lon + Math.atan2(by, cos_lat_plus_bx);
     let ele = (this.ele + other.ele) / 2;
     return new Coord(lat, lon, ele);
+  }
+
+  /**
+   * Return the initial bearing from self to other.
+   * @param other
+   */
+  initial_bearing_to(other: Coord): number {
+    let y = Math.sin(other.lon - this.lon) * Math.cos(other.lat);
+    let x = Math.cos(this.lat) * Math.sin(other.lat) - Math.sin(this.lat) * Math.cos(other.lat) * Math.cos(other.lon - this.lon);
+    return Math.atan2(y, x);
+  }
+
+  initial_bearing_to_deg(other: Coord): number {
+    return this.initial_bearing_to(new Coord(Coord.todegree(other.lat), Coord.todegree(other.lon)));
   }
 
   /**
