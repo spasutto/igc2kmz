@@ -76,14 +76,19 @@ export class Track {
     return result;
   }
 
-  coord_at(dt: Date): Coord {
+  indexOf(dt: Date): number{
     let t = dt.getTime() / 1000;
     if (t < this.t[0]) {
-      return this.coords[0];
+      return 0;
     } else if (this.t[this.t.length - 1] <= t) {
-      return this.coords[this.coords.length - 1];
+      return this.coords.length - 1;
     }
-    let index = Utils.find_first_ge(this.t, t) ?? 0;
+    return Utils.find_first_ge(this.t, t) ?? 0;
+  }
+
+  coord_at(dt: Date): Coord {
+    let t = dt.getTime() / 1000;
+    let index = this.indexOf(dt);
     if (this.t[index] == t) {
       return this.coords[index];
     } else {

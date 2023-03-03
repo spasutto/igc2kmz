@@ -354,7 +354,7 @@ export namespace KML {
   export class text extends SimpleElement { }
   export class tilt extends SimpleElement { }
   export class TimeSpan extends CompoundElement {
-    constructor(begin: Date|null, end: Date|null) {
+    constructor(begin: Date|null, end?: Date|null) {
       super();
       if (begin != null) {
         this.add(new SimpleElement("begin", begin.toISOString()));
