@@ -28,6 +28,12 @@ npm run build    # for command line usage
 npm run minify   # for web
 ```
 
+## Features
+#### Glides / thermals visualisation :
+[![Visualisation example](doc/thermals_glides.jpg?raw=true)](doc/thermals_glides.jpg?raw=true)
+#### Extruded path :
+[![Visualisation example](doc/extruded_path.jpg?raw=true)](doc/extruded_path.jpg?raw=true)
+
 ## Bugs/todo
  - tests
  - versioning
