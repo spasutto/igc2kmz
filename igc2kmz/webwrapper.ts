@@ -31,14 +31,14 @@ class WebCanvas implements SimpleCanvas {
 }
 
 function igc2kmz(igccontent: string, filename?: string): Promise<string> {
-  let igc = IGCParser.parse(igccontent);
-  let flight = new Flight(new Track(igc, filename));
-  //console.log(flight);
-  let cv = new WebCanvas();
-  let fcv = new FlightConvert(cv);
-  // TODO root KML
-  // TODO chargement Task.from_file(open(options.task)) if options.task else None
   return new Promise<string>(res => {
+    let igc = IGCParser.parse(igccontent, {lenient: true});
+    let flight = new Flight(new Track(igc, filename));
+    //console.log(flight);
+    let cv = new WebCanvas();
+    let fcv = new FlightConvert(cv);
+    // TODO root KML
+    // TODO chargement Task.from_file(open(options.task)) if options.task else None
     fcv.flights2kmz([flight]).then(kmz => {
       let outfilename = 'track.kmz';
       if (filename) {
