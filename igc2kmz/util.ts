@@ -59,7 +59,6 @@ export type BoundSet = Record<string, Bounds | null>;
 
 export function bsupdate(bs: BoundSet, other: BoundSet) {
   for (let key in other) {
-    //console.log(key);
     if (bs.hasOwnProperty(key)) {
       bs[key]?.update(other[key]);
     } else {

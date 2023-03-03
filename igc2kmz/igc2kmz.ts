@@ -35,7 +35,6 @@ class HeadlessCanvas implements SimpleCanvas {
         fnt.load(() => {
           this.font_loading = false;
           this.font_loaded = true;
-          console.log('font ' + this.fontname + ' loaded');
           fs.unlink(this.fontfilename, () => { });
           this.loadfontcbs.forEach(r2 => r2());
         });

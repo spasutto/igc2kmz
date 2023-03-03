@@ -15,8 +15,8 @@ class WebCanvas implements SimpleCanvas {
   create_canvas(width: number, height: number): Promise<HTMLCanvasElement> {
     return new Promise(res => {
       let cv = document.createElement('canvas');
-      cv.setAttribute('width', '100');
-      cv.setAttribute('height', '100');
+      cv.setAttribute('width', width.toString());
+      cv.setAttribute('height', height.toString());
       res(cv);
     });
   }
