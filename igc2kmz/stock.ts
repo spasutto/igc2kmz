@@ -3,8 +3,8 @@ import { KML } from "./kml";
 import { KMZ, KMZResource } from "./kmz";
 import { Utils } from "./util";
 
-import icon_paraglider_src from '../images/paraglider.png'
-import icon_pixel_src from '../images/pixel.png'
+import icon_paraglider_src from '../assets/paraglider.png'
+import icon_pixel_src from '../assets/pixel.png'
 
 export class Stock {
   kmz: KMZ;
