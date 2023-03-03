@@ -1,6 +1,9 @@
 import { default_gradient, GradientCbk, RGBA } from "./color";
 import { Bounds, Utils } from "./util";
 
+/**
+ * A linear scale.
+ */
 export class Scale {
   range: Bounds;
   title: string;
@@ -76,8 +79,27 @@ export class Scale {
   }
 }
 
+/**
+ * A bilinear scale centered on zero.
+ */
 export class ZeroCenteredScale extends Scale {
-
+  override normalize(value: number): number {
+    if (value < 0) {
+      if (value < this.range.min) {
+        return 0;
+      } else {
+        return 0.5 - 0.5 * value / this.range.min;
+      }
+    } else if (value == 0) {
+      return 0.5;
+    } else {
+      if (this.range.max <= value) {
+        return 1;
+      } else {
+        return 0.5 + 0.5 * value / this.range.max;
+      }
+    }
+  }
 }
 
 export class TimeScale extends Scale {

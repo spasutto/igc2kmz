@@ -11,6 +11,9 @@ export class RGB {
   toHexString() {
     return ("0" + Math.trunc(255*this.b).toString(16)).substr(-2) + ("0" + Math.trunc(255*this.g).toString(16)).substr(-2) + ("0" + Math.trunc(255*this.r).toString(16)).substr(-2);//TODO trunc nécessaire?
   }
+  toRGBString() {
+    return `rgb(${Math.trunc(255*this.r)},${Math.trunc(255*this.g)},${Math.trunc(255*this.b)})`;
+  }
 }
 export class RGBA extends RGB {
   a: number = 0;
@@ -20,6 +23,9 @@ export class RGBA extends RGB {
   }
   override toHexString() {
     return ("0" + Math.trunc(255*this.a).toString(16)).substr(-2) + super.toHexString();//TODO trunc nécessaire?
+  }
+  toRGBAString() {
+    return `rgba(${Math.trunc(255*this.r)},${Math.trunc(255*this.g)},${Math.trunc(255*this.b)},${Math.trunc(255*this.a)})`;
   }
 }
 

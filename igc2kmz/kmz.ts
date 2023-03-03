@@ -72,18 +72,20 @@ export class KMZ {
     return this;
   }
 
-  getKMZ(version: number): KMZFile {
-    const j: JSZip = new (<any>JSZip).default();
-    let document = new KML.Document();
-    this.roots.forEach(root => document.add(root));
-    this.elements.forEach(elm => document.add(elm));
-    let kml = new KML.KML(version, document);
-    //console.log(kml.serialize(true));
-    //console.log(kml);
-    j.file('doc.kml', kml.serialize());
-    for (let i = 0; i < this.files.length; i++) {
-      j.file(this.files[i].path, this.files[i].content, { base64: true });
-    }
-    return j;
+  get_data(version: number): Promise<ArrayBuffer> {
+    return new Promise<ArrayBuffer>(res => {
+      const j: JSZip = new (<any>JSZip).default();
+      let document = new KML.Document();
+      this.roots.forEach(root => document.add(root));
+      this.elements.forEach(elm => document.add(elm));
+      let kml = new KML.KML(version, document);
+      //console.log(kml.serialize(true));
+      //console.log(kml);
+      j.file('doc.kml', kml.serialize());
+      for (let i = 0; i < this.files.length; i++) {
+        j.file(this.files[i].path, this.files[i].content, { base64: true });
+      }
+      j.generateAsync({ type: "arraybuffer", compression: "DEFLATE" }).then(buff => res(buff));
+    });
   }
 }

@@ -10,18 +10,11 @@
 
     <script>
       var filename = "track.igc";
-      var working = false;
       function convertigc() {
-        if (working) return;
-        try {
-          working = true;
-          igc2kmz(document.getElementById('igccont').value, filename);
-          working = false;
-        } catch (err) {
-          working = false;
+        igc2kmz(document.getElementById('igccont').value, filename).catch(err => {
           alert(err);
           throw err;
-        }
+        });
       }
       function handleFileSelect(evt) {
         var files = evt.target.files;
@@ -50,6 +43,6 @@
   <input type="file" id="files" name="file" /><BR>
   <h3>IGC content :</h3>
   <textarea id="igccont" cols="100" rows="10"></textarea><BR>
-  <input type="button" onclick="convertigc()" value="Convert">
+  <input id="btn" type="button" onclick="convertigc()" value="Convert">
 </body>
 </html>

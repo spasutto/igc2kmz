@@ -1,32 +1,58 @@
 
 import IGCParser = require("igc-parser")
-import { KMZ } from "./kmz";
-import { Flight, FlightConvert } from "./init";
+import { FlightConvert } from "./init";
+import { Flight } from "./flight";
 import { Track } from "./track";
+import { SimpleCanvas } from './simplecanvas';
+import { saveAs } from 'file-saver';
 
 declare global {
     interface Window { igc2kmz: any; }
 }
 
-function igc2kmz(igccontent: string, filename?: string): KMZ | null {
-  let igc = IGCParser.parse(igccontent);
-  let flight = new Flight(new Track(igc, filename));
-  //console.log(flight);
-  let cv = new FlightConvert();
-  // TODO root KML
-  // TODO chargement Task.from_file(open(options.task)) if options.task else None
-  let kmz = cv.flights2kmz([flight]);
-  let outfilename = filename;
-  if (filename) {
-    let i = filename.lastIndexOf('.');
-    if (i >= 0) {
-      outfilename = filename.substring(0, i) + '.kmz';
-    }
+class WebCanvas implements SimpleCanvas {
+  readonly fontname: string = 'Source Sans Pro';
+  create_canvas(width: number, height: number): Promise<HTMLCanvasElement> {
+    return new Promise(res => {
+      let cv = document.createElement('canvas');
+      cv.setAttribute('width', width.toString());
+      cv.setAttribute('height', height.toString());
+      res(cv);
+    });
   }
-  if (kmz) {
-    cv.download(kmz.getKMZ(2.2), outfilename);
+  get_base64(cv: HTMLCanvasElement): Promise<string> {
+    return new Promise(res => {
+      let imgdata = cv.toDataURL();
+      res(imgdata.substring(imgdata.indexOf('base64,') + 'base64,'.length));
+    });
   }
-  return kmz;
+}
+
+function igc2kmz(igccontent: string, filename?: string): Promise<string> {
+  return new Promise<string>(res => {
+    let igc = IGCParser.parse(igccontent, {lenient: true});
+    let flight = new Flight(new Track(igc, filename));
+    //console.log(flight);
+    let cv = new WebCanvas();
+    let fcv = new FlightConvert(cv);
+    // TODO root KML
+    // TODO chargement Task.from_file(open(options.task)) if options.task else None
+    fcv.flights2kmz([flight]).then(kmz => {
+      let outfilename = 'track.kmz';
+      if (filename) {
+        let i = filename.lastIndexOf('.');
+        if (i >= 0) {
+          outfilename = filename.substring(0, i) + '.kmz';
+        } else {
+          outfilename = filename + '.kmz';
+        }
+      }
+      if (kmz) {
+        saveAs(new Blob([kmz]), outfilename);
+      }
+      res(outfilename);
+    });
+  });
 }
 
 if (typeof window === 'object') {

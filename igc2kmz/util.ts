@@ -59,7 +59,6 @@ export type BoundSet = Record<string, Bounds | null>;
 
 export function bsupdate(bs: BoundSet, other: BoundSet) {
   for (let key in other) {
-    //console.log(key);
     if (bs.hasOwnProperty(key)) {
       bs[key]?.update(other[key]);
     } else {
@@ -248,7 +247,8 @@ export class Utils {
     return result;
   }
 
-  static capitalizeFirstLetter(str: string): string {
+  static capitalizeFirstLetter(str: string | null | undefined): string {
+    str = str ?? '';
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 }
