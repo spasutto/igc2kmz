@@ -4,7 +4,7 @@ Typescript port of Tom Payne's python tool [igc2kmz](https://github.com/twpayne/
 [![Visualisation example](doc/output_MtBlanc.jpg?raw=true)](doc/output_MtBlanc.jpg?raw=true)
 
 ## Usage
-See [examples/igc2kmz.html](examples/igc2kmz.html)
+**For the web** : See [examples/igc2kmz.html](examples/igc2kmz.html)
 
 **Command line** : [build first](#build) then on a prompt :
 ```
@@ -23,9 +23,9 @@ npm install
 ```
 then
 ```
-npm run build      # for command line usage
+npm run build    # for command line usage
 #  or
-npm run buildweb   # for web
+npm run minify   # for web
 ```
 
 ## Bugs/todo
@@ -33,8 +33,6 @@ npm run buildweb   # for web
  - versioning
  - description not displayed correctly in desktop version (snippet)
  - overlayXY scale chart incorrect value
- - charts (google)
- - png icons
  - command line usage
    - photos
    - tasks
