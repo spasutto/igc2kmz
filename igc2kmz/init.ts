@@ -28,6 +28,7 @@ export class Flight {
   files: KMZResource[] = [];
   root: KMZ;
   pcount: number = 0;
+  protected id: string = '';
   endconv: ((value: KMZ) => void) | null = null;
 
   constructor(track: Track) {
@@ -43,6 +44,14 @@ export class Flight {
     this.pilot_name = track.pilot_name;
     this.glider_type = track.glider_type;
     this.glider_id = track.glider_id;
+  }
+
+  get Id(): string {
+    if ((this.id ?? "").trim().length > 0) {
+      return this.id;
+    }
+    this.id = RandomIdGenerator.makeid(5);
+    return this.id;
   }
 
   protected endwork() {
@@ -129,9 +138,8 @@ export class Flight {
       let placemark = new KML.Placemark(null, line_string, [], style_url);
       folder.add(placemark);
     }
-    //TODO
     if (scale_chart && scale) {
-      let href = 'images/' + scale.title.replaceAll(' ', '_') + '_scale.png';
+      let href = 'images/' + scale.title.replaceAll(' ', '_') + '_' + this.Id + '_scale.png';
       this.pcount++;
       this.make_scale_chart(globals, scale).then(imgdata => {
         this.root.add_file(href, imgdata);
@@ -314,7 +322,7 @@ export class Flight {
     if (!globals.canvas) {
       return new KML.Comment('Error while generating graph');
     }
-    let href = 'images/' + scale.title.replaceAll(' ', '_') + '_graph.png';
+    let href = 'images/' + scale.title.replaceAll(' ', '_') + '_' + this.Id + '_graph.png';
     this.pcount++;
     this.make_graph_chart(globals, values, scale).then(imgdata => {
       this.root.add_file(href, imgdata);
