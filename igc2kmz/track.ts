@@ -84,7 +84,7 @@ export class Track {
       return this.coords[this.coords.length - 1];
     }
     let index = Utils.find_first_ge(this.t, t) ?? 0;
-    if (index && this.t[index] == t) {
+    if (this.t[index] == t) {
       return this.coords[index];
     } else {
       let delta = (t - this.t[index - 1]) / (this.t[index] - this.t[index - 1]);

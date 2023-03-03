@@ -72,6 +72,7 @@ export class FlightConvert {
           let label_style = new KML.LabelStyle([new KML.color(c), new KML.scale(this.stock.label_scales[i].toString())]);
           altitude_styles.push(new KML.Style([ballon_style, icon_style, label_style]));
         }
+        this.stock.kmz.add_roots(altitude_styles);
         this.altitude_styles.push(altitude_styles);
       }
     }

@@ -370,7 +370,7 @@ export class Flight {
     let size = new KML.size(0, 'fraction', 0, 'fraction');
     let screen_overlay = new KML.ScreenOverlay([icon, overlay_xy, screen_xy, size]);
     let style_url = globals.stock.check_hide_children_style.url;
-    let name = Utils.capitalizeFirstLetter(scale.title) + ' graph'
+    let name = Utils.capitalizeFirstLetter(scale.title) + ' graph (TODO)'
     let folder = new KML.Folder(name, style_url, [screen_overlay], null, false);
     return folder;
   }

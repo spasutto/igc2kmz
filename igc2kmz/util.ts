@@ -80,7 +80,7 @@ export class Utils {
     let left = 0;
     let right = seq.length;
     while (left < right) {
-      let middle = (left + right) / 2;
+      let middle = Math.trunc((left + right) / 2);
       let direction = value - seq[middle];
       if (direction <= 0) {
         right = middle;
@@ -91,7 +91,7 @@ export class Utils {
     if (left == seq.length) {
       return null;
     } else {
-      return Math.min(seq.length - 1, right); // TOFIX
+      return right; //Math.min(seq.length - 1, right); // TOFIX
     }
   }
 
