@@ -13,22 +13,52 @@ import concat from 'concat-stream';
 import { Bitmap } from "pureimage/types/bitmap";
 import { SimpleCanvas } from "./simplecanvas";
 
+import sourcesanspro_font from '../assets/OpenSans-Regular.ttf'
+
 class HeadlessCanvas implements SimpleCanvas {
-  cv: Bitmap | null = null;
-  create_canvas(width: number, height: number, options?: any): Bitmap {
-    this.cv = PImage.make(width, height, {...options});
-    return this.cv;
+  cvs: Bitmap[] = [];
+  font_loading: boolean = false;
+  font_loaded: boolean = false;
+  private readonly fontfilename: string = 'OpenSans-Regular.ttf';
+  readonly fontname: string = 'sans-serif';
+  loadfontcbs: ((value: void | PromiseLike<void>) => void)[] = [];
+
+  // opentype doesn't load font from data url from node context, just web
+  protected loadfont(): Promise<void> {
+    return new Promise(res => {
+      this.loadfontcbs.push(res);
+      if (this.font_loading) return;
+      this.font_loading = true;
+      let sourcesansprofont = sourcesanspro_font.substring(sourcesanspro_font.indexOf('base64,') + 'base64,'.length);
+      fs.writeFile(this.fontfilename, sourcesansprofont, 'base64', () => {
+        let fnt = PImage.registerFont(this.fontfilename, this.fontname, 400, 'bold', '');
+        fnt.load(() => {
+          this.font_loading = false;
+          this.font_loaded = true;
+          console.log('font ' + this.fontname + ' loaded');
+          fs.unlink(this.fontfilename, () => { });
+          this.loadfontcbs.forEach(r2 => r2());
+        });
+      });
+    });
   }
-  get_base64(): Promise<string> {
-    return new Promise((res, rej) => {
-      if (this.cv == null) {
-        rej('no canvas');
+  create_canvas(width: number, height: number, options?: any): Promise<Bitmap> {
+    return new Promise(res => {
+      let ncv = this.cvs.length;
+      this.cvs.push(PImage.make(width, height, { ...options }));
+      if (this.font_loaded) {
+        res(this.cvs[ncv] as Bitmap);
       } else {
-        let base64toout = new Base64Encode();//fs.createWriteStream('out.png')
-        //base64toout.pipe(process.stdout);
-        base64toout.pipe(concat({ encoding: "string" }, res)).on('error', rej);
-        PImage.encodePNGToStream(this.cv, base64toout).catch(rej);
+        this.loadfont().then(() => res(this.cvs[ncv] as Bitmap));
       }
+    });
+  }
+  get_base64(cv: Bitmap): Promise<string> {
+    return new Promise((res, rej) => {
+      let base64toout = new Base64Encode();//fs.createWriteStream('out.png')
+      //base64toout.pipe(process.stdout);
+      base64toout.pipe(concat({ encoding: "string" }, res)).on('error', rej);
+      PImage.encodePNGToStream(cv, base64toout).catch(rej);
     });
   }
 }

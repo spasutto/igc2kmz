@@ -14,9 +14,9 @@
         "pureimage": "^0.3.17"
     },
     "scripts": {
-        "build": "esbuild igc2kmz/igc2kmz.ts --bundle --loader:.png=dataurl --outfile=dist/igc2kmz.js --platform=node",
-        "buildweb": "esbuild igc2kmz/webwrapper.ts --bundle --loader:.png=dataurl --outfile=dist/igc2kmz.js",
-        "minify": "esbuild igc2kmz/webwrapper.ts --bundle --loader:.png=dataurl --minify --keep-names --outfile=dist/igc2kmz.min.js"
+        "build": "esbuild igc2kmz/igc2kmz.ts --bundle --loader:.png=dataurl --loader:.ttf=dataurl --outfile=dist/igc2kmz.js --platform=node",
+        "buildweb": "esbuild igc2kmz/webwrapper.ts --bundle --loader:.png=dataurl --loader:.ttf=dataurl --outfile=dist/igc2kmz.js",
+        "minify": "esbuild igc2kmz/webwrapper.ts --bundle --loader:.png=dataurl --loader:.ttf=dataurl --minify --keep-names --outfile=dist/igc2kmz.min.js"
     },
     "devDependencies": {
         "@types/base64-stream": "^1.0.2",

@@ -11,21 +11,19 @@ declare global {
 }
 
 class WebCanvas implements SimpleCanvas {
-  cv: HTMLCanvasElement | null = null;
-  create_canvas(width: number, height: number): HTMLCanvasElement {
-    this.cv = document.createElement('canvas');
-    this.cv.setAttribute('width', '100');
-    this.cv.setAttribute('height', '100');
-    return this.cv;
+  readonly fontname: string = 'Source Sans Pro';
+  create_canvas(width: number, height: number): Promise<HTMLCanvasElement> {
+    return new Promise(res => {
+      let cv = document.createElement('canvas');
+      cv.setAttribute('width', '100');
+      cv.setAttribute('height', '100');
+      res(cv);
+    });
   }
-  get_base64(): Promise<string> {
-    return new Promise((res, rej) => {
-      if (this.cv == null) {
-        rej('no canvas');
-      } else {
-        let imgdata = this.cv.toDataURL();
-        res(imgdata.substring(imgdata.indexOf('base64,') + 'base64,'.length));
-      }
+  get_base64(cv: HTMLCanvasElement): Promise<string> {
+    return new Promise(res => {
+      let imgdata = cv.toDataURL();
+      res(imgdata.substring(imgdata.indexOf('base64,') + 'base64,'.length));
     });
   }
 }
