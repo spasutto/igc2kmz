@@ -3,7 +3,7 @@ import { bilinear_gradient, default_gradient } from "./color";
 import { Coord } from "./coord";
 import { GoogleChart } from "./chart";
 import { KML } from "./kml";
-import { KMZ, KMZFile } from "./kmz";
+import { KMZ, KMZFile, KMZResource } from "./kmz";
 import { Scale, TimeScale, ZeroCenteredScale } from "./scale";
 import { Task } from "./task";
 import { Track } from "./track";
@@ -12,6 +12,7 @@ import { saveAs } from 'file-saver';
 
 import icon_paraglider_src from '../images/paraglider.png'
 import icon_pixel_src from '../images/pixel.png'
+import { SimpleCanvas } from "./simplecanvas";
 
 export class Flight {
   track: Track;
@@ -24,9 +25,14 @@ export class Flight {
   photos: string[] = [];
   url: string = "";
   time_positions: number[] = [];
+  files: KMZResource[] = [];
+  root: KMZ;
+  pcount: number = 0;
+  endconv: ((value: KMZ) => void) | null = null;
 
   constructor(track: Track) {
     this.track = track;
+    this.root = new KMZ([new KML.Folder(this.track.filename, null, [], true)]);
     if (track.elevation_data) {
       this.altitude_mode = 'absolute';
     } else {
@@ -37,6 +43,13 @@ export class Flight {
     this.pilot_name = track.pilot_name;
     this.glider_type = track.glider_type;
     this.glider_id = track.glider_id;
+  }
+
+  protected endwork() {
+    this.pcount--;
+    if (this.pcount <= 0 && this.endconv) {
+      this.endconv(this.root);
+    }
   }
 
   make_description(globals: FlightConvert): KMZ {
@@ -117,8 +130,16 @@ export class Flight {
       folder.add(placemark);
     }
     //TODO
-    if (false && scale_chart) {
-      let href = this.make_scale_chart(globals, scale).get_url();
+    if (scale_chart && scale) {
+      let href = 'images/' + scale.title.replaceAll(' ', '_') + '_scale.png';
+      this.pcount++;
+      this.make_scale_chart(globals, scale).then(imgdata => {
+        this.root.add_file(href, imgdata);
+        this.endwork();
+      }).catch(e => {
+        console.log(e);
+        this.endwork();
+      });
       let icon = new KML.Icon([new KML.CDATA('href', href)]);
       let overlay_xy = new KML.overlayXY(0, 'fraction', 1, 'fraction');
       let screen_xy = new KML.screenXY(0, 'fraction', 1, 'fraction');
@@ -129,13 +150,38 @@ export class Flight {
     return new KMZ([folder]).add_roots(styles);
   }
 
-  make_scale_chart(globals: FlightConvert, scale: Scale | null): GoogleChart.Chart {
-    //http://chart.apis.google.com/chart?cht=lc&chs=40x200&chd=e:AAAA,CACA,EAEA,GAGA,IAIA,KAKA,MAMA,OAOA,QAQA,SASA,UAUA,WAWA,YAYA,aAaA,cAcA,eAeA,gAgA,h.h.,j.j.,l.l.,n.n.,p.p.,r.r.,t.t.,v.v.,x.x.,z.z.,1.1.,3.3.,5.5.,7.7.,9.9.,....&chf=bg,s,ffffff00%7cc,s,ffffffcc&chxt=r&chxr=0,-2.5,2.5&chxs=0,ffffff&chm=b,0002ff,0,1,1%7cb,0017ff,1,2,1%7cb,002cff,2,3,1%7cb,0041ff,3,4,1%7cb,0057ff,4,5,1%7cb,006cff,5,6,1%7cb,0081ff,6,7,1%7cb,0096ff,7,8,1%7cb,00acff,8,9,1%7cb,00c1ff,9,10,1%7cb,00d6ff,10,11,1%7cb,00ebff,11,12,1%7cb,00fffc,12,13,1%7cb,00ffe7,13,14,1%7cb,00ffd2,14,15,1%7cb,00ffbd,15,16,1%7cb,acff00,16,17,1%7cb,c1ff00,17,18,1%7cb,d6ff00,18,19,1%7cb,ebff00,19,20,1%7cb,fffc00,20,21,1%7cb,ffe700,21,22,1%7cb,ffd200,22,23,1%7cb,ffbd00,23,24,1%7cb,ffa700,24,25,1%7cb,ff9200,25,26,1%7cb,ff7d00,26,27,1%7cb,ff6800,27,28,1%7cb,ff5200,28,29,1%7cb,ff3d00,29,30,1%7cb,ff2800,30,31,1%7cb,ff1300,31,32,1&chls=0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0%7c0
-    return new GoogleChart.Chart();//TODO
+  make_scale_chart(globals: FlightConvert, scale: Scale | null): Promise<string> {
+    return new Promise((res, rej) => {
+      if (!globals.canvas) return rej(('no canvas'));
+      const cv = globals.canvas.create_canvas(100, 100);
+      const ctx = cv.getContext('2d');
+      if (!ctx) return rej(('no context'));
+      ctx.fillStyle = 'red';
+      ctx.fillRect(0, 0, 100, 100);
+      ctx.strokeStyle = 'blue';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(50, 50);
+      ctx.stroke();
+      globals.canvas.get_base64().then(v => res(v));
+    });
   }
 
-  make_graph_chart(globals: FlightConvert, values: number[], scale: Scale | null):GoogleChart.Chart {
-    return new GoogleChart.Chart();//TODO
+  make_graph_chart(globals: FlightConvert, values: number[], scale: Scale | null): Promise<string> {
+    return new Promise((res, rej) => {
+      if (!globals.canvas) return rej(('no canvas'));
+      const cv = globals.canvas.create_canvas(100, 100);
+      const ctx = cv.getContext('2d');
+      if (!ctx) return rej(('no context'));
+      ctx.fillStyle = 'red';
+      ctx.fillRect(0, 0, 100, 100);
+      ctx.strokeStyle = 'blue';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(50, 50);
+      ctx.stroke();
+      globals.canvas.get_base64().then(v => res(v));
+    });
   }
 
   make_track_folder(globals: FlightConvert): KMZ {
@@ -265,15 +311,28 @@ export class Flight {
   }
 
   make_graph(globals: FlightConvert, values: number[], scale: Scale): KML.Element {
-    return new KML.CDATA('empty', 'TODO');
-    let href = this.make_graph_chart(globals, values, scale).get_url();
+    if (!globals.canvas) {
+      return new KML.Comment('Error while generating graph');
+    }
+    let href = 'images/' + scale.title.replaceAll(' ', '_') + '_graph.png';
+    this.pcount++;
+    this.make_graph_chart(globals, values, scale).then(imgdata => {
+      this.root.add_file(href, imgdata);
+      this.endwork();
+    }).catch(e => {
+      console.log(e);
+      this.endwork();
+    });
+    /*if (!imgdata) {
+      return new KML.Comment('Error while generating graph');
+    }*/
     let icon = new KML.Icon([new KML.CDATA('href', href)]);
     let overlay_xy = new KML.overlayXY(0, 'fraction', 0, 'fraction');
     let screen_xy = new KML.screenXY(0, 'fraction', 16, 'pixels');
     let size = new KML.size(0, 'fraction', 0, 'fraction');
     let screen_overlay = new KML.ScreenOverlay([icon, overlay_xy, screen_xy, size]);
-    let name = Utils.capitalizeFirstLetter(scale.title) + ' graph';
     let style_url = globals.stock.check_hide_children_style.url;
+    let name = Utils.capitalizeFirstLetter(scale.title) + ' graph'
     let folder = new KML.Folder(name, style_url, [screen_overlay], null, false);
     return folder;
   }
@@ -319,32 +378,35 @@ export class Flight {
     return folder;
   }
 
-  to_kmz(globals: FlightConvert): KMZ {
-    if (globals.scales["time"] != null) {
-      this.time_positions = this.track.t.map(t => globals.graph_width * (t - globals.scales["time"]?.range.min) / (globals.scales["time"]?.range.max - globals.scales["time"]?.range.min));
-    }
-    let folder = new KMZ([new KML.Folder(this.track.filename, null, [], true)]);
-    folder.add([this.make_description(globals)]);
-    folder.add([this.make_snippet(globals)]);
-    if (this.track.declaration) {
-      folder.add([this.make_task_folder(globals, this.track.declaration)]);
-    }
-    folder.add([this.make_track_folder(globals)]);
-    folder.add([this.make_shadow_folder(globals)]);
-    folder.add([this.make_animation(globals)]);
-    //folder.add([this.make_animation_tour(globals)]);
-    folder.add([this.make_photos_folder(globals)]);
-    folder.add([this.make_xc_folder(globals)]);
-    folder.add([this.make_altitude_marks_folder(globals)]);
-    if (this.track.elevation_data && globals.scales["altitude"]) {
-      let eles: number[] = this.track.coords.map(c => c.ele);
-      folder.add([this.make_graph(globals, eles, globals.scales["altitude"])]);
-    }
-    folder.add([this.make_analysis_folder(globals, 'thermal', this.track.thermals, globals.stock.thermal_style.url)]);
-    folder.add([this.make_analysis_folder(globals, 'glide', this.track.glides, globals.stock.glide_style.url)]);
-    folder.add([this.make_analysis_folder(globals, 'dive', this.track.dives, globals.stock.dive_style.url)]);
-    folder.add([this.make_time_marks_folder(globals)]);
-    return folder;
+  to_kmz(globals: FlightConvert): Promise<KMZ> {
+    return new Promise((res, rej) => {
+      this.endconv = res;
+      this.pcount++;
+      if (globals.scales["time"] != null) {
+        this.time_positions = this.track.t.map(t => globals.graph_width * (t - globals.scales["time"]?.range.min) / (globals.scales["time"]?.range.max - globals.scales["time"]?.range.min));
+      }
+      this.root.add([this.make_description(globals)]);
+      this.root.add([this.make_snippet(globals)]);
+      if (this.track.declaration) {
+        this.root.add([this.make_task_folder(globals, this.track.declaration)]);
+      }
+      this.root.add([this.make_track_folder(globals)]);
+      this.root.add([this.make_shadow_folder(globals)]);
+      this.root.add([this.make_animation(globals)]);
+      //this.root.add([this.make_animation_tour(globals)]);
+      this.root.add([this.make_photos_folder(globals)]);
+      this.root.add([this.make_xc_folder(globals)]);
+      this.root.add([this.make_altitude_marks_folder(globals)]);
+      if (this.track.elevation_data && globals.scales["altitude"]) {
+        let eles: number[] = this.track.coords.map(c => c.ele);
+        this.root.add([this.make_graph(globals, eles, globals.scales["altitude"])]);
+      }
+      this.root.add([this.make_analysis_folder(globals, 'thermal', this.track.thermals, globals.stock.thermal_style.url)]);
+      this.root.add([this.make_analysis_folder(globals, 'glide', this.track.glides, globals.stock.glide_style.url)]);
+      this.root.add([this.make_analysis_folder(globals, 'dive', this.track.dives, globals.stock.dive_style.url)]);
+      this.root.add([this.make_time_marks_folder(globals)]);
+      this.endwork();
+     });
   }
 }
 
@@ -506,8 +568,15 @@ export class FlightConvert {
   graph_width: number = 600;
   graph_height: number = 300;
   default_track: string = 'solid_color';
+  canvas: SimpleCanvas | null = null;
 
-  flights2kmz(flights: Flight[], tz_offset: number = 0, task?: Task): KMZ | null {
+  constructor(canvas?: SimpleCanvas) {
+    if (canvas) {
+      this.canvas = canvas;
+    }
+  }
+
+  flights2kmz(flights: Flight[], tz_offset: number = 0, task?: Task): Promise<KMZ> {
     //RandomIdGenerator.reset(); si on reset le generateur, il faut recréer stock
     flights.forEach(flight => {
       bsupdate(this.bounds, flight.track.bounds);
@@ -563,14 +632,15 @@ export class FlightConvert {
       }
     }
 
-    let result: KMZ = new KMZ();
-    result.add_siblings([this.stock.kmz]);
-    //TODO ROOTS result.add_roots()
-    // TODO tasks
-    flights.forEach(flight => {
-      result.add_siblings([flight.to_kmz(this)]);
-    })
-    return result;
+    return new Promise<KMZ>((res, rej) => {
+      let result: KMZ = new KMZ();
+      result.add_siblings([this.stock.kmz]);
+      //TODO ROOTS result.add_roots()
+      // TODO tasks
+      Promise.all(flights.map(f => f.to_kmz(this))).then(kmzs => {
+        result.add_siblings(kmzs);
+      }).then(() => res(result));
+    });
   }
 
   download(kmz: KMZFile, filename?: string): void {

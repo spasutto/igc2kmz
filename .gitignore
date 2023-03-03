@@ -45,3 +45,4 @@ yarn.lock
 doc/*.pdf
 examples/*.kml
 examples/tasks
+examples/*/

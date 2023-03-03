@@ -6,6 +6,7 @@
         "@rgrove/parse-xml": "^4.1.0",
         "@types/file-saver": "^2.0.5",
         "base64-stream": "^1.0.0",
+        "concat-stream": "^2.0.0",
         "esbuild": "0.17.8",
         "file-saver": "^2.0.5",
         "igc-parser": "^1.1.0",
@@ -19,6 +20,7 @@
     },
     "devDependencies": {
         "@types/base64-stream": "^1.0.2",
+        "@types/concat-stream": "^2.0.0",
         "@types/node": "^18.14.2"
     }
 }

@@ -84,6 +84,16 @@ export namespace KML {
     }
   }
 
+  export class Comment extends Element {
+    text: string;
+    constructor(text: string) {
+      super();
+      this.text = text ?? "";
+    }
+    override serialize(indent?: boolean, level?: number): string {
+      return `<!--${this.text}-->`;
+    }
+  }
   export class CompoundElement extends Element {
     protected childs: Element[] = [];
     constructor(childs: Element[] = []) {

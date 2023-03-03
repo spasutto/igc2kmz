@@ -248,7 +248,8 @@ export class Utils {
     return result;
   }
 
-  static capitalizeFirstLetter(str: string): string {
+  static capitalizeFirstLetter(str: string | null | undefined): string {
+    str = str ?? '';
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 }
