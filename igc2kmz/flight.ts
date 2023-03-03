@@ -308,7 +308,7 @@ export class Flight {
     let folder = new KML.Folder('Animation', null, [style], null, false);
     let point = new KML.Point(this.track.coords[0], this.altitude_mode);
     let timespan = new KML.TimeSpan(null, this.track.coords[0].dt);
-    let placemark = new KML.Placemark(null, point, [], style.url);
+    let placemark = new KML.Placemark(null, point, [timespan], style.url);
     folder.add(placemark);
     for (let i = 1; i < this.track.coords.length - 1; i++){
       let coord = this.track.coords[i - 1].halfway_to(this.track.coords[i]);
