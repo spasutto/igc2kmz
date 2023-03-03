@@ -6,7 +6,7 @@ import { KMZ, KMZResource } from "./kmz";
 import { RandomIdGenerator, Slice, Utils } from "./util";
 import { FlightConvert } from "./init";
 import { Task } from "./task";
-import { Scale } from "./scale";
+import { Scale, TimeScale } from "./scale";
 import { SimpleCanvas } from "./simplecanvas";
 
 export class Flight {
@@ -159,33 +159,33 @@ export class Flight {
       globals.canvas.create_canvas(50, 200).then(cv => {
         const ctx = cv.getContext('2d');
         if (!ctx || !scale) return rej(('no context'));
-        //let scale = { 'range': { 'min': -2.5, 'max': 2.5 } };
         ctx.clearRect(0, 0, cv.width, cv.height);
 
         ctx.fillStyle = "#ffffff00";
         ctx.fillRect(0, 0, cv.width, cv.height);
-
-        let scalewidth = Math.max(scale.range.max.toString().length, scale.range.min.toString().length) * 7 + 2;
-        //console.log(`${scale.range.min}-${scale.range.max} : ${scalewidth}`);
+        let scalewidth = Math.max(Math.round(scale.range.max).toString().length, Math.round(scale.range.min).toString().length) * 9 + 2;
         ctx.fillStyle = "#ffffffcc";
         ctx.fillRect(0, 0, cv.width - scalewidth, cv.height);
 
-        for (let i = 0; i < 32 + 1; i++) {
-          let y = i * (scale.range.max - scale.range.min) / 32 + scale.range.min;
-        }
         for (let i = 0; i < 32; i++) {
           let color = scale.color((i * (scale.range.max - scale.range.min)+ 0.5) / 32 + scale.range.min)
-          //ctx.fillStyle = `rgb(${i * (255 / 31)}, 0, 128)`;
           ctx.fillStyle = color.toRGBString();
-          ctx.fillRect(0, i * (cv.height / 32), cv.width - scalewidth, cv.height / 32);
+          ctx.fillRect(0, (31 - i) * (cv.height / 32), cv.width - scalewidth, cv.height / 32);
         }
-        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#9f9f9f';
+        ctx.fillStyle = '#fff';
         ctx.font = `12pt ${globals.canvas?.fontname}`;
         let nbrgraduations = cv.height / 25;
         for (let i = 0; i < nbrgraduations; i++) {
-          let y = ((Math.round(((nbrgraduations - i) * (scale.range.max - scale.range.min) / nbrgraduations + scale.range.min) * 10)) / 10).toString();
-          ctx.fillText(y, cv.width - scalewidth + 1, i * (cv.height / nbrgraduations));
+          let y = i * (cv.height / nbrgraduations);
+          let value = Math.round((nbrgraduations - i) * (scale.range.max - scale.range.min) / nbrgraduations + scale.range.min).toString();
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(cv.width - scalewidth - 1, y);
+          ctx.stroke();
+          ctx.fillText(value, cv.width - scalewidth + 1, y);
         }
+        //document.body.append(cv as HTMLCanvasElement);
         (globals.canvas as SimpleCanvas).get_base64(cv).then(v => res(v));
       });
     });
@@ -194,16 +194,29 @@ export class Flight {
   make_graph_chart(globals: FlightConvert, values: number[], scale: Scale | null): Promise<string> {
     return new Promise((res, rej) => {
       if (!globals.canvas) return rej(('no canvas'));
-      const cv = globals.canvas.create_canvas(100, 100).then(cv => {
+      globals.canvas.create_canvas(globals.graph_width, globals.graph_height).then(cv => {
         const ctx = cv.getContext('2d');
-        if (!ctx) return rej(('no context'));
-        ctx.fillStyle = 'red';
-        ctx.fillRect(0, 0, 100, 100);
-        ctx.strokeStyle = 'blue';
+        let timescale = globals.scales["time"] as TimeScale;
+        if (!ctx || !(timescale instanceof TimeScale)) return rej(('no context'));
+        ctx.clearRect(0, 0, cv.width, cv.height);
+
+        ctx.fillStyle = "#ffffff00";
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        let margin = 5;
+        ctx.fillStyle = "#ffffffcc";
+        ctx.fillRect(margin, margin, cv.width - margin, cv.height - margin);
+        ctx.fillStyle = '#fff';
+        ctx.font = `12pt ${globals.canvas?.fontname} bold`;
+        let increment = cv.width / timescale.labels.length;
+        for (let i = 0; i < timescale.labels.length; i++){
+          ctx.fillText(timescale.labels[i], i * increment, cv.height - 12);
+        }/*
+        ctx.strokeStyle = '#9f9f9f';
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(50, 50);
-        ctx.stroke();
+        ctx.stroke();*/
+        //document.body.append(cv as HTMLCanvasElement);
         (globals.canvas as SimpleCanvas).get_base64(cv).then(v => res(v));
       });
     });
