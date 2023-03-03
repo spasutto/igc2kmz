@@ -3,8 +3,8 @@
 //   node dist\igc2kmz.js examples\flight.igc
 
 import IGCParser = require("igc-parser")
-import { KMZ } from "./kmz";
-import { Flight, FlightConvert } from "./init";
+import { FlightConvert } from "./init";
+import { Flight } from "./flight";
 import { Track } from "./track";
 import * as fs from 'fs';
 import * as PImage from "pureimage"
