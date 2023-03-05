@@ -112,7 +112,7 @@ export class Flight {
     return new KMZ([]);
   }
 
-  make_solid_track(globals: FlightConvert, style: KML.Style, altitude_mode: string, name: string, visibility: boolean|null = null, extrude: boolean = false): KMZ {
+  make_solid_track(globals: FlightConvert, style: KML.Style, altitude_mode: string, name: string, visibility: boolean | null = null, extrude: boolean = false): KMZ {
     let line_string = new KML.LineString(this.track.coords, altitude_mode);
     if (extrude) {
       line_string.add(new KML.SimpleElement('extrude', '1'));
@@ -173,7 +173,7 @@ export class Flight {
         ctx.fillRect(0, 0, cv.width - scalewidth, cv.height);
 
         for (let i = 0; i < 32; i++) {
-          let color = scale.color((i * (scale.range.max - scale.range.min)+ 0.5) / 32 + scale.range.min)
+          let color = scale.color((i * (scale.range.max - scale.range.min) + 0.5) / 32 + scale.range.min)
           ctx.fillStyle = color.toRGBString();
           ctx.fillRect(0, (31 - i) * (cv.height / 32), cv.width - scalewidth, cv.height / 32);
         }
@@ -202,26 +202,39 @@ export class Flight {
       globals.canvas.create_canvas(globals.graph_width, globals.graph_height).then(cv => {
         const ctx = cv.getContext('2d');
         let timescale = globals.scales["time"] as TimeScale;
-        if (!ctx || !(timescale instanceof TimeScale)) return rej(('no context'));
+        if (!ctx || !(timescale instanceof TimeScale) || !scale) return rej(('no context'));
         ctx.clearRect(0, 0, cv.width, cv.height);
 
-        ctx.fillStyle = "#ffffff00";
+        /*ctx.fillStyle = "#ffffff00";
         ctx.fillRect(0, 0, cv.width, cv.height);
         let margin = 5;
         ctx.fillStyle = "#ffffffcc";
         ctx.fillRect(margin, margin, cv.width - margin, cv.height - margin);
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = '#0000ff00';
         ctx.font = `12pt ${globals.canvas?.fontname} bold`;
+        // axe horizontal (temps)   //timescale.positions == [3550, 3563, 3575, 3588, 0, 13, 25, 38, 50, 63, 75, 88]
         let increment = cv.width / timescale.labels.length;
-        for (let i = 0; i < timescale.labels.length; i++){
+        for (let i = 0; i < timescale.labels.length; i++) {
           ctx.fillText(timescale.labels[i], i * increment, cv.height - 12);
-        }/*
+        }
+        // axe vertical (altitude)
+        //scale.range.min
+        increment = cv.height / (scale.range.max - scale.range.min);
+        //for (let i = 0; i < y.length; i++) {
+          //ctx.fillText(timescale.labels[i], 1, y[i]);
+        //}
+        let y = values.map(v => globals.graph_height * (v - scale.range.min) / (scale.range.max - scale.range.min));
+        let indexes = Utils.incr_douglas_peucker(this.time_positions, y, 1, 450);
         ctx.strokeStyle = '#9f9f9f';
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(50, 50);
-        ctx.stroke();*/
-        //document.body.append(cv as HTMLCanvasElement);
+        ctx.moveTo(margin, y[indexes[0]]);
+        increment = (cv.width - 2 * margin) / indexes.length;
+        for (let i = 1; i < indexes.length; i++) {
+          //ctx.fillText(timescale.labels[i], 1, i * increment);
+          ctx.lineTo(margin + increment * i, y[indexes[i]]);
+        }
+        ctx.stroke();
+        document.body.append(cv as HTMLCanvasElement);*/
         (globals.canvas as SimpleCanvas).get_base64(cv).then(v => res(v));
       });
     });
@@ -278,7 +291,7 @@ export class Flight {
     let result = new KML.Folder('Animation', style_url, [], false);
     let line_style = new KML.Style([new KML.LineStyle('bf00aaff', '2')]);
     result.add(line_style);
-    let tour:KML.Tour = new KML.Tour('Double-click here to start tour', 1);
+    let tour: KML.Tour = new KML.Tour('Double-click here to start tour', 1);
     result.add(tour);
     style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder('Path segments', style_url, [], false);
@@ -395,7 +408,7 @@ export class Flight {
     }
     let folder_style_url = globals.stock.check_hide_children_style.url
     let folder = new KML.Folder(Utils.capitalizeFirstLetter(title) + 's', folder_style_url, null, null, false);
-    for (let k = 0, sl = slices[0]; k < slices.length; k++, sl = slices[k]){
+    for (let k = 0, sl = slices[0]; k < slices.length; k++, sl = slices[k]) {
       let coord0 = this.track.coords[sl.start];
       let coord1 = this.track.coords[sl.stop];
       let coord = coord0.halfway_to(coord1);
@@ -442,18 +455,18 @@ export class Flight {
       dict['finish_time'] = stop_time.toISOString().substring(11, 19);
       let duration = this.track.t[sl.stop] - this.track.t[sl.start];
       let seconds = ("0" + Math.trunc(duration % 60).toString()).substr(-2);
-      dict['duration'] = `${Math.trunc(duration/60)}m ${seconds}ds`;
+      dict['duration'] = `${Math.trunc(duration / 60)}m ${seconds}ds`;
       dict['accumulated_altitude_gain'] = total_dz_positive;
       dict['accumulated_altitude_loss'] = total_dz_negative;
       dict['drift_direction'] = Coord.rad_to_cardinal(theta + Math.PI);
       let extended_data = new KML.ExtendedData(dict);
       let name: string = '';
       if (title == 'thermal') {
-        name = `${round(dz)}m at ${round(dz/dt, 1)}m/s`;
+        name = `${round(dz)}m at ${round(dz / dt, 1)}m/s`;
       } else if (title == 'glide') {
         name = `${round(dp / 1000, 1)}km at ${average_ld}:1, ${round(3.6 * dp / dt)}km/h`;
       } else if (title == 'dive') {
-        name = `${-1*round(-dz)}m at ${round(dz/dt, 1)}m/s`;
+        name = `${-1 * round(-dz)}m at ${round(dz / dt, 1)}m/s`;
       }
       let placemark = new KML.Placemark(name, point, [extended_data], style_url);
       folder.add(placemark);
@@ -470,7 +483,7 @@ export class Flight {
     return new KML.Placemark(name, point, [], style_url);
   }
 
-  make_time_marks_folder(globals: FlightConvert, step: number=300): KML.Folder {
+  make_time_marks_folder(globals: FlightConvert, step: number = 300): KML.Folder {
     let style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder('Time marks', style_url, [], null, false);
     let coord = this.track.coords[0];
@@ -505,7 +518,9 @@ export class Flight {
       this.endconv = res;
       this.pcount++;
       if (globals.scales["time"] != null) {
-        this.time_positions = this.track.t.map(t => globals.graph_width * (t - globals.scales["time"]?.range.min) / (globals.scales["time"]?.range.max - globals.scales["time"]?.range.min));
+        let maxtimescale = globals.scales["time"]?.range.max.getTime() / 1000;
+        let mintimescale = globals.scales["time"]?.range.min.getTime() / 1000;
+        this.time_positions = this.track.t.map(t => Math.trunc(globals.graph_width * (t - mintimescale) / (maxtimescale - mintimescale)));
       }
       this.root.add([this.make_description(globals)]);
       this.root.add([this.make_snippet(globals)]);
@@ -528,6 +543,6 @@ export class Flight {
       this.root.add([this.make_analysis_folder(globals, 'dive', this.track.dives, globals.stock.dive_style.url)]);
       this.root.add([this.make_time_marks_folder(globals)]);
       this.endwork();
-     });
+    });
   }
 }

@@ -81,6 +81,39 @@ export interface Slice {
 }
 
 export class Utils {
+  static incr_douglas_peucker(x: number[], y: number[], epsilon: number, max_indexes: number = Number.MAX_SAFE_INTEGER) {
+    let indexes = [0];
+    let queue = [[0, x.length - 1]];
+    let i = 0, left = 0, right = 0, kx = 0, ky = 0, c = 0, pivot = 0, max_dist = 0, dist = 0;
+    while (i < queue.length) {
+      left = queue[i][0];
+      right = queue[i][1];
+      i++;
+      indexes.push(right);
+      if (indexes.length == max_indexes) break;
+      kx = y[left] - y[right];
+      ky = x[right] - x[left];
+      c = x[left] * y[right] - x[right] * y[left];
+      pivot = left + 1;
+      max_dist = Math.abs(kx * x[pivot] + ky * y[pivot] + c);
+      for (let j = left + 2; j < right; j++) {
+        dist = Math.abs(kx * x[j] + ky * y[j] + c);
+        if (dist > max_dist) {
+          max_dist = dist;
+          pivot = j;
+        }
+      }
+      max_dist /= Math.sqrt(Math.pow(x[right] - x[left], 2) + Math.pow(y[right] - y[left], 2));
+      if (max_dist > epsilon) {
+        indexes.push(pivot);
+        if (indexes.length == max_indexes) break;
+        queue.push([left, pivot]);
+        queue.push([pivot, right]);
+      }
+    }
+    return indexes.sort(function (a, b) { return a - b; });
+  }
+
   static find_first_ge(seq: number[], value: number): number | null {
     let left = 0;
     let right = seq.length;
