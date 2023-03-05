@@ -134,9 +134,9 @@ export class TimeScale extends Scale {
     while (t < upper) {
       let labeltime = new Date(t.getTime() + tz_offset * 1000);
       this.labels.push(labeltime.toTimeString().split(' ')[0].substring(0, 5));
-      // TODO voir pourquoi avec l'exemple flight.igc on a ces valeurs : [3550, 3563, 3575, 3588, 3600, 13, 25, 38, 50, 63, 75, 88]
+      // TODO voir pourquoi avec l'exemple flight.igc on a ces valeurs : [3550, 3563, 3575, 3588, 0, 13, 25, 38, 50, 63, 75, 88]
       // et en python ['3550', '3562', '3575', '3588', '0', '12', '25', '38', '50', '62', '75', '88']
-      this.positions.push(Math.round(100*Utils.datediffsecs(t, lower) / Utils.datediffsecs(upper, lower)));
+      this.positions.push((Math.round(100*Utils.datediffsecs(t, lower) / Utils.datediffsecs(upper, lower)))%3600);
       t = new Date(t.getTime() + (this.step * 1000));
     }
   }
