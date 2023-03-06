@@ -29,6 +29,8 @@ npm run minify   # for web
 ```
 
 ## Features
+#### Animation
+[![Visualisation example](doc/animation.webp?raw=true)](doc/animation.webp?raw=true)
 #### Glides / thermals visualisation :
 [![Visualisation example](doc/thermals_glides.jpg?raw=true)](doc/thermals_glides.jpg?raw=true)
 #### Extruded path :

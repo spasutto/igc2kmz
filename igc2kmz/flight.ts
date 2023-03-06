@@ -127,9 +127,12 @@ export class Flight {
   }
 
   make_colored_track(globals: FlightConvert, values: number[], scale: Scale | null, altitude_mode: string, visibility: boolean, scale_chart: boolean = true): KMZ {
-    let folder = new KML.Folder('Colored by ' + scale?.title, globals.stock.check_hide_children_style.url, [], null, visibility);
-    let styles = scale?.colors().map(c => new KML.Style([new KML.LineStyle(c.toHexString(), this.width.toString())])) ?? [];
-    let discrete_values: number[] = values.map(v => scale?.discretize(v) ?? 0);
+    if (!scale) {
+      return new KMZ();
+    }
+    let folder = new KML.Folder('Colored by ' + scale.title, globals.stock.check_hide_children_style.url, [], null, visibility);
+    let styles = scale.colors().map(c => new KML.Style([new KML.LineStyle(c.toHexString(), this.width.toString())])) ?? [];
+    let discrete_values: number[] = values.map(v => scale.discretize(v));
     let indexes = Utils.runs(discrete_values);
     for (let i = 0, sl = indexes[0]; i < indexes.length; i++, sl = indexes[i]) {
       let coordinates = this.track.coords.slice(sl.start, sl.stop + 1);
