@@ -8,6 +8,7 @@ require("esbuild").build({
   outfile: 'dist/igc2kmz.js',
   //watch: process.argv.includes("--watch"),
   loader: {
-    '.png': 'dataurl'
+    '.png': 'dataurl',
+    '.ttf': 'dataurl'
   },
 }).catch(() => process.exit(1))
