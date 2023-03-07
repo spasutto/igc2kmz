@@ -28,23 +28,32 @@ class WebCanvas implements SimpleCanvas {
   }
 }
 
-function igc2kmz(igccontent: string, filename?: string): Promise<string> {
+function igc2kmz(igccontents: string[] | string, filenames?: string[] | string): Promise<string> {
   return new Promise<string>(res => {
-    let igc = IGCParser.parse(igccontent, {lenient: true});
-    let flight = new Flight(new Track(igc, filename));
-    //console.log(flight);
+    igccontents = Array.isArray(igccontents) ? igccontents : [igccontents ?? ''];
+    filenames = Array.isArray(filenames) ? filenames : [filenames ?? ''];
+    if (filenames.length < igccontents.length) {
+      for (let i = filenames.length; i < igccontents.length; i++) {
+        filenames.push(`track${i+1}.igc`);
+      }
+    }
+    let flights = [];
+    for (let i = 0; i < igccontents.length; i++) {
+      let igc = IGCParser.parse(igccontents[i], {lenient: true});
+      flights.push(new Flight(new Track(igc, filenames[i])));
+    }
     let cv = new WebCanvas();
     let fcv = new FlightConvert(cv);
     // TODO root KML
     // TODO chargement Task.from_file(open(options.task)) if options.task else None
-    fcv.flights2kmz([flight]).then(kmz => {
+    fcv.flights2kmz(flights).then(kmz => {
       let outfilename = 'track.kmz';
-      if (filename) {
-        let i = filename.lastIndexOf('.');
+      if (Array.isArray(filenames) && filenames.length > 0) {
+        let i = filenames[0].lastIndexOf('.');
         if (i >= 0) {
-          outfilename = filename.substring(0, i) + '.kmz';
+          outfilename = filenames[0].substring(0, i) + '.kmz';
         } else {
-          outfilename = filename + '.kmz';
+          outfilename = filenames[0] + '.kmz';
         }
       }
       if (kmz) {

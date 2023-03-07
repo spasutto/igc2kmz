@@ -62,16 +62,19 @@ class HeadlessCanvas implements SimpleCanvas {
   }
 }
 
-export function igc2kmz(igccontent: string, infilename: string, outfilename: string): Promise<string> {
+function igc2kmz(igccontents: string[], infilenames: string[], outfilename: string): Promise<string> {
   return new Promise<string>(res => {
-    let igc = IGCParser.parse(igccontent, {lenient: true});
-    let flight = new Flight(new Track(igc, infilename));
+    let flights: Flight[] = [];
+    igccontents.forEach((igccontent, i) => {
+      let igc = IGCParser.parse(igccontent, { lenient: true });
+      flights.push(new Flight(new Track(igc, infilenames[i])));
+    });
     //console.log(flight);
     let cv = new HeadlessCanvas();
     let fcv = new FlightConvert(cv);
     // TODO root KML
     // TODO chargement Task.from_file(open(options.task)) if options.task else None
-    fcv.flights2kmz([flight]).then(kmz => {
+    fcv.flights2kmz(flights).then(kmz => {
       fs.writeFile(outfilename, Buffer.from(kmz), 'binary', _ => console.log("output to " + outfilename));
     });
   });
@@ -81,13 +84,31 @@ if (process.argv.length < 3) {
   console.log('Usage: node ' + process.argv[1] + ' FILENAME.IGC');
   process.exit(1);
 }
-let filename = process.argv[2];
-fs.readFile(filename, 'utf8', function(err, data) {
-  if (err) throw err;
-  let outfile = filename;
-  let i = filename.lastIndexOf('.');
-  if (i >= 0) {
-    outfile = filename.substring(0, i) + '.kmz';
-  }
-  igc2kmz(data, filename, outfile).catch(err => console.log(err));
-});
+let igccontents: string[] = [];
+let filenames: string[] = [];
+
+let outfilename = process.argv[2];
+let i = outfilename.lastIndexOf('.');
+if (i >= 0) {
+  outfilename = outfilename.substring(0, i);
+}
+outfilename += '.kmz';
+
+let onendread = () => {
+  igc2kmz(igccontents, filenames, outfilename).catch(err => console.log(err));
+};
+
+let nbrfiles: number = 0;
+
+for (let i = 2; i < process.argv.length; i++) {
+  let filename = process.argv[i];
+  filenames.push(filename);
+  igccontents.push();
+  nbrfiles++;
+  fs.readFile(filename, 'utf8', function (err, data) {
+    nbrfiles--;
+    if (err) throw err;
+    igccontents[filenames.indexOf(filename)] = data;
+    if (nbrfiles <= 0) onendread();
+  });
+}
