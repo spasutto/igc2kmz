@@ -103,8 +103,10 @@ export class Flight {
   }
 
   make_snippet(globals: FlightConvert): KMZ {
-    //TODO
-    return new KMZ([]);
+    //TODO     if (this.xc)
+    let date = new Date(this.track.bounds["time"]?.min.getTime() + globals.tz_offset * 1000);
+    let strings = [this.pilot_name, date.toISOString().substring(0, 10)];
+    return new KMZ([new KML.Snippet(strings.join(', '))]);
   }
 
   make_task_folder(globals: FlightConvert, task: Task): KMZ {
@@ -180,7 +182,7 @@ export class Flight {
           ctx.fillStyle = color.toRGBString();
           ctx.fillRect(0, (31 - i) * (cv.height / 32), cv.width - scalewidth, cv.height / 32);
         }
-        ctx.strokeStyle = '#9f9f9f';
+        ctx.strokeStyle = '#ff9f9f9f';
         ctx.fillStyle = '#fff';
         ctx.font = `12pt ${globals.canvas?.fontname}`;
         let nbrgraduations = cv.height / 25;
@@ -189,7 +191,7 @@ export class Flight {
           let value = Math.round((nbrgraduations - i) * (scale.range.max - scale.range.min) / nbrgraduations + scale.range.min).toString();
           ctx.beginPath();
           ctx.moveTo(0, y);
-          ctx.lineTo(cv.width - scalewidth - 1, y);
+          ctx.lineTo(cv.width - scalewidth + 1, y);
           ctx.stroke();
           ctx.fillText(value, cv.width - scalewidth + 1, y);
         }

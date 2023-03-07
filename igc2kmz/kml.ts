@@ -200,8 +200,9 @@ export namespace KML {
     //TODO
   }
   export class Data extends CompoundElement {
-    constructor(value: string | number) {
+    constructor(name: string, value: string | number) {
       super([new SimpleElement('value', value.toString())]);
+      this.add_attr('name', name);
     }
   }
 
@@ -211,7 +212,7 @@ export namespace KML {
   export class ExtendedData extends CompoundElement {
     constructor(dict: Record<string, string | number>) {
       super([]);
-      for (let prop in dict) this.add(new Data(dict[prop]));
+      for (let prop in dict) this.add(new Data(prop, dict[prop]));
     }
   }
   export class extrude extends SimpleElement { }
@@ -294,7 +295,7 @@ export namespace KML {
     constructor(x: number, xunits: string, y: number, yunits: string) {
       super();
       this.add_attr('x', x.toString());
-      this.add_attr('y', x.toString());
+      this.add_attr('y', y.toString());
       this.add_attr('xunits', xunits);
       this.add_attr('yunits', yunits);
     }

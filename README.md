@@ -39,9 +39,7 @@ npm run minify   # for web
 ## Bugs/todo
  - tests
  - versioning
- - description not displayed correctly in desktop version (snippet)
- - overlayXY scale chart incorrect value
  - command line usage
    - photos
    - tasks
- - hide past/futur point in animation?
+ - task drawing
