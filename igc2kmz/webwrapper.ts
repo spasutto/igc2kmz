@@ -28,7 +28,7 @@ class WebCanvas implements SimpleCanvas {
   }
 }
 
-function igc2kmz(igccontents: string[] | string, filenames?: string[] | string): Promise<string> {
+function igc2kmz(igccontents: string[] | string, filenames?: string[] | string, tz_offset?: number): Promise<string> {
   return new Promise<string>(res => {
     igccontents = Array.isArray(igccontents) ? igccontents : [igccontents ?? ''];
     filenames = Array.isArray(filenames) ? filenames : [filenames ?? ''];
@@ -46,7 +46,7 @@ function igc2kmz(igccontents: string[] | string, filenames?: string[] | string):
     let fcv = new FlightConvert(cv);
     // TODO root KML
     // TODO chargement Task.from_file(open(options.task)) if options.task else None
-    fcv.flights2kmz(flights).then(kmz => {
+    fcv.flights2kmz(flights, tz_offset).then(kmz => {
       let outfilename = 'track.kmz';
       if (Array.isArray(filenames) && filenames.length > 0) {
         let i = filenames[0].lastIndexOf('.');

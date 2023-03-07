@@ -1,6 +1,8 @@
 
 // example :
 //   node dist\igc2kmz.js examples\flight.igc
+// Merge 2 IGCs and shift times to UTC+1 hour :
+//   node dist\igc2kmz.js -z 1 examples\flight.igc examples\flight2.igc
 
 import IGCParser = require("igc-parser")
 import { FlightConvert } from "./init";
@@ -62,7 +64,7 @@ class HeadlessCanvas implements SimpleCanvas {
   }
 }
 
-function igc2kmz(igccontents: string[], infilenames: string[], outfilename: string): Promise<string> {
+function igc2kmz(igccontents: string[], infilenames: string[], outfilename: string, tz_offset?: number): Promise<string> {
   return new Promise<string>(res => {
     let flights: Flight[] = [];
     igccontents.forEach((igccontent, i) => {
@@ -74,7 +76,7 @@ function igc2kmz(igccontents: string[], infilenames: string[], outfilename: stri
     let fcv = new FlightConvert(cv);
     // TODO root KML
     // TODO chargement Task.from_file(open(options.task)) if options.task else None
-    fcv.flights2kmz(flights).then(kmz => {
+    fcv.flights2kmz(flights, tz_offset).then(kmz => {
       fs.writeFile(outfilename, Buffer.from(kmz), 'binary', _ => console.log("output to " + outfilename));
     });
   });
@@ -86,6 +88,7 @@ if (process.argv.length < 3) {
 }
 let igccontents: string[] = [];
 let filenames: string[] = [];
+let tzoffset: number = 0;
 
 let outfilename = process.argv[2];
 let i = outfilename.lastIndexOf('.');
@@ -95,20 +98,34 @@ if (i >= 0) {
 outfilename += '.kmz';
 
 let onendread = () => {
-  igc2kmz(igccontents, filenames, outfilename).catch(err => console.log(err));
+  igc2kmz(igccontents, filenames, outfilename, tzoffset).catch(err => console.log(err));
 };
 
-let nbrfiles: number = 0;
+let nextistzoffset: boolean = false;
 
 for (let i = 2; i < process.argv.length; i++) {
   let filename = process.argv[i];
+  if (nextistzoffset) {
+    nextistzoffset = false;
+    tzoffset = parseFloat(filename);
+    if (isNaN(tzoffset)) tzoffset = 0;
+    continue;
+  }
+  else if (filename == '-z' || filename == '--tz-offset') {
+    nextistzoffset = true;
+    continue;
+  }
+  nextistzoffset = false;
   filenames.push(filename);
+}
+
+let nbrfiles: number = filenames.length;
+for (let i = 0; i < filenames.length; i++) {
   igccontents.push();
-  nbrfiles++;
-  fs.readFile(filename, 'utf8', function (err, data) {
+  fs.readFile(filenames[i], 'utf8', function (err, data) {
     nbrfiles--;
     if (err) throw err;
-    igccontents[filenames.indexOf(filename)] = data;
+    igccontents[i] = data;
     if (nbrfiles <= 0) onendread();
   });
 }
