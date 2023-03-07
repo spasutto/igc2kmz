@@ -2,12 +2,13 @@
 Typescript port of Tom Payne's python tool [igc2kmz](https://github.com/twpayne/igc2kmz) (**work in progress**)
 
 The resulting tool is here: [igc2kmz.html](igc2kmz.html)
-(it can be used in command line, see [usage](#usage))
+(it can also be used in command line, see [below](#usage))
 
 [![Visualisation example](doc/output_MtBlanc.jpg?raw=true)](doc/output_MtBlanc.jpg?raw=true)
 
 ## Usage
-**For the web** : See [examples/example.html](examples/example.html)
+**For the web** : See [igc2kmz.html](igc2kmz.html) or [example.html](examples/example.html) (simpler)
+
 
 **Command line** : [build first](#build) then on a prompt :
 ```
