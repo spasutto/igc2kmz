@@ -335,6 +335,7 @@ export class Flight {
       let line_string = new KML.LineString([this.track.coords[i - 1], this.track.coords[i]], 'absolute');
       timespan = new KML.TimeSpan(this.track.coords[i - 1].dt, this.track.coords[i].dt);
       placemark = new KML.Placemark(null, point, [timespan], style.url);
+      //placemark.add(new KML.SimpleElement('name', this.track.pilot_name));
       folder.add(placemark);
       timespan = new KML.TimeSpan(this.track.coords[i].dt, new Date(this.track.coords[i].dt.getTime() + 60000));
       placemark = new KML.Placemark(null, line_string, [timespan], style.url);

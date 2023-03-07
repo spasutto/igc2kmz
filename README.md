@@ -43,3 +43,4 @@ npm run minify   # for web
    - photos
    - tasks
  - task drawing
+ - ~~pilot's name over paraglider icon in animation?~~ (not really usable ; commented out in make_animation)
