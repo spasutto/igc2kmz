@@ -120,8 +120,6 @@ function drop(e) {
   fileselector.value = '';
 }
 function selectFile() {
-  window.igccontent = [];
-  window.filename = [];
   const event = new MouseEvent('click', {
     view: window,
     bubbles: true,
@@ -141,6 +139,8 @@ window.onload = function() {
   dropbox.addEventListener("dragover", dragover, false);
   dropbox.addEventListener("drop", drop, false);
   fileselector.addEventListener('change', (event) => {
+    window.igccontent = [];
+    window.filename = [];
     const files = event.target.files;
     if (files.length <= 0) return;
     for (let i=0; i<files.length; i++) {

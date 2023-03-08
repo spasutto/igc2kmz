@@ -8,6 +8,7 @@ import { FlightConvert } from "./init";
 import { Task } from "./task";
 import { Scale, TimeScale } from "./scale";
 import { SimpleCanvas } from "./simplecanvas";
+import { RGBA } from "./color";
 
 const RIGHTWARDS_ARROW = '->';
 const INFINITY = 'inf';
@@ -325,8 +326,10 @@ export class Flight {
   make_animation(globals: FlightConvert): KMZ {
     let icon_style = new KML.IconStyle([globals.stock.animation_icon, new KML.color(this.color), new KML.scale(globals.stock.icon_scales[0].toString())]);
     let list_style = new KML.ListStyle('checkHideChildren');
-    let line_style = new KML.LineStyle('ff009bff', this.width.toString());
-    let style = new KML.Style([icon_style, list_style, line_style]);
+    let line_style = new KML.LineStyle('9f009bff', this.width.toString());
+    let label_color = new RGBA(Math.random(), Math.random(), Math.random(), 1);
+    let label_style = new KML.LabelStyle(label_color, 1);
+    let style = new KML.Style([icon_style, list_style, line_style, label_style]);
     let folder = new KML.Folder('Animation', null, [style], null, false);
     let point = new KML.Point(this.track.coords[0], this.altitude_mode);
     let timespan = new KML.TimeSpan(null, this.track.coords[0].dt);
@@ -335,11 +338,13 @@ export class Flight {
     for (let i = 1; i < this.track.coords.length - 1; i++) {
       let coord = this.track.coords[i - 1].halfway_to(this.track.coords[i]);
       point = new KML.Point(coord, this.altitude_mode);
-      let line_string = new KML.LineString([this.track.coords[i - 1], this.track.coords[i]], 'absolute');
       timespan = new KML.TimeSpan(this.track.coords[i - 1].dt, this.track.coords[i].dt);
       placemark = new KML.Placemark(null, point, [timespan], style.url);
-      //placemark.add(new KML.SimpleElement('name', this.track.pilot_name));
+      if (globals.flights.length > 1) {
+        placemark.add(new KML.SimpleElement('name', this.track.pilot_name));
+      }
       folder.add(placemark);
+      let line_string = new KML.LineString([this.track.coords[i - 1], this.track.coords[i]], 'absolute');
       timespan = new KML.TimeSpan(this.track.coords[i].dt, new Date(this.track.coords[i].dt.getTime() + 60000));
       placemark = new KML.Placemark(null, line_string, [timespan], style.url);
       folder.add(placemark);

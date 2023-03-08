@@ -262,8 +262,20 @@ export namespace KML {
       return '<?xml version="1.0" encoding="UTF-8"?>\n' + super.serialize(indent, level);
     }
   }
-
-  export class LabelStyle extends CompoundElement { }
+  export class LabelStyle extends CompoundElement {
+    constructor(colorval?: string | RGBA, scaleval?: number, colorMode?: 'normal' | 'random') {
+      super();
+      if (colorval) {
+        this.add(new color(colorval));
+      }
+      if (colorMode) {
+        this.add(new SimpleElement('colorMode', colorMode));
+      }
+      if (scaleval) {
+        this.add(new scale(scaleval.toString()));
+      }
+    }
+  }
   export class latitude extends SimpleElement { }
   export class LineString extends CompoundElement {
     constructor(coordinates: Coord[], altitude_mode: string) {

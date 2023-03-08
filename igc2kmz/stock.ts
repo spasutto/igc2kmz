@@ -95,27 +95,27 @@ export class Stock {
     this.time_mark_styles = [];
     for (let i = 0; i < this.icons.length; i++) {
       let icon_style = new KML.IconStyle([this.icons[0], new KML.scale(this.icon_scales[i].toString())]);
-      let label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'cc33ffff'), new KML.scale(this.label_scales[i].toString())]);
+      let label_style = new KML.LabelStyle('cc33ffff', this.label_scales[i]);
       this.time_mark_styles.push(new KML.Style([icon_style, label_style]));
     }
     this.kmz.add_roots(this.time_mark_styles);
     // #
     let balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '$[description]')]);
     let icon_style = new KML.IconStyle([KML.Icon.palette(4, 46), new KML.scale(this.icon_scales[0].toString())]);
-    let label_style = new KML.LabelStyle([new KML.scale(this.label_scales[0].toString())]);
+    let label_style = new KML.LabelStyle(undefined, this.label_scales[0]);
     this.photo_style = new KML.Style([balloon_style, icon_style, label_style]);
     this.kmz.add_root(this.photo_style);
     // #
     balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '<h3>$[name]</h3>$[description]')]);
     icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.scale(this.icon_scales[0].toString())]);
-    label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'ccff33ff'), new KML.scale(this.label_scales[0].toString())]);
+    label_style = new KML.LabelStyle('ccff33ff', this.label_scales[0]);
     let line_style = new KML.LineStyle('ccff33ff', '2');
     this.xc_style = new KML.Style([balloon_style, icon_style, label_style, line_style]);
     this.kmz.add_root(this.xc_style);
     // #
     balloon_style = new KML.BalloonStyle([new KML.CDATA('text', '<h3>$[name]</h3>$[description]')]);
     icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', 'ccff33ff'), new KML.scale(this.icon_scales[0].toString())]);
-    label_style = new KML.LabelStyle([new KML.SimpleElement('color', 'ccff33ff')]);
+    label_style = new KML.LabelStyle('ccff33ff');
     line_style = new KML.LineStyle('ccff33ff', '2');
     this.xc_style2 = new KML.Style([balloon_style, icon_style, label_style, line_style]);
     this.kmz.add_root(this.xc_style2);
@@ -148,7 +148,7 @@ export class Stock {
     let bg_color = 'ff' + [...bgcolors[1].substring(1).matchAll(/../g)].reverse().join('');
     let balloon_style = new KML.BalloonStyle([new KML.CDATA('text', text), new KML.SimpleElement('bgColor', bg_color)]);
     let icon_style = new KML.IconStyle([this.icons[0], new KML.SimpleElement('color', color), new KML.scale(this.icon_scales[0].toString())]);
-    let label_style = new KML.LabelStyle([new KML.SimpleElement('color', color), new KML.scale(this.label_scales[0].toString())]);
+    let label_style = new KML.LabelStyle(color, this.label_scales[0]);
     let line_style = new KML.LineStyle(color, '4');
     return new KML.Style([balloon_style, icon_style, label_style, line_style]);
   }

@@ -22,6 +22,7 @@ export class FlightConvert {
   default_track: string = 'solid_color';
   canvas: SimpleCanvas | null = null;
   files: string[] = [];
+  flights: Flight[] = [];
 
   constructor(canvas?: SimpleCanvas) {
     if (canvas) {
@@ -30,6 +31,7 @@ export class FlightConvert {
   }
 
   flights2kmz(flights: Flight[], tz_offset: number = 0, task?: Task): Promise<ArrayBuffer> {
+    this.flights = flights;
     //RandomIdGenerator.reset(); si on reset le generateur, il faut recréer stock
     flights.forEach(flight => {
       bsupdate(this.bounds, flight.track.bounds);
@@ -70,7 +72,7 @@ export class FlightConvert {
         for (let j = 0, c = cs[j]; j < cs.length; j++, c = cs[j]) {
           let ballon_style = new KML.BalloonStyle([new KML.SimpleElement('text', '$[description]')]);
           let icon_style = new KML.IconStyle([this.stock.icons[i], new KML.color(c), new KML.scale(this.stock.icon_scales[i].toString())]);
-          let label_style = new KML.LabelStyle([new KML.color(c), new KML.scale(this.stock.label_scales[i].toString())]);
+          let label_style = new KML.LabelStyle(c, this.stock.label_scales[i]);
           altitude_styles.push(new KML.Style([ballon_style, icon_style, label_style]));
         }
         this.stock.kmz.add_roots(altitude_styles);
