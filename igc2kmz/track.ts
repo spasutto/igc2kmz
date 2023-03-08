@@ -39,6 +39,13 @@ export class Track {
     this.filename = filename ?? "flight.igc"; //TODO
     this.coords = Track.filter(flight.fixes.map(f => Coord.deg(f.latitude, f.longitude, (f.pressureAltitude ?? f.gpsAltitude) || 0, new Date(f.timestamp))));
     this.t = this.coords.map(c => c.dt.getTime() / 1000);
+    if (this.t.length <= 0) {
+      throw new Error('No valid records in ' + this.filename);
+    } else if (this.t.length < 5) {
+      throw new Error(`The IGC '${this.filename}' seems corrupted : ${this.t.length} records, starting at ${this.coords[0].dt}`)
+    } else if (this.t.length < 60 || this.coords[0].dt > new Date) {
+      console.warn(`The IGC '${this.filename}' seems corrupted : ${this.t.length} records, starting at ${this.coords[0].dt}`)
+    }
     this.pilot_name = flight.pilot || "";
     this.glider_type = flight.gliderType || "";
     this.glider_id = flight.registration || "";

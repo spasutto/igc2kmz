@@ -152,7 +152,7 @@ window.onload = function() {
   <div class="converter">
     <h1>IGC to KMZ conversion</h1>
     <label for="tzoffset">Timezone offset (hours) :</label><input type="number" id="tzoffset" min="-12" max="12">
-    <input type="file" id="file-selector" multiple style="display:none;">
+    <input type="file" id="file-selector" accept=".igc" multiple style="display:none;">
     <div id="dropbox" onclick="selectFile();">drop .IGC files here<BR>or click to select</div>
     <ul id="lblfile"></ul>
     <input id="btn" type="button" class="button" onclick="convertigc()" value="Convert" style="display:none;">
