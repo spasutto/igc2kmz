@@ -21,6 +21,7 @@ export class FlightConvert {
   graph_height: number = 300;
   default_track: string = 'solid_color';
   canvas: SimpleCanvas | null = null;
+  files: string[] = [];
 
   constructor(canvas?: SimpleCanvas) {
     if (canvas) {

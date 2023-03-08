@@ -143,16 +143,19 @@ export class Flight {
       let placemark = new KML.Placemark(null, line_string, [], style_url);
       folder.add(placemark);
     }
+    let href = 'images/' + scale.title.replaceAll(' ', '_') + '_scale.png';
     if (scale_chart && scale) {
-      let href = 'images/' + scale.title.replaceAll(' ', '_') + '_' + this.Id + '_scale.png';
-      this.pcount++;
-      this.make_scale_chart(globals, scale).then(imgdata => {
-        this.root.add_file(href, imgdata);
-        this.endwork();
-      }).catch(e => {
-        console.log(e);
-        this.endwork();
-      });
+      if (globals.files.indexOf(href) < 0) {
+        globals.files.push(href);
+        this.pcount++;
+        this.make_scale_chart(globals, scale).then(imgdata => {
+          this.root.add_file(href, imgdata);
+          this.endwork();
+        }).catch(e => {
+          console.log(e);
+          this.endwork();
+        });
+      }
       let icon = new KML.Icon([new KML.CDATA('href', href)]);
       let overlay_xy = new KML.overlayXY(0, 'fraction', 1, 'fraction');
       let screen_xy = new KML.screenXY(0, 'fraction', 1, 'fraction');
