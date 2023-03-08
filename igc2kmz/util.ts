@@ -1,3 +1,4 @@
+import { Coord } from "./coord";
 
 export class Bounds {
   min: any;
@@ -70,6 +71,10 @@ export function bsupdate(bs: BoundSet, other: BoundSet) {
 export function round(n: number, digits: number = 0) {
   digits = digits ? digits * 10 : 1;
   return Math.round(n * digits) / digits;
+}
+
+export function add_seconds(dt: Date, seconds: number) {
+  return new Date(dt.getTime() + seconds * 1000);
 }
 
 //export type OpenStruct = Record<string, any | null>;
@@ -288,6 +293,29 @@ export class Utils {
   static capitalizeFirstLetter(str: string | null | undefined): string {
     str = str ?? '';
     return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  static haversineDistance(pointA: Coord | [number, number], pointB: Coord | [number, number]): number {
+    const radius = 6371; // km
+    if (Array.isArray(pointA)) {
+      pointA = new Coord(pointA[1], pointA[0]);
+    }
+    if (Array.isArray(pointB)) {
+      pointB = new Coord(pointB[1], pointB[0]);
+    }
+
+    //convert latitude and longitude to radians
+    const deltaLatitude = (pointB.lat - pointA.lat) * Math.PI / 180;
+    const deltaLongitude = (pointB.lon - pointA.lon) * Math.PI / 180;
+
+    const halfChordLength = Math.cos(
+      pointA.lat * Math.PI / 180) * Math.cos(pointB.lat * Math.PI / 180)
+      * Math.sin(deltaLongitude / 2) * Math.sin(deltaLongitude / 2)
+      + Math.sin(deltaLatitude / 2) * Math.sin(deltaLatitude / 2);
+
+    const angularDistance = 2 * Math.atan2(Math.sqrt(halfChordLength), Math.sqrt(1 - halfChordLength));
+
+    return radius * angularDistance;
   }
 }
 

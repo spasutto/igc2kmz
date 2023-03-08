@@ -30,7 +30,7 @@ export class FlightConvert {
     }
   }
 
-  flights2kmz(flights: Flight[], tz_offset: number = 0, task?: Task): Promise<ArrayBuffer> {
+  flights2kmz(flights: Flight[], tz_offset: number = 0, task?: Task | null): Promise<ArrayBuffer> {
     this.flights = flights;
     //RandomIdGenerator.reset(); si on reset le generateur, il faut recréer stock
     flights.forEach(flight => {

@@ -16,6 +16,7 @@ import { Bitmap } from "pureimage/types/bitmap";
 import { SimpleCanvas } from "./simplecanvas";
 
 import sourcesanspro_font from '../assets/OpenSans-Regular.ttf'
+import { Task } from "./task";
 
 class HeadlessCanvas implements SimpleCanvas {
   cvs: Bitmap[] = [];
@@ -64,7 +65,7 @@ class HeadlessCanvas implements SimpleCanvas {
   }
 }
 
-function igc2kmz(igccontents: string[], infilenames: string[], outfilename: string, tz_offset?: number): Promise<string> {
+function igc2kmz(igccontents: string[], infilenames: string[], outfilename: string, tz_offset?: number, taskcontent?: string): Promise<string> {
   return new Promise<string>(res => {
     let flights: Flight[] = [];
     igccontents.forEach((igccontent, i) => {
@@ -72,11 +73,14 @@ function igc2kmz(igccontents: string[], infilenames: string[], outfilename: stri
       flights.push(new Flight(new Track(igc, infilenames[i])));
     });
     //console.log(flight);
+    let task: Task | null = null;
+    if (taskcontent) {
+      task = Task.loadTask(taskcontent);
+    }
     let cv = new HeadlessCanvas();
     let fcv = new FlightConvert(cv);
     // TODO root KML
-    // TODO chargement Task.from_file(open(options.task)) if options.task else None
-    fcv.flights2kmz(flights, tz_offset).then(kmz => {
+    fcv.flights2kmz(flights, tz_offset, task).then(kmz => {
       fs.writeFile(outfilename, Buffer.from(kmz), 'binary', _ => console.log("output to " + outfilename));
     });
   });
@@ -89,6 +93,8 @@ if (process.argv.length < 3) {
 let igccontents: string[] = [];
 let filenames: string[] = [];
 let tzoffset: number = 0;
+let taskfile: string | null = null;
+let taskcontent: string | null = null;
 
 let outfilename = process.argv[2];
 let i = outfilename.lastIndexOf('.');
@@ -97,35 +103,64 @@ if (i >= 0) {
 }
 outfilename += '.kmz';
 
-let onendread = () => {
-  igc2kmz(igccontents, filenames, outfilename, tzoffset).catch(err => console.log(err));
-};
-
 let nextistzoffset: boolean = false;
+let nextistaskfile: boolean = false;
 
 for (let i = 2; i < process.argv.length; i++) {
   let filename = process.argv[i];
+  if (filename == '-z' || filename == '--tz-offset') {
+    nextistzoffset = true;
+    continue;
+  } else if (filename == '-t' || filename == '--task') {
+    nextistaskfile = true;
+    continue;
+  }
   if (nextistzoffset) {
     nextistzoffset = false;
     tzoffset = parseFloat(filename);
     if (isNaN(tzoffset)) tzoffset = 0;
     continue;
-  }
-  else if (filename == '-z' || filename == '--tz-offset') {
-    nextistzoffset = true;
+  } else if (nextistaskfile) {
+    nextistaskfile = false;
+    taskfile = filename;
     continue;
   }
-  nextistzoffset = false;
+  nextistaskfile = nextistzoffset = false;
   filenames.push(filename);
 }
 
-let nbrfiles: number = filenames.length;
+let promises: Promise<string>[] = [];
+// igc files
 for (let i = 0; i < filenames.length; i++) {
   igccontents.push();
-  fs.readFile(filenames[i], 'utf8', function (err, data) {
-    nbrfiles--;
-    if (err) throw err;
-    igccontents[i] = data;
-    if (nbrfiles <= 0) onendread();
-  });
+  promises.push(new Promise((resolve, reject) => {
+    fs.readFile(filenames[i], 'utf8', function (err, data) {
+      if (err) {
+        reject(err);
+      }
+      else {
+        igccontents[i] = data;
+        resolve(data);
+      }
+    });
+  }));
 }
+
+//task file
+if (taskfile) {
+  promises.push(new Promise((resolve, reject) => {
+    fs.readFile(taskfile ?? '', 'utf8', function (err, data) {
+      if (err) {
+        reject(err);
+      }
+      else {
+        taskcontent = data;
+        resolve(data);
+      }
+    });
+  }));
+}
+
+Promise.all(promises).then(() => {
+  igc2kmz(igccontents, filenames, outfilename, tzoffset, taskcontent ?? undefined).catch(err => console.log(err));
+});
