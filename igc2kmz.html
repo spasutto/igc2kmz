@@ -6,6 +6,10 @@
       body {
         font-family: sans-serif;
       }
+      label {
+        display: inline-block;
+        margin: 0px 10px 5px 0px;
+      }
       .converter {
         width: 500px;
       }
@@ -25,9 +29,22 @@
       .button:hover {
         border-color: #0000ff;
       }
+      #tzoffset {
+        width: 40px;
+      }
       #lblfile {
         display: inline-block;
         margin: 10px;
+        color: #ffafaf;
+        text-shadow: 0 0 2px #7ef504, 0 0 2px #6cd900;
+        font-size: 11pt;
+        max-width: 355px;
+        padding: 0 0 0 10px;
+        max-height: 38px;
+        overflow-y: auto;
+      }
+      #lblfile li {
+        list-style: '- ';
       }
       #dropbox {
         border: 1px dashed brown;
@@ -67,7 +84,7 @@ function loadfile(file, name) {
     window.igccontent.push(reader.result);
     window.filename.push(name);
     window.nbrfiles++;
-    lblfile.innerHTML = window.filename.join(', ');
+    lblfile.innerHTML = window.filename.map(f => '<li>'+f+'</li>').join('');
     btn.style.display = 'initial';
   });
   reader.readAsText(file);
@@ -137,7 +154,7 @@ window.onload = function() {
     <label for="tzoffset">Timezone offset (hours) :</label><input type="number" id="tzoffset" min="-12" max="12">
     <input type="file" id="file-selector" multiple style="display:none;">
     <div id="dropbox" onclick="selectFile();">drop .IGC files here<BR>or click to select</div>
-    <span id="lblfile"></span>
+    <ul id="lblfile"></ul>
     <input id="btn" type="button" class="button" onclick="convertigc()" value="Convert" style="display:none;">
   </div>
 </body>
