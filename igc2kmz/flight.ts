@@ -125,13 +125,13 @@ export class Flight {
       let tp1 = task.tps[sl.stop - 1];
       let distance = tp0.coord.distance_to(tp1.coord);
       let th = `${tp0.name} ${RIGHTWARDS_ARROW} ${tp1.name}`;
-      let td = `${round(Utils.distance/1000, 1)}km`;
+      let td = `${round(distance/1000, 1)}km`;
       rows.push([th, td]);
       total += distance;
       count++;
       tp0 = tp1;
     }
-    rows.append(['Total', `${round(total/1000, 1)}km`]);
+    rows.push(['Total', `${round(total/1000, 1)}km`]);
     let table = Utils.make_table(rows);
     let snippet = `${round(total/1000, 1)}km via ${count} turnpoints`;
     let style_url = globals.stock.check_hide_children_style.url;
@@ -164,11 +164,11 @@ export class Flight {
         continue;
       }
       let tp1 = task.tps[sl.stop - 1];
-      let coord0 = tp0.coord_at(tp0.coord.initial_bearing_to(tp1.coord), tp0.radius);
+      let coord0 = tp0.coord.coord_at(tp0.coord.initial_bearing_to(tp1.coord), tp0.radius);
       let theta = tp1.coord.initial_bearing_to(tp0.coord);
       let coord1 = tp1.coord.coord_at(theta, tp1.radius);
       let line_string1 = new KML.LineString([coord0, coord1], null, true);
-      let coords = [coord1.coord_at(theta - pi / 12, 400), coord1, coord1.coord_at(theta + pi / 12, 400)];
+      let coords = [coord1.coord_at(theta - Math.PI / 12, 400), coord1, coord1.coord_at(theta + Math.PI / 12, 400)];
       let line_string2 = new KML.LineString(coords, null, true);
       let multi_geometry = new KML.MultiGeometry([line_string1, line_string2]);
       folder.add(new KML.Placemark(null, multi_geometry, [], style_url));

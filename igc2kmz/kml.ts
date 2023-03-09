@@ -209,7 +209,7 @@ export namespace KML {
       if (!Array.isArray(coord)) {
         coord = [coord];
       }
-      super(undefined, coordinates.map(c => `${c.lon_deg},${c.lat_deg},${c.ele}`).join(' '));
+      super(undefined, coord.map(c => `${c.lon_deg},${c.lat_deg},${c.ele}`).join(' '));
     }
     static circle(center:number, radius:number,ele?:number,error:number=0.1): Coord[] {
       let decimation = Math.ceil(Math.PI / Math.acos((radius - error) / (radius + error)));
