@@ -1,6 +1,7 @@
-import { IGCFile, RecordExtensions, Task } from "igc-parser";
+import { IGCFile, RecordExtensions } from "igc-parser";
 import { Coord } from "./coord";
 import { Bounds, BoundSet, Utils, Slice } from "./util";
+import { Task } from "./task";
 
 enum FlyingState {
   UNKNOWN = 0,
