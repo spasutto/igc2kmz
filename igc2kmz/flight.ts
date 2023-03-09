@@ -3,7 +3,7 @@ import { Coord } from "./coord";
 import { Track } from "./track";
 import { KML } from "./kml";
 import { KMZ, KMZResource } from "./kmz";
-import { Bounds, RandomIdGenerator, round, Slice, Utils } from "./util";
+import { Bounds, RandomIdGenerator, round, Slice, Utils, add_seconds } from "./util";
 import { FlightConvert } from "./init";
 import { Task } from "./task";
 import { Scale, TimeScale } from "./scale";
@@ -369,6 +369,27 @@ export class Flight {
     return new KMZ();
   }
 
+  make_tour_folder(globals: FlightConvert): KML.Element {
+    let style_url = globals.stock.check_hide_children_style.url;
+    let folder = new KML.Folder('Tour', style_url, [], null, false);
+    let dt = this.track.coords[0].dt;
+    let delta = 15*60;//s (15 minutes)
+    let coords:Coord[] = [];
+    while (dt < this.track.coords[this.track.coords.length-1].dt) {
+      coords.push(this.track.coord_at(dt));
+      dt = add_seconds(dt, delta);
+    }
+    for (let i=0; i<coords.length; i++) {
+      let j = (i + 1) % coords.length;
+      let point = new KML.Point(coords[i], this.altitude_mode);
+      let heading = coords[i].initial_bearing_to_deg(coords[j]);
+      let camera = new KML.Camera(coords[i], heading, 75);
+      let placemark = new KML.Placemark(null, point, [camera]);
+      folder.add(placemark);
+    }
+    return folder;
+  }
+
   make_placemark(globals: FlightConvert, coord: Coord, altitudeMode: string, name: string, style_url: string): KML.Element {
     let point = new KML.Point(coord, altitudeMode);
     return new KML.Placemark(name, point, [new KML.Snippet()], style_url);
@@ -545,6 +566,7 @@ export class Flight {
       this.root.add([this.make_shadow_folder(globals)]);
       this.root.add([this.make_animation(globals)]);
       //this.root.add([this.make_animation_tour(globals)]);
+      this.root.add([this.make_tour_folder(globals)]);
       this.root.add([this.make_photos_folder(globals)]);
       this.root.add([this.make_xc_folder(globals)]);
       this.root.add([this.make_altitude_marks_folder(globals)]);

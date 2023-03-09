@@ -186,7 +186,15 @@ export namespace KML {
   export class BalloonStyle extends CompoundElement { }
   export class begin extends SimpleElement { }
   export class bgColor extends SimpleElement { }
-  export class Camera extends CompoundElement { }
+  export class Camera extends CompoundElement {
+    constructor(coord: Coord, heading: number, tilt: number) {
+      super([new SimpleElement('altitude', coord.ele.toString()), 
+              new SimpleElement('heading', heading.toString()),
+              new SimpleElement('latitude', coord.lat.toString()),
+              new SimpleElement('longitude', coord.lon.toString()),
+              new SimpleElement('tilt', tilt.toString()), ]);
+    }
+  }
   export class color extends SimpleElement {
     constructor(rgba: RGBA | string) {
       if (rgba instanceof RGBA) {
