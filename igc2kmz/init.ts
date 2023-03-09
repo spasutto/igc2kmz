@@ -92,7 +92,9 @@ export class FlightConvert {
       let result: KMZ = new KMZ();
       result.add_siblings([this.stock.kmz]);
       //TODO ROOTS result.add_roots()
-      // TODO tasks
+      if (task) {
+        result.add_siblings(Flight.make_task_folder(this, task));
+      }
       Promise.all(flights.map(f => f.to_kmz(this))).then(kmzs => {
         result.add_siblings(kmzs);
       }).then(() => {

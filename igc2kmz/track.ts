@@ -58,6 +58,10 @@ export class Track {
       }
     }*/
     // TODO parse C records (propriété task à convertir dans propriété declaration)
+    if (flight.task && flight.task.points && flight.task.points.length > 0) {
+      this.declaration = new Task();
+      flight.task.points.forEach(tp => this.declaration.add_turnpoint(tp.name, tp.latitude, tp.longitude));
+    }
     this.analyse(20);
   }
 

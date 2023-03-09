@@ -110,7 +110,7 @@ export class Flight {
     return new KMZ([new KML.Snippet(strings.join(', '))]);
   }
 
-  make_task_folder(globals: FlightConvert, task: Task): KMZ {
+  static make_task_folder(globals: FlightConvert, task: Task): KMZ {
     //TODO
     return new KMZ([]);
   }
@@ -560,7 +560,7 @@ export class Flight {
       this.root.add([this.make_description(globals)]);
       this.root.add([this.make_snippet(globals)]);
       if (this.track.declaration) {
-        this.root.add([this.make_task_folder(globals, this.track.declaration)]);
+        this.root.add([make_task_folder(globals, this.track.declaration)]);
       }
       this.root.add([this.make_track_folder(globals)]);
       this.root.add([this.make_shadow_folder(globals)]);

@@ -45,7 +45,7 @@ export class Task {
     return null;
   }
 
-  protected add_turnpoint(name: string, lat: number, lon: number, alt?:number): Turnpoint {
+  add_turnpoint(name: string, lat: number, lon: number, alt?:number): Turnpoint {
     let tp = new Turnpoint(name, new Coord(lat, lon, alt));
     this.turnpoints.push(tp);
     return tp;
