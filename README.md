@@ -39,6 +39,8 @@ npm run minify   # for web
 [![Visualisation example](doc/thermals_glides.jpg?raw=true)](doc/thermals_glides.jpg?raw=true)
 #### Extruded path :
 [![Visualisation example](doc/extruded_path.jpg?raw=true)](doc/extruded_path.jpg?raw=true)
+#### Task visualization :
+[![Visualisation example](doc/task.jpg?raw=true)](doc/task.jpg?raw=true)
 
 ## Bugs/todo
  - tests
