@@ -157,7 +157,7 @@ export class Flight {
       folder.add(new KML.Placemark(null, line_string, [], style_url));
     }
     tp0 = null;
-    let indexes = Utils.runs(task.tps.map(tp => tp.name));
+    indexes = Utils.runs(task.tps.map(tp => tp.name));
     for (let i = 0, sl = indexes[0]; i < indexes.length; i++, sl = indexes[i]) {
       if (!tp0) {
         tp0 = task.tps[sl.start];
