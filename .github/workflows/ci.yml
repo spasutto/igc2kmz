@@ -53,6 +53,7 @@ jobs:
         run: npm install
       - run: npm ci
       - run: npm run minify --if-present
+      - run: npm run buildweb --if-present
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
