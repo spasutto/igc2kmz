@@ -105,7 +105,7 @@ class XCTrackTaskV2 extends Task {
         if (pts.length <= 0) return;
         let tp = this.add_turnpoint(t.n, pts[0][1], pts[0][0]);
         if (pts.length > 1) {
-          tp.radius = Utils.haversineDistance(pts[0], pts[1]);
+          tp.radius = Coord.haversineDistance(pts[0], pts[1]);
         }
         if (tp && typeof t.d === 'string') {
           tp.description = t.d;

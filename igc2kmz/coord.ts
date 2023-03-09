@@ -76,6 +76,28 @@ export class Coord {
     return d < 1 ? R * Math.acos(d) : 0;
   }
 
+  static haversineDistance(pointA: Coord | [number, number], pointB: Coord | [number, number]): number {
+    if (Array.isArray(pointA)) {
+      pointA = new Coord(pointA[1], pointA[0]);
+    }
+    if (Array.isArray(pointB)) {
+      pointB = new Coord(pointB[1], pointB[0]);
+    }
+
+    //convert latitude and longitude to radians
+    const deltaLatitude = (pointB.lat - pointA.lat) * Math.PI / 180;
+    const deltaLongitude = (pointB.lon - pointA.lon) * Math.PI / 180;
+
+    const halfChordLength = Math.cos(
+      pointA.lat * Math.PI / 180) * Math.cos(pointB.lat * Math.PI / 180)
+      * Math.sin(deltaLongitude / 2) * Math.sin(deltaLongitude / 2)
+      + Math.sin(deltaLatitude / 2) * Math.sin(deltaLatitude / 2);
+
+    const angularDistance = 2 * Math.atan2(Math.sqrt(halfChordLength), Math.sqrt(1 - halfChordLength));
+
+    return R * angularDistance;
+  }
+
   /**
    * Return the point delta between self and other.
    * @param other

@@ -123,7 +123,7 @@ export class Flight {
         continue;
       }
       let tp1 = task.tps[sl.stop - 1];
-      let distance = tp0.coord.distance_to(tp1.coord);
+      let distance = Coord.haversineDistance(tp0.coord, tp1.coord);//tp0.coord.distance_to(tp1.coord);
       let th = `${tp0.name} ${RIGHTWARDS_ARROW} ${tp1.name}`;
       let td = `${round(distance/1000, 1)}km`;
       rows.push([th, td]);
