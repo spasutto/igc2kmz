@@ -205,7 +205,24 @@ export namespace KML {
     }
   }
   export class coordinates extends SimpleElement {
-    //TODO
+    constructor(coord: Coord[] | Coord) {
+      if (!Array.isArray(coord)) {
+        coord = [coord];
+      }
+      super(undefined, coordinates.map(c => `${c.lon_deg},${c.lat_deg},${c.ele}`).join(' '));
+    }
+    static circle(center:number, radius:number,ele?:number,error:number=0.1): Coord[] {
+      let decimation = Math.ceil(Math.PI / Math.acos((radius - error) / (radius + error)));
+      let coords = [];
+      for (let i=0; i<decimation + 1; i++) {
+        let coord = center.coord_at(-2*Math.PI*i/decimation, radius + error);
+        if (typeof ele === 'number') {
+          coord.ele = ele;
+        }
+        coords.push(coord);
+      }
+      return coords;
+    }
   }
   export class Data extends CompoundElement {
     constructor(name: string, value: string | number) {
@@ -286,11 +303,15 @@ export namespace KML {
   }
   export class latitude extends SimpleElement { }
   export class LineString extends CompoundElement {
-    constructor(coordinates: Coord[], altitude_mode: string) {
+    constructor(coords: Coord[], altitude_mode?: string, istessellate?:boolean) {
       super();
-      this.add(new altitudeMode(altitude_mode));
-      let coords = coordinates.map(c => `${c.lon_deg},${c.lat_deg},${c.ele}`).join(' ');
-      this.add(new SimpleElement('coordinates', coords));
+      if (altitude_mode) {
+        this.add(new altitudeMode(altitude_mode));
+      }
+      if (typeof istessellate === 'boolean') {
+        this.add(new tessellate(istessellate));
+      }
+      this.add(new coordinates(coords));
     }
   }
   export class LineStyle extends CompoundElement {
@@ -321,7 +342,7 @@ export namespace KML {
     }
   }
   export class Placemark extends CompoundElement {
-    constructor(name: string | null = null, point: Point | LineString | null = null, childs: Element[] | null = null, style_url: string | null = null, isopen: boolean | null = null, isvisible: boolean | null = null) {
+    constructor(name: string | null = null, coord: Point | LineString | MultiGeometry | null = null, childs: Element[] | null = null, style_url: string | null = null, isopen: boolean | null = null, isvisible: boolean | null = null) {
       childs = childs ?? [];
       if (isopen != null) {
         childs.unshift(new open(isopen));
@@ -329,8 +350,8 @@ export namespace KML {
       if (isvisible != null) {
         childs.unshift(new visibility(isvisible));
       }
-      if (point) {
-        childs.unshift(point);
+      if (coord) {
+        childs.unshift(coord);
       }
       if (style_url) {
         childs.unshift(new styleUrl(style_url));
@@ -342,11 +363,12 @@ export namespace KML {
     }
   }
   export class Point extends CompoundElement {
-    constructor(coordinates: Coord, altitude_mode: string) {
+    constructor(coord: Coord, altitude_mode?: string) {
       super();
-      this.add(new altitudeMode(altitude_mode));
-      let coords = `${coordinates.lon_deg},${coordinates.lat_deg},${coordinates.ele}`;
-      this.add(new SimpleElement('coordinates', coords));
+      if (altitude_mode) {
+        this.add(new altitudeMode(altitude_mode));
+      }
+      this.add(new coordinates(coord));
     }
   }
   export class PolyStyle extends CompoundElement { }
@@ -371,7 +393,11 @@ export namespace KML {
       super(undefined, text);
     }
   }
-  export class tessellate extends SimpleElement { }
+  export class tessellate extends SimpleElement {
+    constructor(te: boolean) {
+      super(undefined, te?'1':'0');
+    }
+  }
   export class text extends SimpleElement { }
   export class tilt extends SimpleElement { }
   export class TimeSpan extends CompoundElement {

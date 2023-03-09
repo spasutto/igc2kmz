@@ -24,7 +24,7 @@ export class Turnpoint {
 }
 
 export class Task {
-  turnpoints: Turnpoint[] = [];
+  tps: Turnpoint[] = [];
   static loadTask(taskcontent: string): Task | null {
     /*const options = { ignoreAttributes: false };
     const parser = new XMLParser(options);
@@ -47,7 +47,7 @@ export class Task {
 
   add_turnpoint(name: string, lat: number, lon: number, alt?:number): Turnpoint {
     let tp = new Turnpoint(name, new Coord(lat, lon, alt));
-    this.turnpoints.push(tp);
+    this.tps.push(tp);
     return tp;
   }
 }
@@ -56,8 +56,8 @@ class XCTrackTask extends Task {
   constructor(taskcontent: string) {
     super();
     let task = JSON.parse(taskcontent);
-    if (Array.isArray(task.turnpoints)) {
-      task.turnpoints.forEach((t: any) => {
+    if (Array.isArray(task.tps)) {
+      task.tps.forEach((t: any) => {
         if (typeof t.radius !== 'number' || typeof t.waypoint !== 'object') return;
         let tp = this.parse_waypoint(t.waypoint);
         if (tp) {

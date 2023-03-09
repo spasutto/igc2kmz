@@ -5,7 +5,7 @@ import { KMZ } from "./kmz";
 import { Scale, TimeScale, ZeroCenteredScale } from "./scale";
 import { Flight } from "./flight";
 import { Task } from "./task";
-import { BoundSet, bsupdate, OpenStruct, Utils } from "./util";
+import { BoundSet, bsupdate, OpenStruct } from "./util";
 import { Stock } from "./stock";
 
 import { SimpleCanvas } from "./simplecanvas";

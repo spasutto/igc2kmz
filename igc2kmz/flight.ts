@@ -5,7 +5,7 @@ import { KML } from "./kml";
 import { KMZ, KMZResource } from "./kmz";
 import { Bounds, RandomIdGenerator, round, Slice, Utils, add_seconds } from "./util";
 import { FlightConvert } from "./init";
-import { Task } from "./task";
+import { Task, Turnpoint } from "./task";
 import { Scale, TimeScale } from "./scale";
 import { SimpleCanvas } from "./simplecanvas";
 import { RGBA } from "./color";
@@ -111,8 +111,70 @@ export class Flight {
   }
 
   static make_task_folder(globals: FlightConvert, task: Task): KMZ {
-    //TODO
-    return new KMZ([]);
+    let name = task.name ?? 'Task';
+    let rows = [];
+    let tp0: Turnpoint | null = null;
+    let total = 0;
+    let count = -1;
+    let indexes = Utils.runs(task.tps.map(tp => tp.name));
+    for (let i = 0, sl = indexes[0]; i < indexes.length; i++, sl = indexes[i]) {
+      if (!tp0) {
+        tp0 = task.tps[sl.start];
+        continue;
+      }
+      let tp1 = task.tps[sl.stop - 1];
+      let distance = tp0.coord.distance_to(tp1.coord);
+      let th = `${tp0.name} ${RIGHTWARDS_ARROW} ${tp1.name}`;
+      let td = `${round(Utils.distance/1000, 1)}km`;
+      rows.push([th, td]);
+      total += distance;
+      count++;
+      tp0 = tp1;
+    }
+    rows.append(['Total', `${round(total/1000, 1)}km`]);
+    let table = Utils.make_table(rows);
+    let snippet = `${round(total/1000, 1)}km via ${count} turnpoints`;
+    let style_url = globals.stock.check_hide_children_style.url;
+    let folder = new KML.Folder(name, style_url, [new KML.CDATA('description', table), new KML.Snippet(snippet)]);
+    style_url = globals.stock.xc_style.url;
+    let done: string[] = [];
+    for (let i=0, tp=task.tps[0]; i<task.tps.length; i++, tp=task.tps[i]) {
+      let key = tp.name;
+      if (done.indexOf(key) >= 0) continue;
+      done.push(key);
+      let point = new KML.Point(tp.coord);
+      folder.add(new KML.Placemark(tp.name, point, [], style_url));
+    }
+    done = [];
+    for (let i=0, tp=task.tps[0]; i<task.tps.length; i++, tp=task.tps[i]) {
+      if (tp.radius == 0) continue;
+      let key = tp.name+tp.radius.toString();
+      if (done.indexOf(key) >= 0) continue;
+      done.push(key);
+      let coordinates = KML.coordinates.circle(tp.coord, tp.radius);
+      let line_string = new KML.LineString(coordinates, null, true);
+      let point = new KML.Point(tp.coord);
+      folder.add(new KML.Placemark(null, line_string, [], style_url));
+    }
+    tp0 = null;
+    let indexes = Utils.runs(task.tps.map(tp => tp.name));
+    for (let i = 0, sl = indexes[0]; i < indexes.length; i++, sl = indexes[i]) {
+      if (!tp0) {
+        tp0 = task.tps[sl.start];
+        continue;
+      }
+      let tp1 = task.tps[sl.stop - 1];
+      let coord0 = tp0.coord_at(tp0.coord.initial_bearing_to(tp1.coord), tp0.radius);
+      let theta = tp1.coord.initial_bearing_to(tp0.coord);
+      let coord1 = tp1.coord.coord_at(theta, tp1.radius);
+      let line_string1 = new KML.LineString([coord0, coord1], null, true);
+      let coords = [coord1.coord_at(theta - pi / 12, 400), coord1, coord1.coord_at(theta + pi / 12, 400)];
+      let line_string2 = new KML.LineString(coords, null, true);
+      let multi_geometry = new KML.MultiGeometry([line_string1, line_string2]);
+      folder.add(new KML.Placemark(null, multi_geometry, [], style_url));
+      tp0 = tp1;
+    }
+    return new KMZ([folder]);
   }
 
   make_solid_track(globals: FlightConvert, style: KML.Style, altitude_mode: string, name: string, visibility: boolean | null = null, extrude: boolean = false): KMZ {
@@ -305,15 +367,13 @@ export class Flight {
     style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder('Path segments', style_url, [], false);
     let placemarks: KML.Placemark[] = [];
-    let line_string = new KML.LineString(this.track.coords.slice(0, 2), this.altitude_mode);
-    line_string.add(new KML.SimpleElement('tessellate', '1'));
+    let line_string = new KML.LineString(this.track.coords.slice(0, 2), this.altitude_mode, true);
     let placemark = new KML.Placemark('1', line_string, [], line_style.url, false, false);
     placemarks.push(placemark);
     tour.add_update(placemark.Id);
     for (let i = 1; i < this.track.coords.length; i++) {
       //coord = this.track.coords[i - 1].halfway_to(this.track.coords[i]);
-      line_string = new KML.LineString(this.track.coords.slice(i, i + 2), this.altitude_mode);
-      line_string.add(new KML.SimpleElement('tessellate', '1'));
+      line_string = new KML.LineString(this.track.coords.slice(i, i + 2), this.altitude_mode, true);
       placemark = new KML.Placemark(null, line_string, [], line_style.url, false, false);
       placemarks.push(placemark);
       tour.add_update(placemark.Id);
