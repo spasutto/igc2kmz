@@ -16,7 +16,7 @@ node dist\igc2kmz.js examples\flight.igc
 ```
 Upload to [Google Earth](https://earth.google.com/web/), voilà!
 
-:information_source: *Note* : animations don't seem to work on web version of earth, but are ok on desktop version...
+:information_source: *Note* : animations doesn't seem to work on web version of earth, but are ok on desktop version...
 
 ## Build
 Get [sources from the repository](https://github.com/spasutto/igc2kmz) and install npm dependencies
@@ -48,6 +48,4 @@ npm run minify   # for web
  - worker for web version
  - command line usage
    - photos
-   - tasks
- - task drawing
- - ~~pilot's name over paraglider icon in animation?~~ (not really usable ; commented out in make_animation)
+ - others tasks formats
