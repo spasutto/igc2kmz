@@ -105,7 +105,7 @@ export namespace KML {
       this.childs.push(child);
     }
 
-    prefixes():string[] {
+    prefixes(): string[] {
       let prefixes: string[] = [];
       if (this.childs && this.childs.length > 0) {
         for (let i = 0; i < this.childs.length; i++) {
@@ -188,11 +188,11 @@ export namespace KML {
   export class bgColor extends SimpleElement { }
   export class Camera extends CompoundElement {
     constructor(coord: Coord, heading: number, tilt: number) {
-      super([new SimpleElement('altitude', coord.ele.toString()), 
-              new SimpleElement('heading', heading.toString()),
-              new SimpleElement('latitude', coord.lat.toString()),
-              new SimpleElement('longitude', coord.lon.toString()),
-              new SimpleElement('tilt', tilt.toString()), ]);
+      super([new SimpleElement('altitude', coord.ele.toString()),
+      new SimpleElement('heading', heading.toString()),
+      new SimpleElement('latitude', coord.lat.toString()),
+      new SimpleElement('longitude', coord.lon.toString()),
+      new SimpleElement('tilt', tilt.toString()),]);
     }
   }
   export class color extends SimpleElement {
@@ -211,11 +211,11 @@ export namespace KML {
       }
       super(undefined, coord.map(c => `${c.lon_deg},${c.lat_deg},${c.ele}`).join(' '));
     }
-    static circle(center:number, radius:number,ele?:number,error:number=0.1): Coord[] {
+    static circle(center: Coord, radius: number, ele?: number, error: number = 0.1): Coord[] {
       let decimation = Math.ceil(Math.PI / Math.acos((radius - error) / (radius + error)));
       let coords = [];
-      for (let i=0; i<decimation + 1; i++) {
-        let coord = center.coord_at(-2*Math.PI*i/decimation, radius + error);
+      for (let i = 0; i < decimation + 1; i++) {
+        let coord = center.coord_at(-2 * Math.PI * i / decimation, radius + error);
         if (typeof ele === 'number') {
           coord.ele = ele;
         }
@@ -303,7 +303,7 @@ export namespace KML {
   }
   export class latitude extends SimpleElement { }
   export class LineString extends CompoundElement {
-    constructor(coords: Coord[], altitude_mode?: string, istessellate?:boolean) {
+    constructor(coords: Coord[], altitude_mode?: string | null, istessellate?: boolean) {
       super();
       if (altitude_mode) {
         this.add(new altitudeMode(altitude_mode));
@@ -395,13 +395,13 @@ export namespace KML {
   }
   export class tessellate extends SimpleElement {
     constructor(te: boolean) {
-      super(undefined, te?'1':'0');
+      super(undefined, te ? '1' : '0');
     }
   }
   export class text extends SimpleElement { }
   export class tilt extends SimpleElement { }
   export class TimeSpan extends CompoundElement {
-    constructor(begin: Date|null, end?: Date|null) {
+    constructor(begin: Date | null, end?: Date | null) {
       super();
       if (begin != null) {
         this.add(new SimpleElement("begin", begin.toISOString()));
@@ -422,7 +422,7 @@ export namespace KML {
 
   export class Tour extends CompoundElement {
     playlist: Playlist;
-    constructor(name: string | null = null, initialwait:number = 0) {
+    constructor(name: string | null = null, initialwait: number = 0) {
       super();
       this.nsprefix = 'gx';
       if (name != null) {
@@ -437,7 +437,7 @@ export namespace KML {
     }
   }
   export class Playlist extends CompoundElement {
-    constructor(wait:number = 0) {
+    constructor(wait: number = 0) {
       super();
       this.nsprefix = 'gx';
       if (wait > 0) {

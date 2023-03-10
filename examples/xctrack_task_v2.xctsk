@@ -1,0 +1,47 @@
+{
+  "t": [
+    {
+      "z": "b`dpMgc{YgsB?",
+      "n": "D01",
+      "d": "AGUAPANELA"
+    },
+    {
+      "z": "hpnoMik{Yo}@ozD",
+      "n": "B15",
+      "t": 2,
+      "d": "PUENTE ROLDANILLO"
+    },
+    {
+      "z": "brtnM_b_[s{@ozD",
+      "n": "G02"
+    },
+    {
+      "z": "td{oMi{nXw{@oe`@",
+      "n": "G05"
+    },
+    {
+      "z": "tpfoMkr_Zwy@_|B",
+      "n": "G03",
+      "t": 3,
+      "d": "GOL ZARZAL NORTE"
+    },
+    {
+      "z": "tpfoMkr_Zwy@g^",
+      "n": "G03",
+      "d": "GOL ZARZAL NORTE"
+    }
+  ],
+  "version": 2,
+  "s": {
+    "t": 1,
+    "g": [
+      "16:30:00Z"
+    ],
+    "d": 1
+  },
+  "g": {
+    "t": 2,
+    "d": "21:00:00Z"
+  },
+  "taskType": "CLASSIC"
+}

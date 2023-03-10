@@ -48,6 +48,10 @@
       }
       #lblfile li {
         list-style: '- ';
+        color: #1d8802;
+      }
+      #lblfile li.task {
+        color: #005faf;
       }
       #dropbox {
         border: 1px dashed brown;
@@ -70,11 +74,13 @@
 const default_filename = "track$i.igc";
 var igccontent = [];
 var filename = [];
+var taskcontent = '';
+var taskfilename = '';
 var nbrfiles = 0;
 function convertigc() {
   let tzoffset = parseFloat(window.tzoffset.value);
   if (isNaN(tzoffset)) tzoffset = 0;
-  igc2kmz(igccontent, filename, tzoffset).catch(err => {
+  igc2kmz(igccontent, filename, tzoffset, taskcontent).catch(err => {
     alert(err);
     throw err;
   });
@@ -84,10 +90,19 @@ function loadfile(file, name) {
   const reader = new FileReader();
   reader.addEventListener('load', (event) => {
     let filesize = 0;
-    window.igccontent.push(reader.result);
-    window.filename.push(name);
+    if (name.trim().toLowerCase().endsWith('.igc')) {
+      window.igccontent.push(reader.result);
+      window.filename.push(name);
+    } else {
+      taskcontent = reader.result;
+      taskfilename = name;
+    }
     window.nbrfiles++;
-    lblfile.innerHTML = window.filename.map(f => '<li>'+f+'</li>').join('');
+    let filesnames = window.filename.map(f => '<li class="flight">'+f+'</li>');
+    if (taskfilename.length > 0) {
+      filesnames.push('<li class="task">'+taskfilename+'</li>')
+    }
+    lblfile.innerHTML = filesnames.join('');
     btn.style.display = 'initial';
   });
   reader.readAsText(file);
@@ -155,8 +170,8 @@ window.onload = function() {
   <div class="converter">
     <h1>IGC to KMZ conversion</h1>
     <label for="tzoffset">Timezone offset (hours) :</label><input type="number" id="tzoffset" min="-12" max="12">
-    <input type="file" id="file-selector" accept=".igc" multiple style="display:none;">
-    <div id="dropbox" onclick="selectFile();">drop .IGC files here<BR>or click to select</div>
+    <input type="file" id="file-selector" accept=".igc,.xctsk" multiple style="display:none;">
+    <div id="dropbox" onclick="selectFile();">drop .IGC/task files here<BR>or click to select</div>
     <ul id="lblfile"></ul>
     <input id="btn" type="button" class="button" onclick="convertigc()" value="Convert" style="display:none;">
   </div>

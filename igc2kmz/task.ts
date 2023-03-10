@@ -24,6 +24,7 @@ export class Turnpoint {
 }
 
 export class Task {
+  name: string | null = null;
   tps: Turnpoint[] = [];
   static loadTask(taskcontent: string): Task | null {
     /*const options = { ignoreAttributes: false };

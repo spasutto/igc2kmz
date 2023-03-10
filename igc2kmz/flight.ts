@@ -123,7 +123,7 @@ export class Flight {
         continue;
       }
       let tp1 = task.tps[sl.stop - 1];
-      let distance = Coord.haversineDistance(tp0.coord, tp1.coord);//tp0.coord.distance_to(tp1.coord);
+      let distance = tp0.coord.distance_to(tp1.coord);
       let th = `${tp0.name} ${RIGHTWARDS_ARROW} ${tp1.name}`;
       let td = `${round(distance/1000, 1)}km`;
       rows.push([th, td]);
@@ -136,6 +136,8 @@ export class Flight {
     let snippet = `${round(total/1000, 1)}km via ${count} turnpoints`;
     let style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder(name, style_url, [new KML.CDATA('description', table), new KML.Snippet(snippet)]);
+    let line_style = new KML.Style([new KML.LineStyle('cc00F5FF', '2')]);
+    folder.add(line_style);
     style_url = globals.stock.xc_style.url;
     let done: string[] = [];
     for (let i=0, tp=task.tps[0]; i<task.tps.length; i++, tp=task.tps[i]) {
@@ -153,7 +155,6 @@ export class Flight {
       done.push(key);
       let coordinates = KML.coordinates.circle(tp.coord, tp.radius);
       let line_string = new KML.LineString(coordinates, null, true);
-      let point = new KML.Point(tp.coord);
       folder.add(new KML.Placemark(null, line_string, [], style_url));
     }
     tp0 = null;
@@ -169,9 +170,9 @@ export class Flight {
       let coord1 = tp1.coord.coord_at(theta, tp1.radius);
       let line_string1 = new KML.LineString([coord0, coord1], null, true);
       let coords = [coord1.coord_at(theta - Math.PI / 12, 400), coord1, coord1.coord_at(theta + Math.PI / 12, 400)];
-      let line_string2 = new KML.LineString(coords, null, true);
-      let multi_geometry = new KML.MultiGeometry([line_string1, line_string2]);
-      folder.add(new KML.Placemark(null, multi_geometry, [], style_url));
+      let line_string = new KML.LineString(coords, null, true);
+      let multi_geometry = new KML.MultiGeometry([line_string1, line_string]);
+      folder.add(new KML.Placemark(null, multi_geometry, [], line_style.url));
       tp0 = tp1;
     }
     return new KMZ([folder]);
