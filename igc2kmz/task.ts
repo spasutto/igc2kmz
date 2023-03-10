@@ -57,8 +57,8 @@ class XCTrackTask extends Task {
   constructor(taskcontent: string) {
     super();
     let task = JSON.parse(taskcontent);
-    if (Array.isArray(task.tps)) {
-      task.tps.forEach((t: any) => {
+    if (Array.isArray(task.turnpoints)) {
+      task.turnpoints.forEach((t: any) => {
         if (typeof t.radius !== 'number' || typeof t.waypoint !== 'object') return;
         let tp = this.parse_waypoint(t.waypoint);
         if (tp) {
