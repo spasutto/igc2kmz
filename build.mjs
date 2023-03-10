@@ -6,7 +6,7 @@ import extraconfig from './esbuild.config.mjs';
 
 await esbuild.build({
   platform: 'node',
-  entryPoints: ["igc2kmz/igc2kmz.ts"],
+  entryPoints: ["igc2kmz/cmdwrapper.ts"],
   bundle: true,
   absWorkingDir: process.cwd(),
   //outdir: path.join(process.cwd(), "dist"),
