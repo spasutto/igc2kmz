@@ -19,7 +19,6 @@
       .button {
         float:right;
         cursor: pointer;
-        background-color: #4CAF50; /* Green */
         border: solid 1px white;
         color: white;
         padding: 10px 30px;
@@ -32,26 +31,36 @@
       .button:hover {
         border-color: #0000ff;
       }
+      .red {
+        background-color: #df1313;
+      }
+      .green {
+        background-color: #4CAF50;
+      }
       #tzoffset {
         width: 40px;
       }
       #lblfile {
-        display: inline-block;
+        display: inline-block !important;
         margin: 10px;
         color: #ffafaf;
         text-shadow: 0 0 2px #7ef504, 0 0 2px #6cd900;
         font-size: 11pt;
-        max-width: 355px;
+        max-width: 250px;
         padding: 0 0 0 10px;
-        max-height: 38px;
+        max-height: 200px;
         overflow-y: auto;
+        overflow-x: hidden;
       }
       #lblfile li {
-        list-style: '- ';
+        list-style: none;
         color: #1d8802;
       }
       #lblfile li.task {
         color: #005faf;
+      }
+      #lblfile li:hover {
+        text-decoration: underline;
       }
       #dropbox {
         border: 1px dashed brown;
@@ -64,10 +73,9 @@
         vertical-align: middle;
         cursor:pointer;
       }
-      #dropbox:hover {
+      #nofile:hover {
         text-decoration: underline;
       }
-      </style>
     </style>
 
     <script>
@@ -98,12 +106,9 @@ function loadfile(file, name) {
       taskfilename = name;
     }
     window.nbrfiles++;
-    let filesnames = window.filename.map(f => '<li class="flight">'+f+'</li>');
-    if (taskfilename.length > 0) {
-      filesnames.push('<li class="task">'+taskfilename+'</li>')
-    }
-    lblfile.innerHTML = filesnames.join('');
-    btn.style.display = 'initial';
+    updateListFiles();
+    btnConvert.style.display = 'initial';
+    btnClear.style.display = 'initial';
   });
   reader.readAsText(file);
 }
@@ -120,8 +125,6 @@ function dragover(e) {
   e.preventDefault();
 }
 function drop(e) {
-  window.igccontent = [];
-  window.filename = [];
   e.stopPropagation();
   e.preventDefault();
   e.srcElement.style.backgroundColor = '#dfffa0';
@@ -142,20 +145,39 @@ function selectFile() {
   });
   fileselector.dispatchEvent(event);
 }
+function clearFiles() {
+  window.igccontent = [];
+  window.filename = [];
+  taskcontent = '';
+  taskfilename = '';
+  btnConvert.style.display = 'none';
+  btnClear.style.display = 'none';
+  updateListFiles();
+}
+function updateListFiles() {
+  let filesnames = window.filename.map(f => '<li class="flight">'+f+'</li>');
+  if (taskfilename.length > 0) {
+    filesnames.push('<li class="task">'+taskfilename+'</li>')
+  }
+  nofile.style.display = (filesnames.length > 0) ? 'none':'initial';
+  lblfile.style.display = (filesnames.length > 0) ? 'initial':'none';
+  lblfile.innerHTML = filesnames.join('');
+}
 window.onload = function() {
   window.fileselector = document.getElementById('file-selector');
   window.dropbox = document.getElementById("dropbox");
   window.lblfile = document.getElementById("lblfile");
-  window.btn = document.getElementById("btn");
+  window.btnConvert = document.getElementById("btnConvert");
+  window.btnClear = document.getElementById("btnClear");
   window.tzoffset = document.getElementById("tzoffset");
+  window.nofile = document.getElementById("nofile");
+  updateListFiles();
 
   dropbox.addEventListener("dragenter", dragenter, false);
   dropbox.addEventListener("dragleave", dragleave, false);
   dropbox.addEventListener("dragover", dragover, false);
   dropbox.addEventListener("drop", drop, false);
   fileselector.addEventListener('change', (event) => {
-    window.igccontent = [];
-    window.filename = [];
     const files = event.target.files;
     if (files.length <= 0) return;
     for (let i=0; i<files.length; i++) {
@@ -171,9 +193,12 @@ window.onload = function() {
     <h1>IGC to KMZ conversion</h1>
     <label for="tzoffset">Timezone offset (hours) :</label><input type="number" id="tzoffset" min="-12" max="12">
     <input type="file" id="file-selector" accept=".igc,.xctsk" multiple style="display:none;">
-    <div id="dropbox" onclick="selectFile();">drop .IGC/task files here<BR>or click to select</div>
-    <ul id="lblfile"></ul>
-    <input id="btn" type="button" class="button" onclick="convertigc()" value="Convert" style="display:none;">
+    <div id="dropbox" onclick="selectFile();">
+      <div id="nofile">drop .IGC/task files here<BR>or click to select</div>
+      <ul id="lblfile" title="click to add files"></ul>
+    </div>
+    <input id="btnConvert" type="button" class="button" title="convert selected files" onclick="convertigc()" value="Convert" style="display:none;">
+    <input id="btnClear" type="button" class="button red" title="clear current files" onclick="clearFiles()" value="Clear" style="display:none;">
   </div>
 </body>
 </html>
