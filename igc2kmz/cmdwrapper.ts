@@ -12,8 +12,9 @@ import { Base64Encode } from 'base64-stream';
 import concat from 'concat-stream';
 import { Bitmap } from "pureimage/types/bitmap";
 import { SimpleCanvas } from "./simplecanvas";
-import sourcesanspro_font from '../assets/OpenSans-Regular.ttf'
+import { defaultconfig, I2KConfiguration } from './init';
 import { igc2kmz } from './igc2kmz';
+import sourcesanspro_font from '../assets/OpenSans-Regular.ttf'
 
 class HeadlessCanvas implements SimpleCanvas {
   cvs: Bitmap[] = [];
@@ -139,7 +140,8 @@ if (taskfile) {
 
 Promise.all(promises).then(() => {
   let cv = new HeadlessCanvas();
-  igc2kmz(cv, igccontents, filenames, tzoffset, taskcontent ?? undefined).catch(err => console.log(err)).then(kmz => {
+  let options: I2KConfiguration = { ...defaultconfig, tz_offset: tzoffset };
+  igc2kmz(cv, igccontents, filenames, taskcontent ?? undefined, options).catch(err => console.log(err)).then(kmz => {
     if (kmz) {
       fs.writeFile(outfilename, Buffer.from(kmz), 'binary', _ => console.log("output to " + outfilename));
     }

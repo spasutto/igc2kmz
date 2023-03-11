@@ -1,12 +1,13 @@
 
 import IGCParser = require("igc-parser")
-import { FlightConvert } from "./init";
+import { FlightConvert, I2KConfiguration, defaultconfig } from "./init";
 import { Flight } from "./flight";
 import { Track } from "./track";
 import { Task } from "./task";
 import { SimpleCanvas } from "./simplecanvas";
 
-export function igc2kmz(cv: SimpleCanvas, igccontents: string[] | string, infilenames?: string[] | string, tz_offset?: number, taskcontent?: string): Promise<ArrayBuffer> {
+export function igc2kmz(cv: SimpleCanvas, igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, options: I2KConfiguration = defaultconfig): Promise<ArrayBuffer> {
+  let config: I2KConfiguration = { ...defaultconfig, ...options };
   igccontents = Array.isArray(igccontents) ? igccontents : [igccontents ?? ''];
   infilenames = Array.isArray(infilenames) ? infilenames : [infilenames ?? ''];
   if (infilenames.length < igccontents.length) {
@@ -26,5 +27,5 @@ export function igc2kmz(cv: SimpleCanvas, igccontents: string[] | string, infile
   }
   let fcv = new FlightConvert(cv);
   // TODO root KML
-return fcv.flights2kmz(flights, tz_offset, task);
+  return fcv.flights2kmz(flights, config, task);
 }

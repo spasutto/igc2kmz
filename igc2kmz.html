@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1.0, maximum-scale=2.0, user-scalable=yes" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <title>igc2kmz</title>
     <script src="./dist/igc2kmz.min.js"></script>
-    <style type="text/css">
+    <style>
       body {
         font-family: sans-serif;
       }
@@ -86,12 +86,20 @@ var taskcontent = '';
 var taskfilename = '';
 var nbrfiles = 0;
 function convertigc() {
-  let tzoffset = parseFloat(window.tzoffset.value);
-  if (isNaN(tzoffset)) tzoffset = 0;
-  igc2kmz(igccontent, filename, tzoffset, taskcontent).catch(err => {
+  let options = getConfig();
+  igc2kmz(igccontent, filename, taskcontent, options).catch(err => {
     alert(err);
     throw err;
   });
+}
+function getConfig() {
+  // TODO : récupération des options depuis le formulaire de la page
+  let tzoffset = parseFloat(window.tzoffset.value);
+  if (isNaN(tzoffset)) tzoffset = 0;
+  return {tz_offset: tzoffset/*, anim_tail_duration:-1*/};
+}
+function setConfig(config) {
+  // TODO : maj formulaire d'options depuis la config IGC2KMZ
 }
 function loadfile(file, name) {
   name = typeof name === 'string' && name.length > 0 ? name.split('\\').pop() : default_filename.replace('$i', window.nbrfiles+1);
@@ -185,6 +193,7 @@ window.onload = function() {
     }
     fileselector.value = '';
   });
+  setConfig(DEFAULT_IGC2KMZ_CONFIGURATION);
 }
       </script>
   </head>

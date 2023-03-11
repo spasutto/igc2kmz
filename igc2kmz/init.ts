@@ -10,11 +10,34 @@ import { Stock } from "./stock";
 
 import { SimpleCanvas } from "./simplecanvas";
 
+export interface I2KConfiguration {
+  /**
+   * timezone offset to apply
+   */
+  tz_offset: number;
+  /**
+   * Paraglider tail length animation.
+   * false if no tail (just icon)
+   */
+  anim_tail: boolean;
+  /**
+   * Paraglider tail length animation, in seconds.
+   * -1 for infinite
+   */
+  anim_tail_duration: number;
+}
+
+export const defaultconfig: I2KConfiguration = {
+  tz_offset: 0,
+  anim_tail: true,
+  anim_tail_duration: 60
+};
+
 export class FlightConvert {
   bounds: BoundSet = {};
   scales: OpenStruct<Scale> = {};
   stock: Stock = new Stock();
-  task: Task|null = null;
+  task: Task | null = null;
   tz_offset: number = 0;
   altitude_styles: KML.Element[][] = [];
   graph_width: number = 600;
@@ -23,6 +46,7 @@ export class FlightConvert {
   canvas: SimpleCanvas | null = null;
   files: string[] = [];
   flights: Flight[] = [];
+  options: I2KConfiguration = defaultconfig;
 
   constructor(canvas?: SimpleCanvas) {
     if (canvas) {
@@ -30,13 +54,14 @@ export class FlightConvert {
     }
   }
 
-  flights2kmz(flights: Flight[], tz_offset: number = 0, task?: Task | null): Promise<ArrayBuffer> {
+  flights2kmz(flights: Flight[], options: I2KConfiguration = defaultconfig, task?: Task | null): Promise<ArrayBuffer> {
     this.flights = flights;
+    this.options = options;
     //RandomIdGenerator.reset(); si on reset le generateur, il faut recréer stock
     flights.forEach(flight => {
       bsupdate(this.bounds, flight.track.bounds);
     });
-    this.tz_offset = tz_offset * 3600;
+    this.tz_offset = options.tz_offset * 3600;
     if (task) {
       this.task = task;
     }

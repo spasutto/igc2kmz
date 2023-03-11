@@ -41,6 +41,7 @@ dist/**/*
 yarn.lock
 
 *.kmz
+*.igc
 
 doc/*.pdf
 examples/*.kml

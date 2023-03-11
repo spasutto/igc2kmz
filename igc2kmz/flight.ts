@@ -405,10 +405,16 @@ export class Flight {
         placemark.add(new KML.SimpleElement('name', this.track.pilot_name));
       }
       folder.add(placemark);
-      let line_string = new KML.LineString([this.track.coords[i - 1], this.track.coords[i]], 'absolute');
-      timespan = new KML.TimeSpan(this.track.coords[i].dt, new Date(this.track.coords[i].dt.getTime() + 60000));
-      placemark = new KML.Placemark(null, line_string, [timespan], style.url);
-      folder.add(placemark);
+      if (globals.options.anim_tail) {
+        let line_string = new KML.LineString([this.track.coords[i - 1], this.track.coords[i]], 'absolute');
+        let endtime: Date | null = null;
+        if (globals.options.anim_tail_duration > 0) {
+          endtime = new Date(this.track.coords[i].dt.getTime() + globals.options.anim_tail_duration * 1000);
+        }
+        timespan = new KML.TimeSpan(this.track.coords[i].dt, endtime);
+        placemark = new KML.Placemark(null, line_string, [timespan], style.url);
+        folder.add(placemark);
+      }
     }
     point = new KML.Point(this.track.coords[this.track.coords.length - 1], this.altitude_mode);
     let line_string = new KML.LineString(this.track.coords.slice(this.track.indexOf(new Date(this.track.coords[this.track.coords.length - 1].dt.getTime() - 60000)), this.track.coords.length - 1), 'absolute');

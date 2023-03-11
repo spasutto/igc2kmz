@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "taskType": "CLASSIC",
+  "turnpoints": [
+    {
+      "radius": 0,
+      "waypoint": {
+        "lon": -76.21138000488281,
+        "lat": 4.403883457183838,
+        "altSmoothed": 1860,
+        "name": "D01",
+        "description": "AGUAPANELA"
+      },
+      "type": "TAKEOFF"
+    },
+    {
+      "radius": 3000,
+      "waypoint": {
+        "lon": -76.10133361816406,
+        "lat": 4.4051666259765625,
+        "altSmoothed": 1000,
+        "name": "B15",
+        "description": "PUENTE ROLDANILLO"
+      },
+      "type": "SSS"
+    },
+    {
+      "radius": 3000,
+      "waypoint": {
+        "lon": -75.96849822998047,
+        "lat": 4.5879998207092285,
+        "altSmoothed": 970,
+        "name": "G02",
+        "description": ""
+      }
+    },
+    {
+      "radius": 17000,
+      "waypoint": {
+        "lon": -76.16603088378906,
+        "lat": 4.177330017089844,
+        "altSmoothed": 972,
+        "name": "G05",
+        "description": ""
+      }
+    },
+    {
+      "radius": 2000,
+      "waypoint": {
+        "lon": -76.06043243408203,
+        "lat": 4.426783084869385,
+        "altSmoothed": 940,
+        "name": "G03",
+        "description": "GOL ZARZAL NORTE"
+      },
+      "type": "ESS"
+    },
+    {
+      "radius": 500,
+      "waypoint": {
+        "lon": -76.06043243408203,
+        "lat": 4.426783084869385,
+        "altSmoothed": 940,
+        "name": "G03",
+        "description": "GOL ZARZAL NORTE"
+      }
+    }
+  ],
+  "sss": {
+    "type": "RACE",
+    "direction": "EXIT",
+    "timeGates": [
+      "16:30:00Z"
+    ]
+  },
+  "goal": {
+    "type": "CYLINDER",
+    "deadline": "21:00:00Z"
+  },
+  "earthModel": "WGS84"
+}
