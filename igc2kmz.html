@@ -104,6 +104,24 @@
         right: 8px;
         bottom: 5px;
       }
+      .popup .jsonbuttons {
+        position: absolute;
+        left: 8px;
+        bottom: 5px;
+      }
+      .popup .jsonbuttons a {
+        display : inline-block;
+        text-decoration: none;
+        height: 22px;
+        width: 22px;
+      }
+      .popup .jsonbuttons a:hover {
+        display : inline-block;
+        text-decoration: none;
+        background-color: rgb(0, 122, 204);
+        height: 22px;
+        width: 22px;
+      }
       #tzoffset {
         width: 40px;
       }
@@ -174,15 +192,43 @@ function floatval(id) {
   let val = parseFloat($(id).value);
   return isNaN(val) ? 0 : val;
 }
+// Function to download data to a file
+function download(data, filename, type) {
+  var file = new Blob([data], {type: type});
+  if (window.navigator.msSaveOrOpenBlob) // IE10+
+    window.navigator.msSaveOrOpenBlob(file, filename);
+  else { // Others
+    var a = document.createElement("a"),
+        url = URL.createObjectURL(file);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 0);
+  }
+}
 function getConfig() {
-  // TODO : récupération des options depuis le formulaire de la page
-  return {tz_offset: floatval('tzoffset'), anim_tail:$('opt_anim_tail').checked, anim_tail_duration:floatval('opt_anim_tail_duration')};
+  return { tz_offset: floatval('tzoffset'), anim_tail: $('opt_anim_tail').checked, anim_tail_duration: floatval('opt_anim_tail_duration') };
 }
 function setConfig(config) {
   window.i2koptions = config;
   $('tzoffset').value = config.tz_offset;
   $('opt_anim_tail').checked = config.anim_tail;
   $('opt_anim_tail_duration').value = config.anim_tail_duration;
+}
+function saveJSON() {
+  let config = getConfig();
+  download(JSON.stringify(config), 'igc2kmz_config.json', 'application/json');
+}
+function loadJSON() {
+  const event = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+  jsonselector.dispatchEvent(event);
+}
+function loadJSONRes(jsonconf) {
+  setConfig(JSON.parse(jsonconf));
 }
 function showOptions() {
   popup_overlay.style.display = 'initial';
@@ -192,22 +238,27 @@ function closeOptions(save) {
   if (save) window.i2koptions = getConfig();
   else setConfig(window.i2koptions);
 }
-function loadfile(file, name) {
+function loadfile(file, name, json) {
+  json = json === true;
   name = typeof name === 'string' && name.length > 0 ? name.split('\\').pop() : default_filename.replace('$i', window.nbrfiles+1);
   const reader = new FileReader();
   reader.addEventListener('load', (event) => {
     let filesize = 0;
-    if (name.trim().toLowerCase().endsWith('.igc')) {
-      window.igccontent.push(reader.result);
-      window.filename.push(name);
+    if (json) {
+      loadJSONRes(reader.result);
     } else {
-      taskcontent = reader.result;
-      taskfilename = name;
+      if (name.trim().toLowerCase().endsWith('.igc')) {
+        window.igccontent.push(reader.result);
+        window.filename.push(name);
+      } else {
+        taskcontent = reader.result;
+        taskfilename = name;
+      }
+      window.nbrfiles++;
+      updateListFiles();
+      btnConvert.style.display = 'initial';
+      btnClear.style.display = 'initial';
     }
-    window.nbrfiles++;
-    updateListFiles();
-    btnConvert.style.display = 'initial';
-    btnClear.style.display = 'initial';
   });
   reader.readAsText(file);
 }
@@ -237,11 +288,7 @@ function drop(e) {
   fileselector.value = '';
 }
 function selectFile() {
-  const event = new MouseEvent('click', {
-    view: window,
-    bubbles: true,
-    cancelable: true
-  });
+  const event = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
   fileselector.dispatchEvent(event);
 }
 function clearFiles() {
@@ -264,6 +311,7 @@ function updateListFiles() {
 }
 window.onload = function() {
   window.fileselector = $('file-selector');
+  window.jsonselector = $('json-selector');
   window.dropbox = $("dropbox");
   window.lblfile = $("lblfile");
   window.btnConvert = $("btnConvert");
@@ -283,6 +331,13 @@ window.onload = function() {
     for (let i=0; i<files.length; i++) {
       loadfile(files.item(i), files.item(i).name);
     }
+    fileselector.value = '';
+  });
+  jsonselector.addEventListener('change', (event) => {
+    const files = event.target.files;
+    if (files.length < 1) return;
+    let file = files.item(0);
+    loadfile(file, file.name, true);
     fileselector.value = '';
   });
   window.popup_overlay.addEventListener('click', e => {
@@ -332,6 +387,11 @@ window.onload = function() {
         <h4>Animation</h4>
         <label for="opt_anim_tail">Show tail</label><input type="checkbox" id="opt_anim_tail"><BR>
         <label for="opt_anim_tail_duration">Tail duration</label><input type="number" id="opt_anim_tail_duration" min="-12" max="12"><BR>
+      </div>
+      <div class="jsonbuttons">
+        <input type="file" id="json-selector" accept=".json" style="display:none;">
+        <a href="#" title="load conf from json" onclick="loadJSON()">&#x1F4C2;</a>
+        <a href="#" title="save conf as json" onclick="saveJSON()">&#x1F4BE;</a>
       </div>
       <div class="buttons">
         <input type="button" value="cancel" onclick="closeOptions()">
