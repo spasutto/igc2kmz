@@ -27,15 +27,75 @@
         font-size: 16px;
         border-radius: 4px;
         background-color: #008CBA;
+        height: 45px;
+      }
+      .button.small {
+        padding: 10px;
       }
       .button:hover {
-        border-color: #0000ff;
+        border-color: #474747;
       }
       .red {
         background-color: #df1313;
       }
       .green {
         background-color: #4CAF50;
+      }
+      .overlay {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #0000009e;
+      }
+      .popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        margin-left: -200px;
+        margin-top: -100px;
+        width:400px;
+        height:200px;
+        background-color: rgb(247, 247, 247);
+        border: solid 1px #cacaca;
+        border-radius: 5px;
+      }
+      .popup .popup_title {
+        width: 100%;
+        color:white;
+        font-weight: bold;
+        background-color: #4CAF50;
+        overflow: hidden;
+        padding: 2px 0;
+      }
+      .popup .popup_title span {
+        margin-left: 5px;
+      }
+      .popup .popup_title .btnclose {
+        float: right;
+        width : 20px;
+        height : 20px;
+        font-weight: bold;
+        padding: 0;
+        margin-right: 1px;
+      }
+      .popup .popup_content {
+        max-height: 150px;
+        overflow: hidden auto;
+        padding:2px;
+      }
+      .popup .popup_content h4 {
+        margin: 1px 0;
+      }
+      .popup .popup_content label {
+        width: 175px;
+      }
+      .popup .buttons {
+        position: absolute;
+        right: 8px;
+        bottom: 5px;
       }
       #tzoffset {
         width: 40px;
@@ -49,8 +109,7 @@
         max-width: 380px;
         padding: 0 0 0 10px;
         max-height: 170px;
-        overflow-y: auto;
-        overflow-x: hidden;
+        overflow: hidden auto;
       }
       #lblfile li {
         list-style: none;
@@ -85,21 +144,36 @@ var filename = [];
 var taskcontent = '';
 var taskfilename = '';
 var nbrfiles = 0;
+var i2koptions = {};
+
 function convertigc() {
-  let options = getConfig();
-  igc2kmz(igccontent, filename, taskcontent, options).catch(err => {
+  igc2kmz(igccontent, filename, taskcontent, i2koptions).catch(err => {
     alert(err);
     throw err;
   });
 }
+function $(id) { return document.getElementById(id); }
+function floatval(id) {
+  let val = parseFloat($(id).value);
+  return isNaN(val) ? 0 : val;
+}
 function getConfig() {
   // TODO : récupération des options depuis le formulaire de la page
-  let tzoffset = parseFloat(window.tzoffset.value);
-  if (isNaN(tzoffset)) tzoffset = 0;
-  return {tz_offset: tzoffset/*, anim_tail_duration:-1*/};
+  return {tz_offset: floatval('tzoffset'), anim_tail:$('opt_anim_tail').checked, anim_tail_duration:floatval('opt_anim_tail_duration')};
 }
 function setConfig(config) {
-  // TODO : maj formulaire d'options depuis la config IGC2KMZ
+  window.i2koptions = config;
+  $('tzoffset').value = config.tz_offset;
+  $('opt_anim_tail').checked = config.anim_tail;
+  $('opt_anim_tail_duration').value = config.anim_tail_duration;
+}
+function showOptions() {
+  popup_overlay.style.display = 'initial';
+}
+function closeOptions(save) {
+  popup_overlay.style.display = 'none';
+  if (save) window.i2koptions = getConfig();
+  else setConfig(window.i2koptions);
 }
 function loadfile(file, name) {
   name = typeof name === 'string' && name.length > 0 ? name.split('\\').pop() : default_filename.replace('$i', window.nbrfiles+1);
@@ -172,13 +246,14 @@ function updateListFiles() {
   lblfile.innerHTML = filesnames.join('');
 }
 window.onload = function() {
-  window.fileselector = document.getElementById('file-selector');
-  window.dropbox = document.getElementById("dropbox");
-  window.lblfile = document.getElementById("lblfile");
-  window.btnConvert = document.getElementById("btnConvert");
-  window.btnClear = document.getElementById("btnClear");
-  window.tzoffset = document.getElementById("tzoffset");
-  window.nofile = document.getElementById("nofile");
+  window.fileselector = $('file-selector');
+  window.dropbox = $("dropbox");
+  window.lblfile = $("lblfile");
+  window.btnConvert = $("btnConvert");
+  window.btnClear = $("btnClear");
+  window.nofile = $("nofile");
+  window.popup_overlay = $("popup_overlay");
+  window.popup_options = $("popup_options");
   updateListFiles();
 
   dropbox.addEventListener("dragenter", dragenter, false);
@@ -193,14 +268,32 @@ window.onload = function() {
     }
     fileselector.value = '';
   });
+  window.popup_overlay.addEventListener('click', e => {
+    closeOptions();
+  });
+  window.popup_options.addEventListener('click', e => {
+    e.stopPropagation();
+  });
+  window.document.addEventListener('keydown', e => {
+    if (popup_overlay.style.display == 'none') return;
+    e = e || window.event;
+    var isEscape = false;
+    if ("key" in e) {
+        isEscape = (e.key === "Escape" || e.key === "Esc");
+    } else {
+        isEscape = (e.keyCode === 27);
+    }
+    if (isEscape) {
+      closeOptions();
+    }
+  })
   setConfig(DEFAULT_IGC2KMZ_CONFIGURATION);
 }
-      </script>
+    </script>
   </head>
 <body>
   <div class="converter">
     <h1>IGC to KMZ conversion</h1>
-    <label for="tzoffset">Timezone offset (hours) :</label><input type="number" id="tzoffset" min="-12" max="12">
     <input type="file" id="file-selector" accept=".igc,.xctsk" multiple style="display:none;">
     <div id="dropbox" onclick="selectFile();">
       <div id="nofile">drop .IGC/task files here<BR>or click to select</div>
@@ -208,6 +301,26 @@ window.onload = function() {
     </div>
     <input id="btnConvert" type="button" class="button" title="convert selected files" onclick="convertigc()" value="Convert" style="display:none;">
     <input id="btnClear" type="button" class="button red" title="clear current files" onclick="clearFiles()" value="Clear" style="display:none;">
+    <input id="btnOptions" type="button" class="button small green" title="configuration" onclick="showOptions()" value="&#x1F527;">
+  </div>
+  <div id="popup_overlay" class="overlay">
+    <div id="popup_options" class="popup">
+      <div class="popup_title">
+        <span>options</span>
+        <input type="button" value="X" class="btnclose" onclick="closeOptions()">
+      </div>
+      <div class="popup_content">
+        <h4>Global</h4>
+        <label for="tzoffset">Timezone offset (hours)</label><input type="number" id="tzoffset" min="-12" max="12"><BR>
+        <h4>Animation</h4>
+        <label for="opt_anim_tail">Show tail</label><input type="checkbox" id="opt_anim_tail"><BR>
+        <label for="opt_anim_tail_duration">Tail duration</label><input type="number" id="opt_anim_tail_duration" min="-12" max="12"><BR>
+      </div>
+      <div class="buttons">
+        <input type="button" value="cancel" onclick="closeOptions()">
+        <input type="button" value="save" onclick="closeOptions(true)">
+      </div>
+    </div>
   </div>
 </body>
 </html>
