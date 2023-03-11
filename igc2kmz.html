@@ -54,9 +54,9 @@
         position: fixed;
         top: 50%;
         left: 50%;
-        margin-left: -200px;
+        margin-left: -180px;
         margin-top: -100px;
-        width:400px;
+        width:360px;
         height:200px;
         background-color: rgb(247, 247, 247);
         border: solid 1px #cacaca;
@@ -134,6 +134,15 @@
       }
       #nofile:hover {
         text-decoration: underline;
+      }
+      @media (max-width: 400px) {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        .converter {
+          width: 360px;
+        }
       }
     </style>
 
