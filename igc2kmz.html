@@ -268,11 +268,15 @@ function showOptions() {
   popup_overlay.style.display = 'initial';
 }
 function closeOptions(save) {
-  popup_overlay.style.display = 'none';
   if (save) {
     window.i2koptions = getConfig();
     try{ localStorage.setItem('options', JSON.stringify(window.i2koptions)); }catch {}
-  }// else setConfig(window.i2koptions);
+  } else {
+    let config = getConfig();
+    if (JSON.stringify(config) != JSON.stringify(window.i2koptions) && !confirm('Warning, current configuration changes will be lost, are you sure?')) return;
+    setConfig(window.i2koptions);
+  }
+  popup_overlay.style.display = 'none';
 }
 function loadfile(file, name, json) {
   json = json === true;
