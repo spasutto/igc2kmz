@@ -25,12 +25,17 @@ export interface I2KConfiguration {
    * -1 for infinite
    */
   anim_tail_duration: number;
+  /**
+   * Serialize KML to console after conversion
+   */
+  dbg_serialize: boolean;
 }
 
 export const defaultconfig: I2KConfiguration = {
   tz_offset: 0,
   anim_tail: true,
-  anim_tail_duration: 60
+  anim_tail_duration: 60,
+  dbg_serialize: false,
 };
 
 export class FlightConvert {
@@ -114,16 +119,16 @@ export class FlightConvert {
     }
 
     return new Promise<ArrayBuffer>(res => {
-      let result: KMZ = new KMZ();
-      result.add_siblings([this.stock.kmz]);
+      let kmz: KMZ = new KMZ();
+      kmz.add_siblings([this.stock.kmz]);
       //TODO ROOTS result.add_roots()
       if (task) {
-        result.add_siblings([Flight.make_task_folder(this, task)]);
+        kmz.add_siblings([Flight.make_task_folder(this, task)]);
       }
       Promise.all(flights.map(f => f.to_kmz(this))).then(kmzs => {
-        result.add_siblings(kmzs);
+        kmz.add_siblings(kmzs);
       }).then(() => {
-        result.get_data(2.2).then(res);
+        kmz.get_data(2.2, this.options.dbg_serialize).then(res);
       });
     });
   }

@@ -91,13 +91,44 @@
       .popup .popup_content {
         max-height: 150px;
         overflow: hidden auto;
-        padding:2px;
+        margin: 0 3px;
       }
       .popup .popup_content h4 {
         margin: 1px 0;
+        font-size: 15px;
+        font-weight: 200;
+        letter-spacing: 0.2em;
+        /* background-color: #f1ffc6; */
+        color: #c30000;
+      }
+      .popup .popup_content h4:before{
+        content:'';
+        display:inline-block;
+        width:5px; height:100%;
+        border-bottom:1px solid #bbbbbb;
+      }
+      .popup .popup_content h4:after{
+        content:'';
+        display:inline-block;
+        width:100%; height:100%;
+        margin-right:-100%;
+        border-bottom:1px solid #bbbbbb;
       }
       .popup .popup_content label {
+        display: inline-block;
         width: 175px;
+        white-space: nowrap;
+      }
+      .popup .popup_content label:hover:after {
+        content: '\00a0\3f\00a0';/*'\00a0\1F6C8';*/
+        border: solid 1px #05009d;
+        background-color: #004883;
+        color:white;
+        margin-left: 1px;
+        border-radius: 5px;
+      }
+      .popup .popup_content input[type=number] {
+        width: 40px;
       }
       .popup .buttons {
         position: absolute;
@@ -121,9 +152,6 @@
         background-color: rgb(0, 122, 204);
         height: 22px;
         width: 22px;
-      }
-      #tzoffset {
-        width: 40px;
       }
       #lblfile {
         display: inline-block !important;
@@ -211,13 +239,19 @@ function download(data, filename, type) {
   }
 }
 function getConfig() {
-  return { tz_offset: floatval('tzoffset'), anim_tail: $('opt_anim_tail').checked, anim_tail_duration: floatval('opt_anim_tail_duration') };
+  return {
+    tz_offset: floatval('opt_tzoffset'),
+    anim_tail: $('opt_anim_tail').checked,
+    anim_tail_duration: floatval('opt_anim_tail_duration') ,
+    dbg_serialize: $('opt_dbg_serialize').checked,
+  };
 }
 function setConfig(config) {
   window.i2koptions = config;
-  $('tzoffset').value = config.tz_offset;
+  $('opt_tzoffset').value = config.tz_offset;
   $('opt_anim_tail').checked = config.anim_tail;
   $('opt_anim_tail_duration').value = config.anim_tail_duration;
+  $('opt_dbg_serialize').value = config.opt_dbg_serialize;
 }
 function saveJSON() {
   let config = getConfig();
@@ -378,15 +412,17 @@ window.onload = function() {
   <div id="popup_overlay" class="overlay">
     <div id="popup_options" class="popup">
       <div class="popup_title">
-        <span>options</span>
+        <span><small>&#x1F527;&nbsp;</small>options</span>
         <input type="button" value="X" class="btnclose" onclick="closeOptions()">
       </div>
       <div class="popup_content">
         <h4>Global</h4>
-        <label for="tzoffset">Timezone offset (hours)</label><input type="number" id="tzoffset" min="-12" max="12"><BR>
+        <label for="opt_tzoffset" title="Shift each record from offset, in hours">Timezone offset</label><input type="number" id="opt_tzoffset" min="-12" max="12"><BR>
         <h4>Animation</h4>
-        <label for="opt_anim_tail">Show tail</label><input type="checkbox" id="opt_anim_tail"><BR>
-        <label for="opt_anim_tail_duration">Tail duration</label><input type="number" id="opt_anim_tail_duration" min="-12" max="12"><BR>
+        <label for="opt_anim_tail" title="Show colored tail after paraglider">Show tail</label><input type="checkbox" id="opt_anim_tail"><BR>
+        <label for="opt_anim_tail_duration" title="Length in seconds for the colored tail. -1 for infinity (till launch)">Tail duration</label><input type="number" id="opt_anim_tail_duration" min="-12" max="12"><BR>
+        <h4>Debug</h4>
+        <label for="opt_dbg_serialize" title="Serialize KML to console after conversion">Serialize to console</label><input type="checkbox" id="opt_dbg_serialize"><BR>
       </div>
       <div class="jsonbuttons">
         <input type="file" id="json-selector" accept=".json" style="display:none;">
