@@ -294,6 +294,14 @@ export class Utils {
     str = str ?? '';
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
+
+  static roundToFloor(numToRound: number, numToRoundTo: number) {
+    return Math.floor(numToRound / numToRoundTo) * numToRoundTo;
+  }
+
+  static roundToCeil(numToRound: number, numToRoundTo: number) {
+    return Math.ceil(numToRound / numToRoundTo) * numToRoundTo;
+  }
 }
 
 export class RandomIdGenerator {

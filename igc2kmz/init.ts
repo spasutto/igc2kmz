@@ -62,6 +62,10 @@ export class FlightConvert {
   flights2kmz(flights: Flight[], options: I2KConfiguration = defaultconfig, task?: Task | null): Promise<ArrayBuffer> {
     this.flights = flights;
     this.options = options;
+    this.bounds = {};
+    this.scales = {};
+    this.altitude_styles = [];
+    this.files = [];
     //RandomIdGenerator.reset(); si on reset le generateur, il faut recréer stock
     flights.forEach(flight => {
       bsupdate(this.bounds, flight.track.bounds);

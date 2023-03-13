@@ -208,7 +208,7 @@ export class Flight {
       folder.add(placemark);
     }
     let href = 'images/' + scale.title.replaceAll(' ', '_') + '_scale.png';
-    if (scale_chart && scale) {
+    if (scale_chart && scale && globals.canvas) {
       if (globals.files.indexOf(href) < 0) {
         globals.files.push(href);
         this.pcount++;
@@ -277,36 +277,56 @@ export class Flight {
         if (!ctx || !(timescale instanceof TimeScale) || !scale) return rej(('no context'));
         ctx.clearRect(0, 0, cv.width, cv.height);
 
-        /*ctx.fillStyle = "#ffffff00";
+        ctx.fillStyle = "#ffffff00";
         ctx.fillRect(0, 0, cv.width, cv.height);
-        let margin = 5;
         ctx.fillStyle = "#ffffffcc";
-        ctx.fillRect(margin, margin, cv.width - margin, cv.height - margin);
-        ctx.fillStyle = '#0000ff00';
+        let marginleft = 35;
+        let marginbtm = 14;
+        let grphw = globals.graph_width - marginleft;
+        let grphh = globals.graph_height - marginbtm;
+        ctx.fillRect(marginleft, 0, grphw, grphh);
+        ctx.fillStyle = '#ffffffff';
         ctx.font = `12pt ${globals.canvas?.fontname} bold`;
         // axe horizontal (temps)   //timescale.positions == [3550, 3563, 3575, 3588, 0, 13, 25, 38, 50, 63, 75, 88]
-        let increment = cv.width / timescale.labels.length;
+        let increment = grphw / timescale.labels.length;
         for (let i = 0; i < timescale.labels.length; i++) {
-          ctx.fillText(timescale.labels[i], i * increment, cv.height - 12);
+          ctx.fillText(timescale.labels[i],marginleft + i * increment, cv.height - 1);
         }
+        ctx.textAlign = "right";
         // axe vertical (altitude)
-        //scale.range.min
-        increment = cv.height / (scale.range.max - scale.range.min);
-        //for (let i = 0; i < y.length; i++) {
-          //ctx.fillText(timescale.labels[i], 1, y[i]);
-        //}
-        let y = values.map(v => globals.graph_height * (v - scale.range.min) / (scale.range.max - scale.range.min));
-        let indexes = Utils.incr_douglas_peucker(this.time_positions, y, 1, 450);
-        ctx.strokeStyle = '#9f9f9f';
+        increment = 50;
+        while ((scale.range.max - scale.range.min) / increment > 10)
+          increment += 50; //increment *= 2;
+        let minalt = Utils.roundToFloor(scale.range.min, increment);
+        let maxalt = Utils.roundToCeil(scale.range.max, increment);
+        let multy = grphh / (maxalt - minalt);
+        for (let i = minalt; i <= maxalt; i += increment) {
+          ctx.fillText(i.toString(), marginleft-1, grphh - ((i - minalt)) * multy);
+        }
+        ctx.textAlign = "left";
+        let yvals = values.map(v => grphh * (v - scale.range.min) / (scale.range.max - scale.range.min));
+        let indexes = Utils.incr_douglas_peucker(this.time_positions, yvals, 1, 450);
+        let cvalues = new Array(2);
+        cvalues[0] = [];
+        cvalues[1] = [];
+        for (let i = 0; i < indexes.length; i++) {
+          cvalues[0].push(this.track.t[indexes[i]]);
+          cvalues[1].push(yvals[indexes[i]]);
+        }
+        let multx = grphw / ((timescale.range.max.getTime() - timescale.range.min.getTime()) / 1000);
+        ctx.strokeStyle = '#FF9500';
+        ctx.lineWidth = 2;
+        let x = marginleft+ multx * (cvalues[0][0] - timescale.range.min.getTime() / 1000);
+        let y = cvalues[1][0];
         ctx.beginPath();
-        ctx.moveTo(margin, y[indexes[0]]);
-        increment = (cv.width - 2 * margin) / indexes.length;
+        ctx.moveTo(x, y);
         for (let i = 1; i < indexes.length; i++) {
-          //ctx.fillText(timescale.labels[i], 1, i * increment);
-          ctx.lineTo(margin + increment * i, y[indexes[i]]);
+          x = marginleft+multx * (cvalues[0][i] - timescale.range.min.getTime() / 1000);
+          y = cvalues[1][i];
+          ctx.lineTo(x, y);
         }
         ctx.stroke();
-        document.body.append(cv as HTMLCanvasElement);*/
+        //document.body.append(cv as HTMLCanvasElement);
         (globals.canvas as SimpleCanvas).get_base64(cv).then(v => res(v));
       });
     });
@@ -499,7 +519,7 @@ export class Flight {
     let size = new KML.size(0, 'fraction', 0, 'fraction');
     let screen_overlay = new KML.ScreenOverlay([icon, overlay_xy, screen_xy, size]);
     let style_url = globals.stock.check_hide_children_style.url;
-    let name = Utils.capitalizeFirstLetter(scale.title) + ' graph (TODO)'
+    let name = Utils.capitalizeFirstLetter(scale.title) + ' graph';
     let folder = new KML.Folder(name, style_url, [screen_overlay], null, false);
     return folder;
   }
