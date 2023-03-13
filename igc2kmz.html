@@ -251,7 +251,7 @@ function setConfig(config) {
   $('opt_tzoffset').value = config.tz_offset;
   $('opt_anim_tail').checked = config.anim_tail;
   $('opt_anim_tail_duration').value = config.anim_tail_duration;
-  $('opt_dbg_serialize').value = config.opt_dbg_serialize;
+  $('opt_dbg_serialize').checked = config.dbg_serialize;
 }
 function saveJSON() {
   let config = getConfig();
@@ -269,8 +269,10 @@ function showOptions() {
 }
 function closeOptions(save) {
   popup_overlay.style.display = 'none';
-  if (save) window.i2koptions = getConfig();
-  else setConfig(window.i2koptions);
+  if (save) {
+    window.i2koptions = getConfig();
+    try{ localStorage.setItem('options', JSON.stringify(window.i2koptions)); }catch {}
+  } else setConfig(window.i2koptions);
 }
 function loadfile(file, name, json) {
   json = json === true;
@@ -392,8 +394,15 @@ window.onload = function() {
     if (isEscape) {
       closeOptions();
     }
-  })
-  setConfig(DEFAULT_IGC2KMZ_CONFIGURATION);
+  });
+  let default_config = DEFAULT_IGC2KMZ_CONFIGURATION;
+  try {
+    let config = JSON.parse(localStorage.getItem('options'));
+    if (typeof config === 'object' && typeof config.tz_offset === 'number') {
+      default_config = config;
+    }
+  } catch {}
+  setConfig(default_config);
 }
     </script>
   </head>
