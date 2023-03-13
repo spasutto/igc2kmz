@@ -272,7 +272,7 @@ function closeOptions(save) {
   if (save) {
     window.i2koptions = getConfig();
     try{ localStorage.setItem('options', JSON.stringify(window.i2koptions)); }catch {}
-  } else setConfig(window.i2koptions);
+  }// else setConfig(window.i2koptions);
 }
 function loadfile(file, name, json) {
   json = json === true;

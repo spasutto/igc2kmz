@@ -190,8 +190,8 @@ export namespace KML {
     constructor(coord: Coord, heading: number, tilt: number) {
       super([new SimpleElement('altitude', coord.ele.toString()),
       new SimpleElement('heading', heading.toString()),
-      new SimpleElement('latitude', coord.lat.toString()),
-      new SimpleElement('longitude', coord.lon.toString()),
+      new SimpleElement('latitude', coord.lat_deg.toString()),
+      new SimpleElement('longitude', coord.lon_deg.toString()),
       new SimpleElement('tilt', tilt.toString()),]);
     }
   }

@@ -633,7 +633,7 @@ export class Flight {
       this.root.add([this.make_shadow_folder(globals)]);
       this.root.add([this.make_animation(globals)]);
       //this.root.add([this.make_animation_tour(globals)]);
-      this.root.add([this.make_tour_folder(globals)]);
+      //this.root.add([this.make_tour_folder(globals)]);
       this.root.add([this.make_photos_folder(globals)]);
       this.root.add([this.make_xc_folder(globals)]);
       this.root.add([this.make_altitude_marks_folder(globals)]);
