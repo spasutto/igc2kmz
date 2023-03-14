@@ -1,10 +1,10 @@
 
 // example :
-//   node dist\igc2kmz.js examples\flight.igc
+//   node dist\igc2kmz.cmd.js examples\flight.igc
 // Merge 2 IGCs and shift times to UTC+1 hour :
-//   node dist\igc2kmz.js -z 1 examples\flight.igc examples\flight2.igc
+//   node dist\igc2kmz.cmd.js -z 1 examples\flight.igc examples\flight2.igc
 // Add task infos :
-//   node dist\igc2kmz.js examples\flight.igc -t examples\xctrack_task_v2.xctsk
+//   node dist\igc2kmz.cmd.js examples\flight.igc -t examples\xctrack_task_v2.xctsk
 
 import * as fs from 'fs';
 import * as PImage from "pureimage"

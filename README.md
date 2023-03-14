@@ -12,7 +12,7 @@
 
 **Command line** : [build first](#build) then on a prompt :
 ```
-node dist\igc2kmz.js examples\flight.igc
+node dist\igc2kmz.cmd.js examples\flight.igc
 ```
 Upload to [Google Earth](https://earth.google.com/web/), voilà!
 
@@ -30,6 +30,7 @@ then
 npm run build    # for command line usage
 #  or
 npm run minify   # for web
+npm run buildweb # for web (development)
 ```
 
 ## Features

@@ -10,7 +10,7 @@ await esbuild.build({
   bundle: true,
   absWorkingDir: process.cwd(),
   //outdir: path.join(process.cwd(), "dist"),
-  outfile: 'dist/igc2kmz.js',
+  outfile: 'dist/igc2kmz.cmd.js',
   //watch: process.argv.includes("--watch"),
   //minify: true
   ...extraconfig,
