@@ -73,11 +73,11 @@ export class Flight {
     if (this.glider_id) {
       rows.push(['Glider ID', this.glider_id]);
     }
-    let take_off_time = new Date(this.track.bounds["time"]?.min.getTime() + globals.tz_offset * 1000); //TOCHECK temps UTC
+    let take_off_time = new Date((this.track.bounds["time"]?.min + globals.tz_offset) * 1000); //TOCHECK temps UTC
     rows.push(['Take-off time', take_off_time.toISOString().substring(11, 19)]);
-    let landing_time = new Date(this.track.bounds["time"]?.max.getTime() + globals.tz_offset * 1000); //TOCHECK temps UTC
+    let landing_time = new Date((this.track.bounds["time"]?.max + globals.tz_offset) * 1000); //TOCHECK temps UTC
     rows.push(['Landing time', landing_time.toISOString().substring(11, 19)]);
-    let duration = (this.track.bounds["time"]?.max.getTime() - this.track.bounds["time"]?.min.getTime()) / 1000;
+    let duration = this.track.bounds["time"]?.max - this.track.bounds["time"]?.min;
     let hour = Math.trunc(duration / 3600);
     let seconds = duration % 3600;
     let minute = Math.trunc(seconds / 60);
@@ -105,7 +105,7 @@ export class Flight {
 
   make_snippet(globals: FlightConvert): KMZ {
     //TODO     if (this.xc)
-    let date = new Date(this.track.bounds["time"]?.min.getTime() + globals.tz_offset * 1000);
+    let date = new Date((this.track.bounds["time"]?.min + globals.tz_offset) * 1000);
     let strings = [this.pilot_name, date.toISOString().substring(0, 10)];
     return new KMZ([new KML.Snippet(strings.join(', '))]);
   }
@@ -273,6 +273,8 @@ export class Flight {
       if (!globals.canvas) return rej(('no canvas'));
       globals.canvas.create_canvas(globals.graph_width, globals.graph_height).then(cv => {
         const ctx = cv.getContext('2d');
+        let oldconsole = console.log; // TODO : voir pourquoi pureimage arrête pas de râler sur les tracés en double
+        console.log = function () { };
         let timescale = globals.scales["time"] as TimeScale;
         if (!ctx || !(timescale instanceof TimeScale) || !scale) return rej(('no context'));
         ctx.clearRect(0, 0, cv.width, cv.height);
@@ -313,19 +315,20 @@ export class Flight {
           cvalues[0].push(this.track.t[indexes[i]]);
           cvalues[1].push(yvals[indexes[i]]);
         }
-        let multx = grphw / ((timescale.range.max.getTime() - timescale.range.min.getTime()) / 1000);
+        let multx = grphw / (timescale.range.max - timescale.range.min);
         ctx.strokeStyle = '#FF9500';
         ctx.lineWidth = 2;
-        let x = marginleft+ multx * (cvalues[0][0] - timescale.range.min.getTime() / 1000);
-        let y = cvalues[1][0];
+        let x = marginleft+ multx * (cvalues[0][0] - timescale.range.min);
+        let y = grphh - cvalues[1][0];
         ctx.beginPath();
         ctx.moveTo(x, y);
         for (let i = 1; i < indexes.length; i++) {
-          x = marginleft+multx * (cvalues[0][i] - timescale.range.min.getTime() / 1000);
-          y = cvalues[1][i];
+          x = marginleft+multx * (cvalues[0][i] - timescale.range.min);
+          y = grphh - cvalues[1][i];
           ctx.lineTo(x, y);
         }
         ctx.stroke();
+        console.log = oldconsole;
         //document.body.append(cv as HTMLCanvasElement);
         (globals.canvas as SimpleCanvas).get_base64(cv).then(v => res(v));
       });
@@ -640,8 +643,8 @@ export class Flight {
       this.endconv = res;
       this.pcount++;
       if (globals.scales["time"] != null) {
-        let maxtimescale = globals.scales["time"]?.range.max.getTime() / 1000;
-        let mintimescale = globals.scales["time"]?.range.min.getTime() / 1000;
+        let maxtimescale = globals.scales["time"]?.range.max;
+        let mintimescale = globals.scales["time"]?.range.min;
         this.time_positions = this.track.t.map(t => Math.trunc(globals.graph_width * (t - mintimescale) / (maxtimescale - mintimescale)));
       }
       this.root.add([this.make_description(globals)]);

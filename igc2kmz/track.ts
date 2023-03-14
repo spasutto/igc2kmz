@@ -58,10 +58,9 @@ export class Track {
           this.extensions[ext] = [flight.fixes[i].extensions[ext]];
       }
     }*/
-    // TODO parse C records (propriété task à convertir dans propriété declaration)
     if (flight.task && flight.task.points && flight.task.points.length > 0) {
       this.declaration = new Task();
-      flight.task.points.forEach(tp => this.declaration.add_turnpoint(tp.name, tp.latitude, tp.longitude));
+      flight.task.points.forEach(tp => this.declaration?.add_turnpoint(tp.name, tp.latitude, tp.longitude));
     }
     this.analyse(20);
   }
@@ -115,7 +114,7 @@ export class Track {
     if (dt < 2 * period)
       dt = 2 * period;
     this.bounds["ele"] = Bounds.createbounds(this.coords.map(c => c.ele));
-    this.bounds["time"] = Bounds.createbounds([this.coords[0].dt, this.coords[n - 1].dt]);
+    this.bounds["time"] = Bounds.createbounds([this.coords[0].dt.getTime() / 1000, this.coords[n - 1].dt.getTime() / 1000]);
     this.bounds["t"] = Bounds.createbounds([this.t[0], this.t[n - 1]]);
     this.bounds["tas"] = Bounds.createbounds(this.flight.fixes.filter(f => f.extensions.hasOwnProperty('TAS')).map(f => parseInt(f.extensions['TAS'])));
     if (this.bounds["ele"] && (this.bounds["ele"].min != 0 || this.bounds["ele"].max != 0))

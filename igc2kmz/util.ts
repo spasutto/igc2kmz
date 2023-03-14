@@ -266,6 +266,10 @@ export class Utils {
     return result;
   }
 
+  static seconds_to_date(sec: number) {
+    return new Date(sec * 1000);
+  }
+
   static datetime_floor(dt: Date, delta: number): Date {
     dt = new Date(dt.getTime());
     if (delta >= 3600) {

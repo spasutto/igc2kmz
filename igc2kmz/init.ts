@@ -87,6 +87,11 @@ export class FlightConvert {
       this.scales["speed"] = new Scale(this.bounds["speed"], 'ground speed');
     }
     if (this.bounds["time"] != null) {
+      if (Math.abs(this.bounds["time"].max - this.bounds["time"].min) > 24 * 3600) {
+        let time = Math.abs(this.bounds["time"].max - this.bounds["time"].min);
+        time = Math.trunc(time / 3600);
+        throw new Error(`Invalid operation : more than 24hours between flights (${time} hours)`);
+      }
       this.scales["time"] = new TimeScale(this.bounds["time"], 'ground speed', 1, default_gradient, 16, this.tz_offset);
     }
     if (this.bounds["tec"] != null) {

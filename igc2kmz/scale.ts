@@ -109,21 +109,21 @@ export class TimeScale extends Scale {
     // on passe 0 pour step pour éviter que le constructeur Scale fasse un boulot inutile
     super(range, title, 0, cbgradient, max_divisions);
     this.step = step;
-    let lower: Date = range.min, upper: Date = range.max;
+    let lower: Date = Utils.seconds_to_date(range.min), upper: Date = Utils.seconds_to_date(range.max);
     if (step > 0) {
       //Array.from(Array(n - 1)).map((v, i) => this.progress[i] < 0.9 && this.climb[i] < 1);
       let steps: number[] = [1, 5, 15, 30, 60,
         5 * 60, 15 * 60, 30 * 60,
         3600, 3 * 3600, 6 * 3600, 12 * 3600].filter(s => s >= step);
       for (let i = 0, mult = steps[0]; i < steps.length; i++, mult = steps[i]) {
-        lower = Utils.datetime_floor(range.min, mult);
-        upper = Utils.datetime_floor(range.max, mult);
+        lower = Utils.datetime_floor(Utils.seconds_to_date(range.min), mult);
+        upper = Utils.datetime_floor(Utils.seconds_to_date(range.max), mult);
         if (upper < range.max) {
           // ajout de mult secondes
           upper = new Date(upper.getTime() + mult * 1000);
         }
         if ((upper.getTime() - lower.getTime()) / (mult * 1000) < max_divisions) {
-          this.range = new Bounds([lower, upper]);
+          this.range = new Bounds([lower.getTime() / 1000, upper.getTime() / 1000]);
           this.grid_step = 100 * mult / ((upper.getTime() - lower.getTime()) / 1000);
           this.step = mult;
           break;

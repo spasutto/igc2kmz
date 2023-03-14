@@ -48,4 +48,7 @@ npm run minify   # for web
  - worker for web version
  - command line usage
    - photos
+   - output file name
  - others tasks formats
+ - warnings on fonts via pureimage node dist\igc2kmz.js -z 1 examples\courtet.igc examples\courtet_Laurent.igc
+ - warning on Buffer() (outdated pngjs of pureimage)

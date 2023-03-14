@@ -288,6 +288,9 @@ function loadfile(file, name, json) {
       loadJSONRes(reader.result);
     } else {
       if (name.trim().toLowerCase().endsWith('.igc')) {
+        if (window.igccontent.indexOf(reader.result) > -1) {
+          return;
+        }
         window.igccontent.push(reader.result);
         window.filename.push(name);
       } else {

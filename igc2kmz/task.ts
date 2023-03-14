@@ -17,8 +17,8 @@ export class Turnpoint {
   type: TP_TYPE = TP_TYPE.NONE;
   coord: Coord;
   radius: number = 0;
-  constructor(name: string, lat: number, lon: number, alt?:number) {
-    this.name = name;
+  constructor(name: string | null, lat: number, lon: number, alt?:number) {
+    this.name = name??''
     this.coord = Coord.deg(lat, lon, alt);
   }
 }
@@ -46,7 +46,7 @@ export class Task {
     return null;
   }
 
-  add_turnpoint(name: string, lat: number, lon: number, alt?:number): Turnpoint {
+  add_turnpoint(name: string | null, lat: number, lon: number, alt?:number): Turnpoint {
     let tp = new Turnpoint(name, lat, lon, alt);
     this.tps.push(tp);
     return tp;

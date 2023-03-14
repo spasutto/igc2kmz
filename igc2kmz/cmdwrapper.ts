@@ -73,13 +73,6 @@ let tzoffset: number = 0;
 let taskfile: string | null = null;
 let taskcontent: string | null = null;
 
-let outfilename = process.argv[2];
-let i = outfilename.lastIndexOf('.');
-if (i >= 0) {
-  outfilename = outfilename.substring(0, i);
-}
-outfilename += '.kmz';
-
 let nextistzoffset: boolean = false;
 let nextistaskfile: boolean = false;
 
@@ -137,6 +130,13 @@ if (taskfile) {
     });
   }));
 }
+
+let outfilename = filenames.length > 0 ? filenames[0] : 'track.kmz';
+let i = outfilename.lastIndexOf('.');
+if (i >= 0) {
+  outfilename = outfilename.substring(0, i);
+}
+outfilename += '.kmz';
 
 Promise.all(promises).then(() => {
   let cv = new HeadlessCanvas();
