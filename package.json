@@ -16,9 +16,9 @@
         "pureimage": "^0.3.17"
     },
     "scripts": {
-        "build": "node ./build.mjs",
-        "buildweb": "node ./buildweb.mjs",
-        "minify": "node ./minify.mjs"
+        "build": "node ./build.mjs cmd",
+        "buildweb": "node ./build.mjs",
+        "minify": "node ./build.mjs minify"
     },
     "devDependencies": {
         "@types/base64-stream": "^1.0.2",
