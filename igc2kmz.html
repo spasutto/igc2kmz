@@ -188,6 +188,26 @@
       #nofile:hover {
         text-decoration: underline;
       }
+      #help {
+        background: transparent;
+        color: transparent;
+        visibility: hidden;
+        transition: all 1s linear;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0;
+        text-align: center;
+        user-select: none;
+      }
+      #help.visible {
+        background: green;
+        color:white;
+        visibility: visible;
+        transition: all 1s linear;
+        padding: 5px;
+      }
       @media (max-width: 410px) {
         .converter {
           width: 100%;
@@ -219,6 +239,11 @@ function $(id) { return document.getElementById(id); }
 function floatval(id) {
   let val = parseFloat($(id).value);
   return isNaN(val) ? 0 : val;
+}
+function isTouchDevice() {
+  return (('ontouchstart' in window) ||
+     (navigator.maxTouchPoints > 0) ||
+     (navigator.msMaxTouchPoints > 0));
 }
 // Function to download data to a file
 function download(data, filename, type) {
@@ -352,6 +377,14 @@ function updateListFiles() {
   lblfile.style.display = (filesnames.length > 0) ? 'initial':'none';
   lblfile.innerHTML = filesnames.join('');
 }
+function showHelp(text) {
+  if (window.helptimer) {
+    window.clearTimeout(window.helptimer);
+  }
+  help.innerHTML = text;
+  help.classList.add("visible");
+  window.helptimer = window.setTimeout(() => { window.helptimer = null; help.classList.remove("visible"); }, 3500);
+}
 window.onload = function() {
   window.fileselector = $('file-selector');
   window.jsonselector = $('json-selector');
@@ -362,6 +395,7 @@ window.onload = function() {
   window.nofile = $("nofile");
   window.popup_overlay = $("popup_overlay");
   window.popup_options = $("popup_options");
+  window.help = $("help");
   updateListFiles();
 
   dropbox.addEventListener("dragenter", dragenter, false);
@@ -410,6 +444,13 @@ window.onload = function() {
     }
   } catch {}
   setConfig(default_config);
+  if (isTouchDevice()) {
+    [...document.querySelectorAll('.popup .popup_content label')].forEach(lbl => {
+      lbl.addEventListener('click', e => {
+        showHelp(e.srcElement.title);
+      });
+    });
+  }
 }
     </script>
   </head>
@@ -451,5 +492,6 @@ window.onload = function() {
       </div>
     </div>
   </div>
+  <div id="help"></div>
 </body>
 </html>
