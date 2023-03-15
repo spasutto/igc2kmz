@@ -206,6 +206,7 @@
       #help {
         background: transparent;
         color: transparent;
+        font-size: 13pt;
         visibility: hidden;
         transition: all 1s linear;
         position: absolute;
@@ -215,6 +216,10 @@
         padding: 0;
         text-align: center;
         user-select: none;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
       }
       #help.visible {
         background: green;
@@ -497,7 +502,7 @@ window.onload = function() {
         <h4>Global</h4>
         <label for="opt_tzoffset" title="Shift each record from offset, in hours">Timezone offset</label><input type="number" id="opt_tzoffset" min="-12" max="12"><BR>
         <h4>Animation</h4>
-        <label for="opt_anim_tail" title="Show colored tail after paraglider">Show tail</label><input type="checkbox" id="opt_anim_tail"><BR>
+        <label for="opt_anim_tail" title="Show colored tail following paraglider's path">Show tail</label><input type="checkbox" id="opt_anim_tail"><BR>
         <label for="opt_anim_tail_duration" title="Length in seconds for the colored tail. -1 for infinity (till launch)">Tail duration</label><input type="number" id="opt_anim_tail_duration"><BR>
         <h4>Debug</h4>
         <label for="opt_dbg_serialize" title="Serialize KML to console after conversion">Serialize to console</label><input type="checkbox" id="opt_dbg_serialize"><BR>
