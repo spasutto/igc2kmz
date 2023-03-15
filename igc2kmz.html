@@ -64,7 +64,7 @@
         margin-left: -180px;
         margin-top: -100px;
         width:360px;
-        height:200px;
+        height:220px;
         background-color: rgb(247, 247, 247);
         border: solid 1px #cacaca;
         border-radius: 5px;
@@ -89,7 +89,7 @@
         margin-right: 1px;
       }
       .popup .popup_content {
-        max-height: 150px;
+        max-height: 165px;
         overflow: hidden auto;
         margin: 0 3px;
       }
@@ -119,16 +119,31 @@
         width: 175px;
         white-space: nowrap;
       }
-      .popup .popup_content label:hover:after {
-        content: '\00a0\3f\00a0';/*'\00a0\1F6C8';*/
+      @media (hover: hover) {
+        .popup .popup_content label:hover:after {
+          content: '\00a0\3f\00a0';/*'\00a0\1F6C8';*/
+          border: solid 1px #05009d;
+          background-color: #004883;
+          color:white;
+          margin-left: 1px;
+          border-radius: 5px;
+        }
+      }
+      .popup .popup_content input {
+        width: 40px;
+      }
+      .popup .popup_content span {
+        float: right;
+        margin-right: 50px;
+        padding:0 5px;
+        border-radius: 5px;
+        border: solid 1px #8a88cb;
+        background-color: #8ebbe1;
+        color:white;
+      }
+      .popup .popup_content span:hover {
         border: solid 1px #05009d;
         background-color: #004883;
-        color:white;
-        margin-left: 1px;
-        border-radius: 5px;
-      }
-      .popup .popup_content input[type=number] {
-        width: 40px;
       }
       .popup .buttons {
         position: absolute;
@@ -445,10 +460,16 @@ window.onload = function() {
   } catch {}
   setConfig(default_config);
   if (isTouchDevice()) {
-    [...document.querySelectorAll('.popup .popup_content label')].forEach(lbl => {
-      lbl.addEventListener('click', e => {
+    [...document.querySelectorAll('.popup .popup_content input')].forEach(inpt => {
+      let title = inpt.previousElementSibling.title;
+      if (typeof title !== 'string' || title.trim().length <= 0) return;
+      let span = document.createElement("span");
+      span.appendChild(document.createTextNode("?"));
+      span.setAttribute('title', title);
+      span.addEventListener('click', e => {
         showHelp(e.srcElement.title);
       });
+      inpt.after(span);
     });
   }
 }
