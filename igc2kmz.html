@@ -460,7 +460,7 @@ window.onload = function() {
   try {
     let config = JSON.parse(localStorage.getItem('options'));
     if (typeof config === 'object' && typeof config.tz_offset === 'number') {
-      default_config = config;
+      default_config = {...default_config, ...config};
     }
   } catch {}
   setConfig(default_config);
