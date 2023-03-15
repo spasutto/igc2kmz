@@ -282,29 +282,36 @@ function download(data, filename, type) {
     }, 0);
   }
 }
-function getValueOpt_checkbox(ipt) { return ipt.checked; }
-function getValueOpt_number(ipt) { return parseFloat(ipt.value); }
-function setValueOpt_checkbox(ipt, val) { ipt.checked = !!val; }
-function setValueOpt_number(ipt, val) { return ipt.value = val; }
-function isValidOpt_number(val) { return !isNaN(val); }
+let optactions = {
+  'number': { 'get': ipt => parseFloat(ipt.value), 'set': (ipt, v) => ipt.value = v, 'valid': (v,o) => !isNaN(v) && (typeof o[5] !== 'number' || o[5] <= v) && (typeof o[6] !== 'number' || o[6] >= v) },
+  'checkbox': { 'get': ipt => ipt.checked, 'set': (ipt, v) => ipt.checked = !!v, 'valid': () => true },
+}
 function getConfig() {
   let config = DEFAULT_IGC2KMZ_CONFIGURATION;
   let extraconfig = {};
+  let warns = false;
   [...document.querySelectorAll('.popup .popup_content input')].forEach(ipt => {
     let id = ipt.id;
     if (!id.startsWith('opt_')) return;
     id = id.substring(4);
     let type = id.substring(0, id.indexOf('_'));
-    let value = null;
     id = id.substring(id.indexOf('_')+1);
-    if (typeof window['getValueOpt_'+type] === 'function') value = window['getValueOpt_'+type](ipt);
-    else value = ipt.value;
-    if (typeof window['isValidOpt_'+type] === 'function' && !window['isValidOpt_'+type](value)) {
-      console.log('invalid value for ' + id);
+    let opt = options.find(o => o[1] == id);
+    if (!opt) {
+      warns = true;
+      console.warn(`unknown field '${id}'`);
+      return;
+    }
+    let value = optactions[type].get(ipt);
+    if (!optactions[type].valid(value, opt)) {
+      warns = true;
+      console.warn(`invalid value for field '${id}', defaulted to '${config[id]}'`);
+      optactions[type].set(ipt, config[id]);
     } else {
       extraconfig[id] = value;
     }
   });
+  if (warns) alert('some invalid values found (set to default), check console');
   config = {...config, ...extraconfig};
   return config;
 }
@@ -312,10 +319,9 @@ function setConfig(config) {
   window.i2koptions = config;
   for (let key in config) {
     let opt = options.find(o => o[1] == key);
-    if (opt && typeof window['setValueOpt_'+opt[2]] === 'function') {
-      let id = `opt_${opt[2]}_${opt[1]}`;
-      window['setValueOpt_'+opt[2]]($(id), config[key]);
-    }
+    if (!opt) continue;
+    let id = `opt_${opt[2]}_${opt[1]}`;
+    optactions[opt[2]].set($(id), config[key]);
   }
 }
 function saveJSON() {
@@ -338,8 +344,10 @@ function closeOptions(save) {
     try{ localStorage.setItem('options', JSON.stringify(window.i2koptions)); }catch {}
   } else {
     let config = getConfig();
-    if (JSON.stringify(config) != JSON.stringify(window.i2koptions) && !confirm('Warning, current configuration changes will be lost, are you sure?')) return;
-    setConfig(window.i2koptions);
+    if (JSON.stringify(config) != JSON.stringify(window.i2koptions)) {
+      if (!confirm('Warning, current configuration changes will be lost, are you sure?')) return;
+      setConfig(window.i2koptions);
+    }
   }
   popup_overlay.style.display = 'none';
 }
@@ -533,7 +541,7 @@ let options = [
   // GROUP, FIELDNAME, TYPE, LABEL, HELP, MIN, MAX
   ['Global', 'tz_offset', 'number', 'Timezone offset', 'Shift each record from offset, in hours', -12, 12],
   ['Animation', 'anim_tail', 'checkbox', 'Show tail', 'Show colored tail following paraglider\'s path'],
-  ['Animation', 'anim_tail_duration', 'number', 'Tail duration', 'Length in seconds for the colored tail. -1 for infinity (till launch)'],
+  ['Animation', 'anim_tail_duration', 'number', 'Tail duration', 'Length in seconds for the colored tail. -1 for infinity (till launch)', 0],
   ['Debug', 'dbg_serialize', 'checkbox', 'Serialize to console', 'Serialize KML to console after conversion'],
 ];
     </script>
