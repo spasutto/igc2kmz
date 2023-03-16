@@ -330,6 +330,7 @@ function saveJSON() {
 function loadJSON() {
   const event = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
   jsonselector.dispatchEvent(event);
+  jsonselector.value = null;
 }
 function loadJSONRes(jsonconf) {
   setConfig(JSON.parse(jsonconf));
@@ -400,11 +401,12 @@ function drop(e) {
   for (let i=0; i<files.length; i++) {
     loadfile(files[i], files[i].name);
   }
-  fileselector.value = '';
+  fileselector.value = null;
 }
 function selectFile() {
   const event = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
   fileselector.dispatchEvent(event);
+  fileselector.value = null;
 }
 function clearFiles() {
   window.igccontent = [];
@@ -482,14 +484,14 @@ window.onload = function() {
     for (let i=0; i<files.length; i++) {
       loadfile(files.item(i), files.item(i).name);
     }
-    fileselector.value = '';
+    fileselector.value = null;
   });
   jsonselector.addEventListener('change', (event) => {
     const files = event.target.files;
     if (files.length < 1) return;
     let file = files.item(0);
     loadfile(file, file.name, true);
-    fileselector.value = '';
+    fileselector.value = null;
   });
   window.popup_overlay.addEventListener('click', e => {
     closeOptions();
@@ -549,7 +551,7 @@ let options = [
 <body>
   <div class="converter">
     <h1>IGC to KMZ conversion</h1>
-    <input type="file" id="file-selector" accept=".igc,.xctsk" multiple style="display:none;">
+    <input type="file" id="file-selector" onclick="this.value=null;" accept=".igc,.xctsk" multiple style="display:none;">
     <div id="dropbox" onclick="selectFile();">
       <div id="nofile">drop .IGC/task files here<BR>or click to select</div>
       <ul id="lblfile" title="click to add files"></ul>
@@ -568,7 +570,7 @@ let options = [
       </div>
       <div class="popup_content"></div>
       <div class="jsonbuttons">
-        <input type="file" id="json-selector" accept=".json" style="display:none;">
+        <input type="file" id="json-selector" onclick="this.value=null;" accept=".json" style="display:none;">
         <a href="#" title="load conf from json" onclick="loadJSON()">&#x1F4C2;</a>
         <a href="#" title="save conf as json" onclick="saveJSON()">&#x1F4BE;</a>
       </div>
