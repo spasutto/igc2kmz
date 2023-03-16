@@ -316,7 +316,6 @@ function getConfig() {
   return config;
 }
 function setConfig(config) {
-  window.i2koptions = config;
   for (let key in config) {
     let opt = options.find(o => o[1] == key);
     if (!opt) continue;
@@ -518,7 +517,8 @@ window.onload = function() {
     if (typeof config === 'object' && typeof config.tz_offset === 'number') {
       default_config = {...default_config, ...config};
     }
-  } catch {}
+  } catch {}  
+  window.i2koptions = default_config;
   setConfig(default_config);
   if (isTouchDevice()) {
     [...document.querySelectorAll('.popup .popup_content input')].forEach(inpt => {
