@@ -64,18 +64,6 @@ class HeadlessCanvas implements SimpleCanvas {
   }
 }
 
-if (process.argv.length < 3) {
-  let scriptname = process.argv[1];
-  let idx = scriptname.lastIndexOf(Path.sep);
-  if (idx > -1) scriptname = scriptname.substring(idx + 1);
-  console.log('Usage: node ' + scriptname + ' FILENAME.IGC [FILENAME2.IGC] [options]');
-  console.log('Options :');
-  console.log('  -z|-tz-offset : set timezone offset (in hours)');
-  console.log('  -t|-task      : set task file');
-  console.log('  -d|-debug     : set debug mode (serialize KML)');
-  process.exit(1);
-}
-
 interface KeyValuePair<TKey, TValue> {
   key: TKey;
   value: TValue;
@@ -87,19 +75,19 @@ class ArgParser {
   curparam: string | null = null;
 
   setParamValue(param: string, value: string) {
-    let idx = this.params.findIndex(p => p.key == param);
-    if (idx < 0) this.params.push({ key: param, value: value });
-    else this.params[idx].value = value;
+    this.params.push({ key: param, value: value });
     //console.log(`param '${param}' found with value '${value}'`);
   }
   parse(argv: string[]) {
     for (let i = 2; i < argv.length; i++) {
       let arg = argv[i];
-      let matches = arg.match(regparam);
       if (this.curparam != null) {
         this.setParamValue(this.curparam, arg);
         this.curparam = null;
-      } else if (!matches) {//!regparam.test(arg)) {
+        continue;
+      }
+      let matches = arg.match(regparam);
+      if (!matches) {//!regparam.test(arg)) {
         this.files.push(arg);
       } else {
         let param = matches[1] ?? matches[2];
@@ -141,7 +129,29 @@ ap.params.forEach(p => {
   }
 });
 
+if (ap.files.length <= 0 && !taskfile) {
+  let scriptname = process.argv[1];
+  let idx = scriptname.lastIndexOf(Path.sep);
+  if (idx > -1) scriptname = scriptname.substring(idx + 1);
+  console.log('Usage: node ' + scriptname + ' FILENAME.IGC [FILENAME2.IGC] [options]');
+  console.log('Options :');
+  console.log('  -z|-tz-offset : set timezone offset (in hours)');
+  console.log('  -t|-task      : set task file');
+  console.log('  -d|-debug     : set debug mode (serialize KML)');
+  process.exit(1);
+}
+
 filenames = ap.files;
+
+let tmpfiles = [...ap.files];
+if (taskfile) tmpfiles.push(taskfile);
+tmpfiles.forEach(f => {
+  if (!fs.existsSync(f)) {
+    console.log(`Error: no such file '${f}'`);
+    process.exit(1);
+  }
+});
+
 let promises: Promise<string>[] = [];
 // igc files
 for (let i = 0; i < filenames.length; i++) {
@@ -174,12 +184,18 @@ if (taskfile) {
   }));
 }
 
-let outfilename = filenames.length > 0 ? filenames[0] : 'track.kmz';
+let outfilename = 'track.kmz';
+if (filenames.length > 0) outfilename = filenames[0];
+else if (taskcontent && taskfile) outfilename = taskfile;
 let i = outfilename.lastIndexOf('.');
 if (i >= 0) {
   outfilename = outfilename.substring(0, i);
 }
-outfilename += '.kmz';
+if (fs.existsSync(outfilename + '.kmz')) {
+  let i = 0;
+  while (fs.existsSync(outfilename + '_' + (++i).toString() + '.kmz'));
+  outfilename += '_' + i.toString() + '.kmz';
+}
 
 Promise.all(promises).then(() => {
   let cv = new HeadlessCanvas();
