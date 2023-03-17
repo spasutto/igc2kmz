@@ -15,6 +15,7 @@ import { SimpleCanvas } from "./simplecanvas";
 import { defaultconfig, I2KConfiguration } from './init';
 import { igc2kmz } from './igc2kmz';
 import sourcesanspro_font from '../assets/OpenSans-Regular.ttf'
+import * as Path from 'path';
 
 class HeadlessCanvas implements SimpleCanvas {
   cvs: Bitmap[] = [];
@@ -64,41 +65,83 @@ class HeadlessCanvas implements SimpleCanvas {
 }
 
 if (process.argv.length < 3) {
-  console.log('Usage: node ' + process.argv[1] + ' FILENAME.IGC');
+  let scriptname = process.argv[1];
+  let idx = scriptname.lastIndexOf(Path.sep);
+  if (idx > -1) scriptname = scriptname.substring(idx + 1);
+  console.log('Usage: node ' + scriptname + ' FILENAME.IGC [FILENAME2.IGC] [options]');
+  console.log('Options :');
+  console.log('  -z|-tz-offset : set timezone offset (in hours)');
+  console.log('  -t|-task      : set task file');
+  console.log('  -d|-debug     : set debug mode (serialize KML)');
   process.exit(1);
 }
+
+interface KeyValuePair<TKey, TValue> {
+  key: TKey;
+  value: TValue;
+}
+const regparam = /^-(?:-([\w-]{2,})|([a-zA-Z]+))=?(.*)$/;
+class ArgParser {
+  files: string[] = [];
+  params:KeyValuePair<string, string>[] = [];
+  curparam: string | null = null;
+
+  setParamValue(param: string, value: string) {
+    let idx = this.params.findIndex(p => p.key == param);
+    if (idx < 0) this.params.push({ key: param, value: value });
+    else this.params[idx].value = value;
+    //console.log(`param '${param}' found with value '${value}'`);
+  }
+  parse(argv: string[]) {
+    for (let i = 2; i < argv.length; i++) {
+      let arg = argv[i];
+      let matches = arg.match(regparam);
+      if (this.curparam != null) {
+        this.setParamValue(this.curparam, arg);
+        this.curparam = null;
+      } else if (!matches) {//!regparam.test(arg)) {
+        this.files.push(arg);
+      } else {
+        let param = matches[1] ?? matches[2];
+        let value = matches[3];
+        if (value.trim().length == 0) {
+          this.curparam = param;
+        } else {
+          this.curparam = null;
+          this.setParamValue(param, value);
+        }
+      }
+    }
+  }
+}
+
+let options: I2KConfiguration = { ...defaultconfig };
 let igccontents: string[] = [];
 let filenames: string[] = [];
-let tzoffset: number = 0;
 let taskfile: string | null = null;
 let taskcontent: string | null = null;
 
-let nextistzoffset: boolean = false;
-let nextistaskfile: boolean = false;
+let ap: ArgParser = new ArgParser();
+ap.parse(process.argv);
 
-for (let i = 2; i < process.argv.length; i++) {
-  let filename = process.argv[i];
-  if (filename == '-z' || filename == '--tz-offset') {
-    nextistzoffset = true;
-    continue;
-  } else if (filename == '-t' || filename == '--task') {
-    nextistaskfile = true;
-    continue;
+ap.params.forEach(p => {
+  switch (p.key) {
+    case 'z':
+    case 'tz-offset':
+      options.tz_offset = parseFloat(p.value);
+      break;
+    case 't':
+    case 'task':
+      taskfile = p.value;
+      break;
+    case 'd':
+    case 'debug':
+      options.dbg_serialize = true;
+      break;
   }
-  if (nextistzoffset) {
-    nextistzoffset = false;
-    tzoffset = parseFloat(filename);
-    if (isNaN(tzoffset)) tzoffset = 0;
-    continue;
-  } else if (nextistaskfile) {
-    nextistaskfile = false;
-    taskfile = filename;
-    continue;
-  }
-  nextistaskfile = nextistzoffset = false;
-  filenames.push(filename);
-}
+});
 
+filenames = ap.files;
 let promises: Promise<string>[] = [];
 // igc files
 for (let i = 0; i < filenames.length; i++) {
@@ -140,7 +183,6 @@ outfilename += '.kmz';
 
 Promise.all(promises).then(() => {
   let cv = new HeadlessCanvas();
-  let options: I2KConfiguration = { ...defaultconfig, tz_offset: tzoffset };
   igc2kmz(cv, igccontents, filenames, taskcontent ?? undefined, options).catch(err => console.log(err)).then(kmz => {
     if (kmz) {
       fs.writeFile(outfilename, Buffer.from(kmz), 'binary', _ => console.log("output to " + outfilename));
