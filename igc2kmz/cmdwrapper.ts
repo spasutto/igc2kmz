@@ -109,14 +109,18 @@ let igccontents: string[] = [];
 let filenames: string[] = [];
 let taskfile: string | null = null;
 let taskcontent: string | null = null;
-let photosnames: string[] = [];
-let photoscontents: Buffer[] = [];
+let photos: [string, Buffer][] = [];
+let outfilename: string = '';
 
 let ap: ArgParser = new ArgParser();
 ap.parse(process.argv);
 
 ap.params.forEach(p => {
   switch (p.key) {
+    case 'o':
+    case 'output':
+      outfilename = p.value;
+      break;
     case 'z':
     case 'tz-offset':
       options.tz_offset = parseFloat(p.value);
@@ -127,7 +131,7 @@ ap.params.forEach(p => {
       break;
     case 'p':
     case 'photo':
-      photosnames.push(p.value);
+      photos.push([p.value, Buffer.from('')]);
       break;
     case 'd':
     case 'debug':
@@ -142,6 +146,7 @@ if (ap.files.length <= 0 && !taskfile) {
   if (idx > -1) scriptname = scriptname.substring(idx + 1);
   console.log('Usage: node ' + scriptname + ' FILENAME.IGC [FILENAME2.IGC] [options]');
   console.log('Options :');
+  console.log('  -o|--output : set output filename');
   console.log('  -z|--tz-offset : set timezone offset (in hours)');
   console.log('  -t|--task      : set task file');
   console.log('  -p|--photo     : add photo');
@@ -151,7 +156,7 @@ if (ap.files.length <= 0 && !taskfile) {
 
 filenames = ap.files;
 
-let tmpfiles = [...ap.files, ...photosnames];
+let tmpfiles = [...ap.files, ...photos.map(p => p[0])];
 if (taskfile) tmpfiles.push(taskfile);
 let success = true;
 tmpfiles.forEach(f => {
@@ -185,31 +190,39 @@ if (taskfile) {
 }
 
 // photos files
-for (let i = 0; i < photosnames.length; i++) {
-  promises.push(new Promise((resolve, reject) => {
-    readFile(photosnames[i]).then(data => {
-      photoscontents.push(data);
+for (let i = 0; i < photos.length; i++) {
+  //let rename = photos.filter(p => p[0] == photos[i][0]).length > 0;
+  // todo multiple same file name
+  promises.push(new Promise(resolve => {
+    let name = photos[i][0];
+    readFile(name).then(data => {
+      let photo = photos.find(p => p[0] == name);
+      if (photo) {
+        photo[1] = data;
+      }
       resolve(data);
     });
   }));
 }
 
-let outfilename = 'track.kmz';
-if (filenames.length > 0) outfilename = filenames[0];
-else if (taskcontent && taskfile) outfilename = taskfile;
-let i = outfilename.lastIndexOf('.');
-if (i >= 0) {
-  outfilename = outfilename.substring(0, i);
-}
-if (existsSync(outfilename + '.kmz')) {
-  let i = 0;
-  while (existsSync(outfilename + '_' + (++i).toString() + '.kmz'));
-  outfilename += '_' + i.toString() + '.kmz';
+if (!outfilename) {
+  outfilename = 'track.kmz';
+  if (filenames.length > 0) outfilename = filenames[0];
+  else if (taskcontent && taskfile) outfilename = taskfile;
+  let i = outfilename.lastIndexOf('.');
+  if (i >= 0) {
+    outfilename = outfilename.substring(0, i);
+  }
+  if (existsSync(outfilename + '.kmz')) {
+    let i = 0;
+    while (existsSync(outfilename + '_' + (++i).toString() + '.kmz'));
+    outfilename += '_' + i.toString() + '.kmz';
+  }
 }
 
 Promise.all(promises).then(() => {
   let cv = new HeadlessCanvas();
-  igc2kmz(cv, igccontents, filenames, taskcontent ?? undefined, photoscontents, photosnames, options).catch(err => console.log(err)).then(kmz => {
+  igc2kmz(cv, igccontents, filenames, taskcontent ?? undefined, photos, options).catch(err => console.log(err)).then(kmz => {
     if (kmz) {
       writeFile(outfilename, Buffer.from(kmz), 'binary').then(_ => console.log("output to " + outfilename));
     }

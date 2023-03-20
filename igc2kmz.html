@@ -252,14 +252,13 @@ var igccontent = [];
 var filename = [];
 var taskcontent = '';
 var taskfilename = '';
-var photoscontents = [];
-var photosfilenames = [];
+var photos = [];
 var nbrfiles = 0;
 var i2koptions = {};
 var helptimer = null;
 
 function convertigc() {
-  igc2kmz(igccontent, filename, taskcontent, photoscontents, photosfilenames, i2koptions).catch(err => {
+  igc2kmz(igccontent, filename, taskcontent, photos, i2koptions).catch(err => {
     alert(err);
     throw err;
   });
@@ -380,8 +379,7 @@ function loadfile(file, name, json) {
         igccontent.push(textresult);
         filename.push(name);
       } else if (['jpg','jpeg','png','gif','tiff','tif','webp','bmp'].includes(ext)) {
-        photoscontents.push(reader.result);
-        photosfilenames.push(name);
+        photos.push([name, reader.result]);
       } else {
         let textresult = (new TextDecoder()).decode(reader.result);
         taskcontent = textresult;
@@ -426,9 +424,8 @@ function selectFile() {
 }
 function clearFiles() {
   igccontent = [];
-  photoscontents = [];
+  photos = [];
   filename = [];
-  photosfilename = [];
   taskcontent = '';
   taskfilename = '';
   nbrfiles = 0;
@@ -441,8 +438,8 @@ function updateListFiles() {
   if (taskfilename.trim().length > 0) {
     filesnames.push('<li class="task">'+taskfilename+'</li>')
   }
-  if (photosfilenames.length > 0) {
-    filesnames.push(...photosfilenames.map(f => '<li class="photo">'+f+'</li>'))
+  if (photos.length > 0) {
+    filesnames.push(...photos.map(f => '<li class="photo">'+f[0]+'</li>'))
   }
   nofile.style.display = (filesnames.length > 0) ? 'none':'initial';
   lblfile.style.display = (filesnames.length > 0) ? 'initial':'none';

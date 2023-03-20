@@ -27,7 +27,7 @@ class WebCanvas implements SimpleCanvas {
 }
 
 if (typeof window === 'object') {
-  function igc2kmzwrapper(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: Buffer[], photosnames?: string[], options?:I2KConfiguration) {
+  function igc2kmzwrapper(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: [string, Buffer][], options?:I2KConfiguration) {
     let cv = new WebCanvas();
     infilenames = Array.isArray(infilenames) ? infilenames : [infilenames ?? ''];
     let outfilename = infilenames.length > 0 && infilenames[0].trim().length > 0 ? infilenames[0] : 'track.igc';
@@ -37,7 +37,7 @@ if (typeof window === 'object') {
     }
     outfilename += '.kmz';
     return new Promise<string>(res => {
-      igc2kmz(cv, igccontents, infilenames, taskcontent, photos, photosnames, options).then(kmz => {
+      igc2kmz(cv, igccontents, infilenames, taskcontent, photos, options).then(kmz => {
         if (kmz) {
           saveAs(new Blob([kmz]), outfilename);
           res(outfilename);

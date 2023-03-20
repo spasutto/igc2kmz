@@ -7,7 +7,7 @@ import { Task } from "./task";
 import { SimpleCanvas } from "./simplecanvas";
 import { Photo } from "./photo";
 
-export function igc2kmz(cv: SimpleCanvas, igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photoscontents?: Buffer[], photosfilenames?: string[], options: I2KConfiguration = defaultconfig): Promise<ArrayBuffer> {
+export function igc2kmz(cv: SimpleCanvas, igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: [string, Buffer][], options: I2KConfiguration = defaultconfig): Promise<ArrayBuffer> {
   let config: I2KConfiguration = { ...defaultconfig, ...options };
   igccontents = Array.isArray(igccontents) ? igccontents : [igccontents ?? ''];
   infilenames = Array.isArray(infilenames) ? infilenames : [infilenames ?? ''];
@@ -27,12 +27,10 @@ export function igc2kmz(cv: SimpleCanvas, igccontents: string[] | string, infile
     task = Task.loadTask(taskcontent);
   }
   let promises: Promise<Photo>[] = [];
-  if (flights.length > 0 && photosfilenames) {
-    for (let i = 0; i < photosfilenames.length; i++) {
-      if (!photoscontents || photoscontents.length <= i) continue;
-      let image = photoscontents[i];
-      promises.push(Photo.parse(photosfilenames[i], image));
-    }
+  if (flights.length > 0 && photos) {
+    photos.forEach(photo => {
+      promises.push(Photo.parse(photo[0], photo[1]));
+    });
   }
   return new Promise<ArrayBuffer>(res => {
     Promise.all(promises).then(photos => {
