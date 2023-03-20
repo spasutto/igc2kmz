@@ -125,7 +125,7 @@
           border: solid 1px #05009d;
           background-color: #004883;
           color:white;
-          margin-left: 1px;
+          margin-left: 5px;
           border-radius: 5px;
         }
       }
@@ -562,6 +562,7 @@ let options = [
   //   0         1       2     3     4     5    6
   // GROUP, FIELDNAME, TYPE, LABEL, HELP, MIN, MAX
   ['Global', 'tz_offset', 'number', 'Timezone offset', 'Shift each record from offset, in hours', -12, 12],
+  ['Global', 'same_start', 'checkbox', 'Align launch time', 'Apply first flight\'s launch time to subsequent flights (flight comparison)'],
   ['Animation', 'anim_tail', 'checkbox', 'Show tail', 'Show colored tail following paraglider\'s path'],
   ['Animation', 'anim_tail_duration', 'number', 'Tail duration', 'Length in seconds for the colored tail. -1 for infinity (till launch)', 0],
   ['Animation', 'anim_tail_color', 'color', 'Tail color', 'Color of the tail following paraglider\'s path'],

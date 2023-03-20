@@ -17,8 +17,17 @@ export function igc2kmz(cv: SimpleCanvas, igccontents: string[] | string, infile
     }
   }
   let flights: Flight[] = [];
+  let firstlaunch = -1;
   for (let i = 0; i < igccontents.length; i++) {
     let igc = IGCParser.parse(igccontents[i], { lenient: true });
+    if (options.same_start && igc.fixes.length > 0) {
+      if (firstlaunch < 0) {
+        firstlaunch = igc.fixes[0].timestamp;
+      } else {
+        let offset = firstlaunch - igc.fixes[0].timestamp;
+        igc.fixes.forEach(f => f.timestamp += offset);
+      }
+    }
     flights.push(new Flight(new Track(igc, infilenames[i])));
   }
   //console.log(flight);

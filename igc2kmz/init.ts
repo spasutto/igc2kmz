@@ -16,6 +16,10 @@ export interface I2KConfiguration {
    */
   tz_offset: number;
   /**
+   * set to true to apply launch time to subsequent flights
+   */
+  same_start: boolean;
+  /**
    * Paraglider tail animation.
    * false if no tail (just icon)
    */
@@ -37,6 +41,7 @@ export interface I2KConfiguration {
 
 export const defaultconfig: I2KConfiguration = {
   tz_offset: 0,
+  same_start: false,
   anim_tail: true,
   anim_tail_duration: 60,
   anim_tail_color: '#ff9b00',
