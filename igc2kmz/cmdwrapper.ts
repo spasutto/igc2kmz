@@ -6,7 +6,8 @@
 // Add task infos :
 //   node dist\igc2kmz.cmd.js examples\flight.igc -t examples\xctrack_task_v2.xctsk
 
-import * as fs from 'fs';
+import { existsSync, unlink } from "fs";
+import { readFile, writeFile } from "fs/promises";
 import * as PImage from "pureimage"
 import { Base64Encode } from 'base64-stream';
 import concat from 'concat-stream';
@@ -32,12 +33,12 @@ class HeadlessCanvas implements SimpleCanvas {
       if (this.font_loading) return;
       this.font_loading = true;
       let sourcesansprofont = sourcesanspro_font.substring(sourcesanspro_font.indexOf('base64,') + 'base64,'.length);
-      fs.writeFile(this.fontfilename, sourcesansprofont, 'base64', () => {
+      writeFile(this.fontfilename, sourcesansprofont, 'base64').then(() => {
         let fnt = PImage.registerFont(this.fontfilename, this.fontname, 400, 'bold', '');
         fnt.load(() => {
           this.font_loading = false;
           this.font_loaded = true;
-          fs.unlink(this.fontfilename, () => { });
+          unlink(this.fontfilename, () => { });
           this.loadfontcbs.forEach(r2 => r2());
         });
       });
@@ -108,6 +109,8 @@ let igccontents: string[] = [];
 let filenames: string[] = [];
 let taskfile: string | null = null;
 let taskcontent: string | null = null;
+let photosnames: string[] = [];
+let photoscontents: Buffer[] = [];
 
 let ap: ArgParser = new ArgParser();
 ap.parse(process.argv);
@@ -122,6 +125,10 @@ ap.params.forEach(p => {
     case 'task':
       taskfile = p.value;
       break;
+    case 'p':
+    case 'photo':
+      photosnames.push(p.value);
+      break;
     case 'd':
     case 'debug':
       options.dbg_serialize = true;
@@ -135,51 +142,54 @@ if (ap.files.length <= 0 && !taskfile) {
   if (idx > -1) scriptname = scriptname.substring(idx + 1);
   console.log('Usage: node ' + scriptname + ' FILENAME.IGC [FILENAME2.IGC] [options]');
   console.log('Options :');
-  console.log('  -z|-tz-offset : set timezone offset (in hours)');
-  console.log('  -t|-task      : set task file');
-  console.log('  -d|-debug     : set debug mode (serialize KML)');
+  console.log('  -z|--tz-offset : set timezone offset (in hours)');
+  console.log('  -t|--task      : set task file');
+  console.log('  -p|--photo     : add photo');
+  console.log('  -d|--debug     : set debug mode (serialize KML)');
   process.exit(1);
 }
 
 filenames = ap.files;
 
-let tmpfiles = [...ap.files];
+let tmpfiles = [...ap.files, ...photosnames];
 if (taskfile) tmpfiles.push(taskfile);
+let success = true;
 tmpfiles.forEach(f => {
-  if (!fs.existsSync(f)) {
+  if (!existsSync(f)) {
     console.log(`Error: no such file '${f}'`);
-    process.exit(1);
+    success = false;
   }
 });
+if (!success) process.exit(1);
 
-let promises: Promise<string>[] = [];
+let promises: Promise<string|Buffer>[] = [];
 // igc files
 for (let i = 0; i < filenames.length; i++) {
   igccontents.push();
-  promises.push(new Promise((resolve, reject) => {
-    fs.readFile(filenames[i], 'utf8', function (err, data) {
-      if (err) {
-        reject(err);
-      }
-      else {
-        igccontents[i] = data;
-        resolve(data);
-      }
+  promises.push(new Promise(resolve => {
+    readFile(filenames[i], 'utf8').then(data => {
+      igccontents[i] = data;
+      resolve(data);
     });
   }));
 }
 
 //task file
 if (taskfile) {
+  promises.push(new Promise(resolve => {
+    readFile(taskfile ?? '', 'utf8').then(data => {
+      taskcontent = data;
+      resolve(data);
+    });
+  }));
+}
+
+// photos files
+for (let i = 0; i < photosnames.length; i++) {
   promises.push(new Promise((resolve, reject) => {
-    fs.readFile(taskfile ?? '', 'utf8', function (err, data) {
-      if (err) {
-        reject(err);
-      }
-      else {
-        taskcontent = data;
-        resolve(data);
-      }
+    readFile(photosnames[i]).then(data => {
+      photoscontents.push(data);
+      resolve(data);
     });
   }));
 }
@@ -191,17 +201,17 @@ let i = outfilename.lastIndexOf('.');
 if (i >= 0) {
   outfilename = outfilename.substring(0, i);
 }
-if (fs.existsSync(outfilename + '.kmz')) {
+if (existsSync(outfilename + '.kmz')) {
   let i = 0;
-  while (fs.existsSync(outfilename + '_' + (++i).toString() + '.kmz'));
+  while (existsSync(outfilename + '_' + (++i).toString() + '.kmz'));
   outfilename += '_' + i.toString() + '.kmz';
 }
 
 Promise.all(promises).then(() => {
   let cv = new HeadlessCanvas();
-  igc2kmz(cv, igccontents, filenames, taskcontent ?? undefined, options).catch(err => console.log(err)).then(kmz => {
+  igc2kmz(cv, igccontents, filenames, taskcontent ?? undefined, photoscontents, photosnames, options).catch(err => console.log(err)).then(kmz => {
     if (kmz) {
-      fs.writeFile(outfilename, Buffer.from(kmz), 'binary', _ => console.log("output to " + outfilename));
+      writeFile(outfilename, Buffer.from(kmz), 'binary').then(_ => console.log("output to " + outfilename));
     }
   });
 });

@@ -38,6 +38,8 @@ npm run buildweb # for web (development)
 [![Visualisation example](doc/animation.webp?raw=true)](doc/animation.webp?raw=true)
 #### Glides / thermals visualisation :
 [![Visualisation example](doc/thermals_glides.jpg?raw=true)](doc/thermals_glides.jpg?raw=true)
+#### Photos (placed at GPS position)
+[![Visualisation example](doc/inline_photos.jpg?raw=true)](doc/inline_photos.jpg?raw=true)
 #### Extruded path :
 [![Visualisation example](doc/extruded_path.jpg?raw=true)](doc/extruded_path.jpg?raw=true)
 #### Task visualization :

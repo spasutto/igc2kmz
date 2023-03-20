@@ -2,13 +2,14 @@
 import { Coord } from "./coord";
 import { Track } from "./track";
 import { KML } from "./kml";
-import { KMZ, KMZResource } from "./kmz";
+import { KMZ } from "./kmz";
 import { Bounds, RandomIdGenerator, round, Slice, Utils, add_seconds } from "./util";
 import { FlightConvert } from "./init";
 import { Task, Turnpoint } from "./task";
 import { Scale, TimeScale } from "./scale";
 import { SimpleCanvas } from "./simplecanvas";
 import { RGBA } from "./color";
+import { Photo } from "./photo";
 
 const RIGHTWARDS_ARROW = '->';
 const INFINITY = 'inf';
@@ -23,10 +24,9 @@ export class Flight {
   pilot_name: string;
   glider_type: string;
   glider_id: string;
-  photos: string[] = [];
+  photos: Photo[] = [];
   url: string = "";
   time_positions: number[] = [];
-  files: KMZResource[] = [];
   root: KMZ;
   pcount: number = 0;
   protected id: string = '';
@@ -450,8 +450,32 @@ export class Flight {
   }
 
   make_photos_folder(globals: FlightConvert): KMZ {
-    //TODO
-    return new KMZ();
+    if (this.photos.length <= 0) {
+      return new KMZ();
+    }
+    let folder = new KML.Folder('Photos', null, [], false);
+    let photos = this.photos.sort((a, b) => b.date.getTime() - a.date.getTime());
+    photos.forEach(photo => {
+      let coord: Coord;
+      let altitude_mode: string;
+      if (photo.coord) {
+        coord = photo.coord;
+        altitude_mode = (photo.elevation_data) ? 'absolute' : 'clampToGround';
+      } else {
+        coord = this.track.coord_at(add_seconds(photo.date, -1 * globals.tz_offset));
+        altitude_mode = this.altitude_mode;
+      }
+      let point = new KML.Point(coord, altitude_mode);
+      let title = photo.name;
+      if (photo.description?.trim().length ?? 0 > 0) {
+        title += ': ' + photo.description;
+      }
+      let description = `<h3>${title}</h3>${photo.to_html_img()}`;
+      let style_url = globals.stock.photo_style.url;
+      let placemark = new KML.Placemark(photo.name, point, [new KML.CDATA('description', description), new KML.CDATA('Snippet', description)], style_url);
+      folder.add(placemark);
+    });
+    return new KMZ([folder]);
   }
 
   make_xc_folder(globals: FlightConvert): KMZ {
@@ -668,6 +692,7 @@ export class Flight {
       this.root.add([this.make_analysis_folder(globals, 'glide', this.track.glides, globals.stock.glide_style.url)]);
       this.root.add([this.make_analysis_folder(globals, 'dive', this.track.dives, globals.stock.dive_style.url)]);
       this.root.add([this.make_time_marks_folder(globals)]);
+      this.photos.forEach(photo => this.root.add_file(photo.filename, photo.image));
       this.endwork();
     });
   }

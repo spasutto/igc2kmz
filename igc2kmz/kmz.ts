@@ -6,8 +6,8 @@ export type KMZFile = JSZip;
 
 export class KMZResource {
   path: string;
-  content: string;
-  constructor(path: string, content: string) {
+  content: string | Buffer;
+  constructor(path: string, content: string | Buffer) {
     this.path = path;
     this.content = content;
   }
@@ -34,7 +34,7 @@ export class KMZ {
     return this;
   }
 
-  add_file(filename: string, content: string): KMZ {
+  add_file(filename: string, content: string | Buffer): KMZ {
     this.files.push(new KMZResource(filename, content));
     return this;
   }
@@ -83,7 +83,7 @@ export class KMZ {
       //console.log(kml);
       j.file('doc.kml', kml.serialize());
       for (let i = 0; i < this.files.length; i++) {
-        j.file(this.files[i].path, this.files[i].content, { base64: true });
+        j.file(this.files[i].path, this.files[i].content, { base64: typeof this.files[i].content == 'string' });
       }
       j.generateAsync({ type: "arraybuffer", compression: "DEFLATE" }).then(buff => res(buff));
     });

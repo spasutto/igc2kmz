@@ -189,6 +189,9 @@
       #lblfile li.task {
         color: #005faf;
       }
+      #lblfile li.photo {
+        color: #af0000;
+      }
       #lblfile li:hover {
         text-decoration: underline;
       }
@@ -249,11 +252,14 @@ var igccontent = [];
 var filename = [];
 var taskcontent = '';
 var taskfilename = '';
+var photoscontents = [];
+var photosfilenames = [];
 var nbrfiles = 0;
 var i2koptions = {};
+var helptimer = null;
 
 function convertigc() {
-  igc2kmz(igccontent, filename, taskcontent, i2koptions).catch(err => {
+  igc2kmz(igccontent, filename, taskcontent, photoscontents, photosfilenames, i2koptions).catch(err => {
     alert(err);
     throw err;
   });
@@ -340,43 +346,54 @@ function showOptions() {
 }
 function closeOptions(save) {
   if (save) {
-    window.i2koptions = getConfig();
-    try{ localStorage.setItem('options', JSON.stringify(window.i2koptions)); }catch {}
+    i2koptions = getConfig();
+    try{ localStorage.setItem('options', JSON.stringify(i2koptions)); }catch {}
   } else {
     let config = getConfig();
-    if (JSON.stringify(config) != JSON.stringify(window.i2koptions)) {
+    if (JSON.stringify(config) != JSON.stringify(i2koptions)) {
       if (!confirm('Warning, current configuration changes will be lost, are you sure?')) return;
-      setConfig(window.i2koptions);
+      setConfig(i2koptions);
     }
   }
   popup_overlay.style.display = 'none';
 }
 function loadfile(file, name, json) {
   json = json === true;
-  name = typeof name === 'string' && name.length > 0 ? name.split('\\').pop() : default_filename.replace('$i', window.nbrfiles+1);
+  name = typeof name === 'string' && name.length > 0 ? name.split('\\').pop() : default_filename.replace('$i', nbrfiles+1);
   const reader = new FileReader();
   reader.addEventListener('load', (event) => {
     let filesize = 0;
     if (json) {
-      loadJSONRes(reader.result);
+      let textresult = (new TextDecoder()).decode(reader.result);
+      loadJSONRes(textresult);
     } else {
-      if (name.trim().toLowerCase().endsWith('.igc')) {
-        if (window.igccontent.indexOf(reader.result) > -1) {
+      let ext = name.trim().toLowerCase();
+      let idx = ext.lastIndexOf('.');
+      if (idx > -1) {
+        ext = ext.substring(idx+1);
+      } else ext = '';
+      if (ext == 'igc') {
+        let textresult = (new TextDecoder()).decode(reader.result);
+        if (igccontent.indexOf(textresult) > -1) {
           return;
         }
-        window.igccontent.push(reader.result);
-        window.filename.push(name);
+        igccontent.push(textresult);
+        filename.push(name);
+      } else if (['jpg','jpeg','png','gif','tiff','tif','webp','bmp'].includes(ext)) {
+        photoscontents.push(reader.result);
+        photosfilenames.push(name);
       } else {
-        taskcontent = reader.result;
+        let textresult = (new TextDecoder()).decode(reader.result);
+        taskcontent = textresult;
         taskfilename = name;
       }
-      window.nbrfiles++;
+      nbrfiles++;
       updateListFiles();
       btnConvert.style.display = 'initial';
       btnClear.style.display = 'initial';
     }
   });
-  reader.readAsText(file);
+  reader.readAsArrayBuffer(file);
 }
 function dragenter(e) {
   e.stopPropagation();
@@ -397,7 +414,6 @@ function drop(e) {
 
   let dt = e.dataTransfer;
   let files = dt.files;
-
   for (let i=0; i<files.length; i++) {
     loadfile(files[i], files[i].name);
   }
@@ -409,30 +425,36 @@ function selectFile() {
   fileselector.value = null;
 }
 function clearFiles() {
-  window.igccontent = [];
-  window.filename = [];
+  igccontent = [];
+  photoscontents = [];
+  filename = [];
+  photosfilename = [];
   taskcontent = '';
   taskfilename = '';
+  nbrfiles = 0;
   btnConvert.style.display = 'none';
   btnClear.style.display = 'none';
   updateListFiles();
 }
 function updateListFiles() {
-  let filesnames = window.filename.map(f => '<li class="flight">'+f+'</li>');
-  if (taskfilename.length > 0) {
+  let filesnames = filename.map(f => '<li class="flight">'+f+'</li>');
+  if (taskfilename.trim().length > 0) {
     filesnames.push('<li class="task">'+taskfilename+'</li>')
+  }
+  if (photosfilenames.length > 0) {
+    filesnames.push(...photosfilenames.map(f => '<li class="photo">'+f+'</li>'))
   }
   nofile.style.display = (filesnames.length > 0) ? 'none':'initial';
   lblfile.style.display = (filesnames.length > 0) ? 'initial':'none';
   lblfile.innerHTML = filesnames.join('');
 }
 function showHelp(text) {
-  if (window.helptimer) {
-    window.clearTimeout(window.helptimer);
+  if (helptimer) {
+    window.clearTimeout(helptimer);
   }
   help.innerHTML = text;
   help.classList.add("visible");
-  window.helptimer = window.setTimeout(() => { window.helptimer = null; help.classList.remove("visible"); }, 3500);
+  helptimer = window.setTimeout(() => { helptimer = null; help.classList.remove("visible"); }, 3500);
 }
 function buildOptions() {
   optgroups = optgroups.reverse();
@@ -493,13 +515,13 @@ window.onload = function() {
     loadfile(file, file.name, true);
     fileselector.value = null;
   });
-  window.popup_overlay.addEventListener('click', e => {
+  popup_overlay.addEventListener('click', e => {
     closeOptions();
   });
-  window.popup_options.addEventListener('click', e => {
+  popup_options.addEventListener('click', e => {
     e.stopPropagation();
   });
-  window.document.addEventListener('keydown', e => {
+  document.addEventListener('keydown', e => {
     if (popup_overlay.style.display == 'none') return;
     e = e || window.event;
     var isEscape = false;
@@ -519,8 +541,8 @@ window.onload = function() {
     if (typeof config === 'object' && typeof config.tz_offset === 'number') {
       default_config = {...default_config, ...config};
     }
-  } catch {}  
-  window.i2koptions = default_config;
+  } catch {}
+  i2koptions = default_config;
   setConfig(default_config);
   if (isTouchDevice()) {
     [...document.querySelectorAll('.popup .popup_content input')].forEach(inpt => {
@@ -551,9 +573,9 @@ let options = [
 <body>
   <div class="converter">
     <h1>IGC to KMZ conversion</h1>
-    <input type="file" id="file-selector" onclick="this.value=null;" accept=".igc,.xctsk" multiple style="display:none;">
+    <input type="file" id="file-selector" onclick="this.value=null;" accept=".igc,.xctsk,.jpg,.gif" multiple style="display:none;">
     <div id="dropbox" onclick="selectFile();">
-      <div id="nofile">drop .IGC/task files here<BR>or click to select</div>
+      <div id="nofile">drop .IGC/task/image files here<BR>or click to select</div>
       <ul id="lblfile" title="click to add files"></ul>
     </div>
     <div id="buttons">

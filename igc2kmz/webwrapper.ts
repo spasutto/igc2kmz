@@ -1,11 +1,7 @@
 
-import IGCParser = require("igc-parser")
-import { defaultconfig, FlightConvert, I2KConfiguration } from "./init";
-import { Flight } from "./flight";
-import { Track } from "./track";
+import { defaultconfig, I2KConfiguration } from "./init";
 import { SimpleCanvas } from './simplecanvas';
 import { saveAs } from 'file-saver';
-import { Task } from "./task";
 import { igc2kmz } from "./igc2kmz";
 
 declare global {
@@ -31,7 +27,7 @@ class WebCanvas implements SimpleCanvas {
 }
 
 if (typeof window === 'object') {
-  function igc2kmzwrapper(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, options?:I2KConfiguration) {
+  function igc2kmzwrapper(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: Buffer[], photosnames?: string[], options?:I2KConfiguration) {
     let cv = new WebCanvas();
     infilenames = Array.isArray(infilenames) ? infilenames : [infilenames ?? ''];
     let outfilename = infilenames.length > 0 && infilenames[0].trim().length > 0 ? infilenames[0] : 'track.igc';
@@ -41,7 +37,7 @@ if (typeof window === 'object') {
     }
     outfilename += '.kmz';
     return new Promise<string>(res => {
-      igc2kmz(cv, igccontents, infilenames, taskcontent, options).then(kmz => {
+      igc2kmz(cv, igccontents, infilenames, taskcontent, photos, photosnames, options).then(kmz => {
         if (kmz) {
           saveAs(new Blob([kmz]), outfilename);
           res(outfilename);
