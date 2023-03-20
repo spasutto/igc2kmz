@@ -410,7 +410,11 @@ export class Flight {
   make_animation(globals: FlightConvert): KMZ {
     let icon_style = new KML.IconStyle([globals.stock.animation_icon, new KML.color(this.color), new KML.scale(globals.stock.icon_scales[0].toString())]);
     let list_style = new KML.ListStyle('checkHideChildren');
-    let line_style = new KML.LineStyle('9f009bff', this.width.toString());
+    let line_color = RGBA.fromRGBAHexString(globals.options.anim_tail_color);
+    if (!line_color) {
+      line_color = new RGBA(0xff / 255, 0x9b / 255, 0x00 / 255, 0x9f / 255);
+    }
+    let line_style = new KML.LineStyle(line_color.toHexString(), this.width.toString());
     let label_color = new RGBA(Math.random(), Math.random(), Math.random(), 1);
     let label_style = new KML.LabelStyle(label_color, 1);
     let style = new KML.Style([icon_style, list_style, line_style, label_style]);

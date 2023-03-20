@@ -290,6 +290,7 @@ function download(data, filename, type) {
 let optactions = {
   'number': { 'get': ipt => parseFloat(ipt.value), 'set': (ipt, v) => ipt.value = v, 'valid': (v,o) => !isNaN(v) && (typeof o[5] !== 'number' || o[5] <= v) && (typeof o[6] !== 'number' || o[6] >= v) },
   'checkbox': { 'get': ipt => ipt.checked, 'set': (ipt, v) => ipt.checked = !!v, 'valid': () => true },
+  'color': { 'get': ipt => ipt.value, 'set': (ipt, v) => ipt.value = v, 'valid': () => true },
 }
 function getConfig() {
   let config = DEFAULT_IGC2KMZ_CONFIGURATION;
@@ -563,6 +564,7 @@ let options = [
   ['Global', 'tz_offset', 'number', 'Timezone offset', 'Shift each record from offset, in hours', -12, 12],
   ['Animation', 'anim_tail', 'checkbox', 'Show tail', 'Show colored tail following paraglider\'s path'],
   ['Animation', 'anim_tail_duration', 'number', 'Tail duration', 'Length in seconds for the colored tail. -1 for infinity (till launch)', 0],
+  ['Animation', 'anim_tail_color', 'color', 'Tail color', 'Color of the tail following paraglider\'s path'],
   ['Debug', 'dbg_serialize', 'checkbox', 'Serialize to console', 'Serialize KML to console after conversion'],
 ];
     </script>

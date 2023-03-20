@@ -16,7 +16,7 @@ export interface I2KConfiguration {
    */
   tz_offset: number;
   /**
-   * Paraglider tail length animation.
+   * Paraglider tail animation.
    * false if no tail (just icon)
    */
   anim_tail: boolean;
@@ -25,6 +25,10 @@ export interface I2KConfiguration {
    * -1 for infinite
    */
   anim_tail_duration: number;
+  /**
+   * Paraglider tail animation color
+   */
+  anim_tail_color: string;
   /**
    * Serialize KML to console after conversion
    */
@@ -35,6 +39,7 @@ export const defaultconfig: I2KConfiguration = {
   tz_offset: 0,
   anim_tail: true,
   anim_tail_duration: 60,
+  anim_tail_color: '#ff9b00',
   dbg_serialize: false,
 };
 
