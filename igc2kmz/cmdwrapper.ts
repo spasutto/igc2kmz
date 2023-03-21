@@ -146,7 +146,7 @@ if (ap.files.length <= 0 && !taskfile) {
   if (idx > -1) scriptname = scriptname.substring(idx + 1);
   console.log('Usage: node ' + scriptname + ' FILENAME.IGC [FILENAME2.IGC] [options]');
   console.log('Options :');
-  console.log('  -o|--output : set output filename');
+  console.log('  -o|--output    : set output filename');
   console.log('  -z|--tz-offset : set timezone offset (in hours)');
   console.log('  -t|--task      : set task file');
   console.log('  -p|--photo     : add photo');

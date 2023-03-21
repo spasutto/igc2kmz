@@ -373,7 +373,13 @@ export class Flight {
     let style = new KML.Style([new KML.LineStyle('ff000000', '1')]);
     folder.add([this.make_solid_track(globals, style, 'clampToGround', 'Normal')]);
     let line_style = new KML.LineStyle('00000000', '1');
-    let poly_style = new KML.PolyStyle([new KML.SimpleElement('color', '80000000'), new KML.SimpleElement('width', '1')]);
+    let polyline_color = RGBA.fromRGBAHexString(globals.options.extrude_color);
+    if (!polyline_color) {
+      polyline_color = new RGBA(0, 0, 0, 0x80 / 255);
+    } else {
+      polyline_color.a = 0x80 / 255;
+    }
+    let poly_style = new KML.PolyStyle([new KML.SimpleElement('color', polyline_color.toHexString()), new KML.SimpleElement('width', '1')]);
     style = new KML.Style([line_style, poly_style]);
     folder.add([this.make_solid_track(globals, style, 'absolute', 'Extrude', false, true)]);
     style = new KML.Style([new KML.LineStyle(this.color, this.width.toString())]);
@@ -413,6 +419,8 @@ export class Flight {
     let line_color = RGBA.fromRGBAHexString(globals.options.anim_tail_color);
     if (!line_color) {
       line_color = new RGBA(0xff / 255, 0x9b / 255, 0x00 / 255, 0x9f / 255);
+    } else {
+      line_color.a = 0x9f / 255;
     }
     let line_style = new KML.LineStyle(line_color.toHexString(), this.width.toString());
     let label_color = new RGBA(Math.random(), Math.random(), Math.random(), 1);

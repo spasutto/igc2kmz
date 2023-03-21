@@ -8,6 +8,7 @@ export class RGB {
     this.g = g;
     this.b = b;
   }
+  static fromByteValue(r: number, g: number, b: number, a?:number) { return new RGB(r / 255, g / 255, b / 255); }
   static validColor(color: string | null): string | null {
     let reg_rgba = /^#?([\da-f]{6}(?:[\da-f]{2})?)$/;
     color = (color ?? '').trim().toLowerCase();
@@ -22,7 +23,7 @@ export class RGB {
     if (!color) {
       return null;
     }
-    return new RGB(parseInt(color.substring(0, 2)), parseInt(color.substring(2, 4)), parseInt(color.substring(4, 6)));
+    return RGB.fromByteValue(parseInt(color.substring(0, 2), 16), parseInt(color.substring(2, 4), 16), parseInt(color.substring(4, 6), 16));
   }
   toHexString() {
     return ("0" + Math.trunc(255*this.b).toString(16)).substr(-2) + ("0" + Math.trunc(255*this.g).toString(16)).substr(-2) + ("0" + Math.trunc(255*this.r).toString(16)).substr(-2);//TODO trunc nécessaire?
@@ -37,6 +38,7 @@ export class RGBA extends RGB {
     super(r,g,b);
     this.a = a;
   }
+  static fromByteValue(r: number, g: number, b: number, a: number) { return new RGBA(r / 255, g / 255, b / 255, a / 255); }
   static fromRGBAHexString(color: string | null): RGBA | null {
     color = RGB.validColor(color);
     if (!color) {
@@ -44,9 +46,9 @@ export class RGBA extends RGB {
     }
     let alpha = 1;
     if (color.length == 8) {
-      alpha = parseInt(color.substring(6, 8));
+      alpha = parseInt(color.substring(6, 8), 16);
     }
-    return new RGBA(parseInt(color.substring(0, 2)), parseInt(color.substring(2, 4)), parseInt(color.substring(4, 6)), alpha);
+    return RGBA.fromByteValue(parseInt(color.substring(0, 2), 16), parseInt(color.substring(2, 4), 16), parseInt(color.substring(4, 6), 16), alpha);
   }
   override toHexString() {
     return ("0" + Math.trunc(255*this.a).toString(16)).substr(-2) + super.toHexString();//TODO trunc nécessaire?

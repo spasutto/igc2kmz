@@ -34,6 +34,10 @@ export interface I2KConfiguration {
    */
   anim_tail_color: string;
   /**
+   * Extrude section color
+   */
+  extrude_color: string;
+  /**
    * Serialize KML to console after conversion
    */
   dbg_serialize: boolean;
@@ -45,6 +49,7 @@ export const defaultconfig: I2KConfiguration = {
   anim_tail: true,
   anim_tail_duration: 60,
   anim_tail_color: '#ff9b00',
+  extrude_color: '#000000',
   dbg_serialize: false,
 };
 
