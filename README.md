@@ -51,5 +51,5 @@ npm run buildweb # for web (development)
  - worker for web version
  - command line usage
  - others tasks formats
- - warnings on fonts via pureimage node dist\igc2kmz.js -z 1 examples\courtet.igc examples\courtet_Laurent.igc
+ - warnings on fonts via pureimage
  - warning on Buffer() (outdated pngjs of pureimage)
