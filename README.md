@@ -1,7 +1,7 @@
 # igc2kmz
 > *Typescript port of Tom Payne's python tool [igc2kmz](https://github.com/twpayne/igc2kmz)*
 
-**The resulting tool is available online here : [--> igc2kmz.html <--](https://spasutto.github.io/igc2kmz/igc2kmz.html)** (it can also be used in command line, see [below](#usage))
+**The resulting tool is available online here : [&#x2192; igc2kmz.html &#x2190;](https://spasutto.github.io/igc2kmz/igc2kmz.html)** (it can also be used in command line, see [below](#usage))
 
 [![Visualisation example](doc/output_MtBlanc.jpg?raw=true)](doc/output_MtBlanc.jpg?raw=true)
 
