@@ -329,6 +329,9 @@ function setConfig(config) {
     optactions[opt[2]].set($(id), config[key]);
   }
 }
+function defaultConf() {
+  setConfig(DEFAULT_IGC2KMZ_CONFIGURATION);
+}
 function saveJSON() {
   let config = getConfig();
   download(JSON.stringify(config), 'igc2kmz_config.json', 'application/json');
@@ -594,8 +597,9 @@ let options = [
       <div class="popup_content"></div>
       <div class="jsonbuttons">
         <input type="file" id="json-selector" onclick="this.value=null;" accept=".json" style="display:none;">
-        <a href="#" title="load conf from json" onclick="loadJSON()">&#x1F4C2;</a>
-        <a href="#" title="save conf as json" onclick="saveJSON()">&#x1F4BE;</a>
+        <a href="#" title="reset to default configuration" onclick="defaultConf()">&#x1F4C4;</a>
+        <a href="#" title="load conf from file" onclick="loadJSON()">&#x1F4C2;</a>
+        <a href="#" title="save conf to file" onclick="saveJSON()">&#x1F4BE;</a>
       </div>
       <div class="buttons">
         <input type="button" value="cancel" onclick="closeOptions()">
