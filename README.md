@@ -6,7 +6,7 @@
 [![Visualisation example](doc/output_MtBlanc.jpg?raw=true)](doc/output_MtBlanc.jpg?raw=true)
 
 ## Usage
-**For the web** : See [igc2kmz.html](igc2kmz.html) or [example.html](examples/example.html) ('*hello world*' code)
+**For the web** : See [igc2kmz.html](igc2kmz.html) or [example.html](examples/example.html) ('*hello world*' code), Single Page Application [available here](https://spasutto.github.io/igc2kmz/dist/igc2kmz_spa.html) (right click and save it to computer/phone)
 
 :warning: As of now, web version runs on the UI thread and on slow machines or with big flight it can block the page for some time :boom:
 
@@ -53,3 +53,4 @@ npm run buildweb # for web (development)
  - others tasks formats
  - warnings on fonts via pureimage
  - warning on Buffer() (outdated pngjs of pureimage)
+ - [version insertion](https://github.com/naecoo/esbuild-plugin-replace)
