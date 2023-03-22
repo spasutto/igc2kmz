@@ -19,7 +19,9 @@
     "scripts": {
         "build": "node ./build.mjs cmd",
         "buildweb": "node ./build.mjs",
-        "minify": "node ./build.mjs minify"
+        "minify": "node ./build.mjs minify",
+        "bundleweb": "npm run minify && node ./build.mjs bundleweb",
+        "buildall": "npm run build && npm run buildweb && npm run bundleweb"
     },
     "devDependencies": {
         "@types/base64-stream": "^1.0.2",
