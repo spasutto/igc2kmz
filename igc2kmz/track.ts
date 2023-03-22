@@ -100,7 +100,9 @@ export class Track {
   coord_at(dt: Date): Coord {
     let t = dt.getTime() / 1000;
     let index = this.indexOf(dt);
-    if (this.t[index] == t) {
+    if (index == 0 || index == this.coords.length - 1) {
+      return this.coords[index];
+    } else if (this.t[index] == t) {
       return this.coords[index];
     } else {
       let delta = (t - this.t[index - 1]) / (this.t[index] - this.t[index - 1]);
