@@ -61,7 +61,7 @@ if (build) {
   } else {
     let count = 0;
     while ((matches = htmli2k.match(regtoreplace)) != null && count++ < 10) {
-      if (matches.length < 2) { console.log('pouet'); continue; }
+      if (matches.length < 2) continue;
       const minifiedjs = fs.readFileSync(matches[1], { encoding: 'utf8', flag: 'r' });
       //https://stackoverflow.com/a/34040529
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
