@@ -2,6 +2,8 @@ import { IGCFile, RecordExtensions } from "igc-parser";
 import { Coord } from "./coord";
 import { Bounds, BoundSet, Utils, Slice } from "./util";
 import { Task } from "./task";
+import { solver, Solution, scoringRules as scoring } from 'igc-xc-score';
+import { defaultconfig, I2KConfiguration } from "./init";
 
 enum FlyingState {
   UNKNOWN = 0,
@@ -11,6 +13,7 @@ enum FlyingState {
 }
 
 export class Track {
+  options: I2KConfiguration;
   filename: string;
   flight: IGCFile;
   coords: Coord[];
@@ -33,9 +36,11 @@ export class Track {
   glides: Slice[] = [];
   dives: Slice[] = [];
   declaration: Task | null = null;
+  xc_score: Solution | null = null;
 
   //extensions: Record<string, string[]> = {};
-  constructor(flight: IGCFile, filename?: string) {
+  constructor(flight: IGCFile, filename?: string, options: I2KConfiguration = defaultconfig) {
+    this.options = options;
     this.flight = flight;
     this.filename = filename ?? "flight.igc"; //TODO
     this.coords = Track.filter(flight.fixes.map(f => Coord.deg(f.latitude, f.longitude, (f.pressureAltitude ?? f.gpsAltitude) || 0, new Date(f.timestamp))));
@@ -231,6 +236,24 @@ export class Track {
             this.glides.push(sl);
           }
           break;
+      }
+    }
+    if (this.options.xc_score) {
+      const tend = Date.now() + this.options.xc_score_maxtime * 1000;
+      if (!scoring.hasOwnProperty(this.options.xc_score_rules)) this.options.xc_score_rules = defaultconfig.xc_score_rules;
+      const it = solver(this.flight, scoring[this.options.xc_score_rules]);
+      let newbest, best;
+      do {
+        newbest = it.next();
+        if (best === undefined || newbest.value.id !== best.id) {
+          best = newbest.value;
+        }
+        if (Date.now() > tend) {
+          break;
+        }
+      } while (!newbest.done);
+      if (best) {
+        this.xc_score = best;
       }
     }
   }

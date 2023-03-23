@@ -13,6 +13,7 @@
         "file-saver": "^2.0.5",
         "google-polyline": "^1.0.3",
         "igc-parser": "^1.1.0",
+        "igc-xc-score": "^1.7.0",
         "jszip": "^3.10.1",
         "pureimage": "^0.3.17"
     },

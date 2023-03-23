@@ -38,6 +38,18 @@ export interface I2KConfiguration {
    */
   extrude_color: string;
   /**
+   * Score flights
+   */
+  xc_score: boolean;
+  /**
+   * Scoring rules
+   */
+  xc_score_rules: string;
+  /**
+   * Max time to score flights in seconds
+   */
+  xc_score_maxtime: number;
+  /**
    * Serialize KML to console after conversion
    */
   dbg_serialize: boolean;
@@ -50,6 +62,9 @@ export const defaultconfig: I2KConfiguration = {
   anim_tail_duration: 60,
   anim_tail_color: '#ff9b00',
   extrude_color: '#000000',
+  xc_score: true,
+  xc_score_rules: 'FFVL',
+  xc_score_maxtime: 10,
   dbg_serialize: false,
 };
 

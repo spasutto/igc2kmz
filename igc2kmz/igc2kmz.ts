@@ -28,7 +28,7 @@ export function igc2kmz(cv: SimpleCanvas, igccontents: string[] | string, infile
         igc.fixes.forEach(f => f.timestamp += offset);
       }
     }
-    flights.push(new Flight(new Track(igc, infilenames[i])));
+    flights.push(new Flight(new Track(igc, infilenames[i], config)));
   }
   //console.log(flight);
   let task: Task | null = null;

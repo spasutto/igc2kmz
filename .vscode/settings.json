@@ -1,0 +1,7 @@
+{
+  "search.useIgnoreFiles": false,
+  "search.exclude": {
+    "": true,
+    "**/node_modules": false
+  }
+}

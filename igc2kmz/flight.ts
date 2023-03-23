@@ -491,8 +491,50 @@ export class Flight {
   }
 
   make_xc_folder(globals: FlightConvert): KMZ {
-    //TODO
-    return new KMZ();
+    if (!this.track.xc_score || typeof this.track.xc_score.scoreInfo !== 'object') {
+      return new KMZ();
+    }
+    //console.log(this.track.xc_score);
+    //console.log(JSON.stringify(this.track.xc_score.scoreInfo));
+    let score = this.track.xc_score.scoreInfo;
+    let rows = [];
+    rows.push(['Type', this.track.xc_score.opt.scoring.name]);
+    rows.push(['Score', `${score.score}pts`]);
+    if (score.legs) {
+      score.legs.forEach(leg => {
+        rows.push([leg.name, `${leg.d}km`]);
+      });
+    }
+    rows.push(['Distance', `${score.distance}km`]);
+    let table = Utils.make_table(rows);
+    let snippet = `${score.distance}km (${score.score}pts)`;
+    if (score.tp) {
+      snippet += ` via ${score.tp.length} turnpoints`;
+    }
+    let style_url = globals.stock.check_hide_children_style.url;
+    let folder = new KML.Folder('Score', style_url, [new KML.CDATA('description', table), new KML.Snippet(snippet)]);
+    let line_style: KML.Style;
+    if (score.legs) {
+      line_style = new KML.Style([new KML.LineStyle('cc00F5FF', '2')]);
+      folder.add(line_style);
+    }
+    style_url = globals.stock.xc_style.url;
+    if (score.tp) {
+      score.tp.forEach((tp, i) => {
+        let coord = Coord.deg(tp.y, tp.x);
+        let point = new KML.Point(coord);
+        folder.add(new KML.Placemark('TP' + (i + 1), point, [], style_url));
+      });
+    }
+    if (score.legs) {
+      score.legs.forEach(leg => {
+        let coord0 = Coord.deg(leg.start.y, leg.start.x);
+        let coord1 = Coord.deg(leg.finish.y, leg.finish.x);
+        let line_string = new KML.LineString([coord0, coord1], null, true);
+        folder.add(new KML.Placemark(null, line_string, [], line_style.url));
+      });
+    }
+    return new KMZ([folder]);
   }
 
   make_tour_folder(globals: FlightConvert): KML.Element {

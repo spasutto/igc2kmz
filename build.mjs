@@ -7,7 +7,7 @@ import * as fs from 'fs';
 var defaultconfig = {
   loader: {
     '.png': 'dataurl',
-    '.ttf': 'dataurl'
+    '.ttf': 'dataurl',
   },
   bundle: true,
   //outdir: path.join(process.cwd(), "dist"),
@@ -56,6 +56,17 @@ async function buildAction(buildmode) {
 
   if (build) {
     await esbuild.build(config).catch(() => process.exit(1));
+    // contournement d'un bug dans collections.js utilisée par igc-xc-score ;
+    // dans le fichier generic-collections.js est référencé directement l'objet global
+    if (buildmode != 'cmd') {
+      let builtjs = fs.readFileSync(config.outfile, { encoding: 'utf8', flag: 'r' });
+      const usestrict = '"use strict";';
+      let startofjs = builtjs.indexOf(usestrict);
+      if (startofjs > -1) {
+        builtjs = usestrict + 'window.global=window;' + builtjs.substring(startofjs + usestrict.length);
+        fs.writeFileSync(config.outfile, builtjs);
+      }
+    }
   }
   if (bundle) {
     // BUNDLE
