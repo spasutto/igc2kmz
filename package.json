@@ -18,10 +18,10 @@
     },
     "scripts": {
         "build": "node ./build.mjs cmd",
-        "buildweb": "node ./build.mjs",
+        "buildweb": "node ./build.mjs web",
         "minify": "node ./build.mjs minify",
-        "bundleweb": "node ./build.mjs minify bundle",
-        "buildall": "npm run build && npm run buildweb && npm run bundleweb"
+        "bundleweb": "node ./build.mjs bundle",
+        "buildall": "npm run build && npm run buildweb && npm run minify && npm run bundleweb"
     },
     "devDependencies": {
         "@types/base64-stream": "^1.0.2",
