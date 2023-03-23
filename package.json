@@ -20,7 +20,7 @@
         "build": "node ./build.mjs cmd",
         "buildweb": "node ./build.mjs",
         "minify": "node ./build.mjs minify",
-        "bundleweb": "npm run minify && node ./build.mjs bundleweb",
+        "bundleweb": "node ./build.mjs minify bundle",
         "buildall": "npm run build && npm run buildweb && npm run bundleweb"
     },
     "devDependencies": {

@@ -16,12 +16,9 @@ var config = {
   //watch: process.argv.includes("--watch"),
 };
 
-let build = true;
 let buildmode = process.argv.length > 2 ? process.argv[2] : 'default';
+let bundle = process.argv.length > 3 && process.argv[3] == 'bundle';
 switch (buildmode) {
-  case 'bundleweb':
-    build = false;
-    break;
   case 'cmd':
     config = {
       entryPoints: ["igc2kmz/cmdwrapper.ts"],
@@ -47,11 +44,11 @@ switch (buildmode) {
     break;
 }
 
-if (build) {
-  await esbuild.build({
-    ...config,
-  }).catch(() => process.exit(1))
-} else {
+await esbuild.build({
+  ...config,
+}).catch(() => process.exit(1));
+
+if (bundle) {
   // BUNDLE
   const regtoreplace = /<script[\s\r\n]+src\s*=\s*(?:"|')([^"']+)(?:"|')[\s\r\n]*>/i;
   let htmli2k = fs.readFileSync('./igc2kmz.html', { encoding: 'utf8', flag: 'r' });
