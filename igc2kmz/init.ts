@@ -20,6 +20,10 @@ export interface I2KConfiguration {
    */
   same_start: boolean;
   /**
+   * Solid color
+   */
+  solid_color: string;
+  /**
    * Paraglider tail animation.
    * false if no tail (just icon)
    */
@@ -58,6 +62,7 @@ export interface I2KConfiguration {
 export const defaultconfig: I2KConfiguration = {
   tz_offset: 0,
   same_start: false,
+  solid_color: '#ff0000',
   anim_tail: true,
   anim_tail_duration: 60,
   anim_tail_color: '#ff9b00',

@@ -40,6 +40,10 @@ npm run buildweb # for web (development)
 [![Visualisation example](doc/thermals_glides.jpg?raw=true)](doc/thermals_glides.jpg?raw=true)
 #### Photos (placed at GPS position)
 [![Visualisation example](doc/inline_photos.jpg?raw=true)](doc/inline_photos.jpg?raw=true)
+#### XC Score :
+> *computed by [igc-xc-score](https://github.com/mmomtchev/igc-xc-score)*
+
+[![Visualisation example](doc/xc_score.jpg?raw=true)](doc/xc_score.jpg?raw=true)
 #### Extruded path :
 [![Visualisation example](doc/extruded_path.jpg?raw=true)](doc/extruded_path.jpg?raw=true)
 #### Task visualization :

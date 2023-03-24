@@ -40,7 +40,13 @@ export class Flight {
     } else {
       this.altitude_mode = 'clampToGround';
     }
-    this.color = "ff0000ff";
+    let solid_color = RGBA.fromRGBAHexString(track.options.solid_color);
+    if (!solid_color) {
+      solid_color = new RGBA(0, 0, 0, 0xff / 255);
+    } else {
+      solid_color.a = 0xff / 255;
+    }
+    this.color = solid_color.toHexString();
     this.width = 2;
     this.pilot_name = track.pilot_name;
     this.glider_type = track.glider_type;
