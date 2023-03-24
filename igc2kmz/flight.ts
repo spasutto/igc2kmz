@@ -498,6 +498,7 @@ export class Flight {
     //console.log(JSON.stringify(this.track.xc_score.scoreInfo));
     let score = this.track.xc_score.scoreInfo;
     let rows = [];
+    rows.push(['Rules', globals.options.xc_score_rules]);
     rows.push(['Type', this.track.xc_score.opt.scoring.name]);
     rows.push(['Score', `${score.score}pts`]);
     if (score.legs) {
@@ -507,17 +508,16 @@ export class Flight {
     }
     rows.push(['Distance', `${score.distance}km`]);
     let table = Utils.make_table(rows);
-    let snippet = `${score.distance}km (${score.score}pts)`;
+    let snippet = `${score.score}pts (${score.distance}km)`;
     if (score.tp) {
       snippet += ` via ${score.tp.length} turnpoints`;
     }
     let style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder('Score', style_url, [new KML.CDATA('description', table), new KML.Snippet(snippet)]);
-    let line_style: KML.Style;
-    if (score.legs) {
-      line_style = new KML.Style([new KML.LineStyle('cc00F5FF', '2')]);
-      folder.add(line_style);
-    }
+    let line_style = new KML.Style([new KML.LineStyle('cc00FF00', '1')]);
+    folder.add(line_style);
+    let line_style1 = new KML.Style([new KML.LineStyle('ccFFFFFF', '1')]);
+    folder.add(line_style1);
     style_url = globals.stock.xc_style.url;
     if (score.tp) {
       score.tp.forEach((tp, i) => {
@@ -533,6 +533,20 @@ export class Flight {
         let line_string = new KML.LineString([coord0, coord1], null, true);
         folder.add(new KML.Placemark(null, line_string, [], line_style.url));
       });
+    }
+    if (score.cp) {
+      let coordin = Coord.deg(score.cp.in.y, score.cp.in.x);
+      let coordout = Coord.deg(score.cp.out.y, score.cp.out.x);
+      folder.add(new KML.Placemark('IN', new KML.Point(coordin), [], style_url));
+      folder.add(new KML.Placemark('OUT', new KML.Point(coordout), [], style_url));
+      if (score.tp) {
+        let coordtp = Coord.deg(score.tp[0].y, score.tp[0].x);
+        let line_string = new KML.LineString([coordin, coordtp], null, true);
+        folder.add(new KML.Placemark(null, line_string, [], line_style1.url));
+        coordtp = Coord.deg(score.tp[score.tp.length - 1].y, score.tp[score.tp.length - 1].x);
+        line_string = new KML.LineString([coordout, coordtp], null, true);
+        folder.add(new KML.Placemark(null, line_string, [], line_style1.url));
+      }
     }
     return new KMZ([folder]);
   }
