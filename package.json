@@ -28,6 +28,7 @@
         "@types/base64-stream": "^1.0.2",
         "@types/concat-stream": "^2.0.0",
         "@types/google-polyline": "^1.0.0",
-        "@types/node": "^18.14.2"
+        "@types/node": "^18.14.2",
+        "simple-git": "^3.17.0"
     }
 }
