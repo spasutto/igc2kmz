@@ -1,5 +1,7 @@
 # igc2kmz
-> *Typescript port of Tom Payne's python tool [igc2kmz](https://github.com/twpayne/igc2kmz)*
+igc2kmz is a tool to convert IGC (flight recorder) to KMZ/KML (Google Earth).
+
+> *It's aTypescript port of Tom Payne's python tool [igc2kmz](https://github.com/twpayne/igc2kmz)*
 
 **The resulting tool is available online here : [&#x2192; igc2kmz.html &#x2190;](https://spasutto.github.io/igc2kmz/igc2kmz.html)** (it can also be used in command line, see [below](#usage))
 
