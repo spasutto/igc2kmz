@@ -1,0 +1,36 @@
+{
+  "name": "igc2kmz - Convert IGC to Google Earth",
+  "short_name": "igc2kmz",
+  "description": "igc2kmz is a tool to convert IGC (flight recorder) to KMZ/KML (Google Earth).",
+  "icons": [
+    {
+        "src": "assets/googleearth-32.png",
+        "sizes": "32x32",
+        "type": "image/png"
+    },
+    {
+        "src": "assets/googleearth-64.png",
+        "sizes": "64x64",
+        "type": "image/png"
+    },
+    {
+        "src": "assets/googleearth-128.png",
+        "sizes": "128x128",
+        "type": "image/png"
+    },
+    {
+        "src": "assets/googleearth-256.png",
+        "sizes": "256x256",
+        "type": "image/png"
+    },
+    {
+        "src": "assets/googleearth-512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+    }
+  ],
+  "start_url": "/igc2kmz/igc2kmz.html",
+  "display": "fullscreen",
+  "theme_color": "#FAFAFA",
+  "background_color": "#FAFAFA"
+}

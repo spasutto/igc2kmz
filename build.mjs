@@ -83,15 +83,14 @@ async function buildAction(buildmode) {
   if (build) {
     console.log(`Building '${buildmode}'...`);
     await esbuild.build(config).catch(() => process.exit(1));
-    // contournement d'un bug dans collections.js utilisée par igc-xc-score ;
-    // dans le fichier generic-collections.js est référencé directement l'objet global
+    // contournement de l'utilisation de l'objet global dans collections.js utilisée par igc-xc-score ;
+    // (dans le fichier generic-collections.js). Avec Webpack c'est remplacé mais pas trouvé comment faire avec esbuild...
     if (buildmode != 'cmd') {
       let builtjs = fs.readFileSync(config.outfile, { encoding: 'utf8', flag: 'r' });
-      const usestrict = '"use strict";';
-      let startofjs = builtjs.indexOf(usestrict);
-      if (startofjs > -1) {
-        builtjs = usestrict + 'window.global=window;' + builtjs.substring(startofjs + usestrict.length);
-        fs.writeFileSync(config.outfile, builtjs);
+      const toreplace = 'global.DOMTokenList';
+      let idxtoreplace = builtjs.indexOf(toreplace);
+      if (idxtoreplace > -1) {
+        fs.writeFileSync(config.outfile, builtjs.replace('global.DOMTokenList', 'window.DOMTokenList'));
       }
     }
   }

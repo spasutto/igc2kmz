@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+    <link rel="manifest" href="igc2kmz.webmanifest">
     <title>igc2kmz</title>
     <script src="./dist/igc2kmz.min.js"></script>
     <style>
@@ -583,16 +584,21 @@ let options = [
   // GROUP, FIELDNAME, TYPE, LABEL, HELP, [ MIN,   MAX ]
   ['Global', 'tz_offset', 'number', 'Timezone offset', 'Shift each record from offset, in hours', [-12, 12]],
   ['Global', 'same_start', 'checkbox', 'Align launch time', 'Apply first flight\'s launch time to subsequent flights (flight comparison)'],
-  ['Global', 'solid_color', 'color', 'Solid color', 'Solid track color'],
   ['Animation', 'anim_tail', 'checkbox', 'Show tail', 'Show colored tail following paraglider\'s path'],
   ['Animation', 'anim_tail_duration', 'number', 'Tail duration', 'Length in seconds for the colored tail. -1 for infinity (till launch)', [0]],
   ['Animation', 'anim_tail_color', 'color', 'Tail color', 'Color of the tail following paraglider\'s path'],
+  ['Miscellaneous', 'solid_color', 'color', 'Solid color', 'Solid track color'],
   ['Miscellaneous', 'extrude_color', 'color', 'Extrude color', 'Color of the extruded path (solid track)'],
   ['Score', 'xc_score', 'checkbox', 'Score flights', 'Score distance/circuit of flights'],
   ['Score', 'xc_score_rules', 'select', 'Scoring rules', 'Scoring rules', ['FFVL', 'XContest', 'FAI', 'FAI-Cylinders', 'FAI-OAR', 'FAI-OAR2', 'XCLeague']],
   ['Score', 'xc_score_maxtime', 'number', 'Max timeout', 'Maximum time in seconds before stop scoring', [0]],
   ['Debug', 'dbg_serialize', 'checkbox', 'Serialize to console', 'Serialize KML to console after conversion'],
 ];
+
+// Registering Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('ergsw.js');
+}
     </script>
   </head>
 <body>

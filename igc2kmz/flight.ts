@@ -514,10 +514,7 @@ export class Flight {
     }
     rows.push(['Distance', `${score.distance}km`]);
     let table = Utils.make_table(rows);
-    let snippet = `${score.score}pts (${score.distance}km)`;
-    if (score.tp) {
-      snippet += ` via ${score.tp.length} turnpoints`;
-    }
+    let snippet = `${this.track.xc_score.opt.scoring.name} ${score.score}pts`;
     let style_url = globals.stock.check_hide_children_style.url;
     let folder = new KML.Folder('Score', style_url, [new KML.CDATA('description', table), new KML.Snippet(snippet)]);
     let line_style = new KML.Style([new KML.LineStyle('cc00FF00', '1')]);
