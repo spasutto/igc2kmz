@@ -565,7 +565,7 @@ window.onload = function() {
   i2koptions = default_config;
   setConfig(default_config);
   if (isTouchDevice()) {
-    [...document.querySelectorAll('.popup .popup_content input')].forEach(inpt => {
+    [...document.querySelectorAll('.popup .popup_content input, .popup .popup_content select')].forEach(inpt => {
       let title = inpt.previousElementSibling.title;
       if (typeof title !== 'string' || title.trim().length <= 0) return;
       let span = document.createElement("span");
