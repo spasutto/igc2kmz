@@ -27,8 +27,8 @@ function buildRelease() {
     let zipname = `igc2kmz-${matches[1]}.zip`;
     let zip = new JSZip();
     ['igc2kmz.cmd.js', 'igc2kmz.min.js', 'igc2kmz.js'].forEach(f => zip.file('dist/' + f, fs.readFileSync('dist/' + f, { encoding: 'utf8', flag: 'r' })));
+    ['igc2kmz.html', 'README.md', 'LICENSE', 'sw.js', 'igc2kmz.webmanifest', 'favicon.ico', 'assets/googleearth-32.png', 'assets/googleearth-64.png', 'assets/googleearth-128.png', 'assets/googleearth-256.png', 'assets/googleearth-512.png'].forEach(f => zip.file(f, fs.readFileSync(f, { encoding: 'utf8', flag: 'r' })));
     zip.file('igc2kmz_spa.html', fs.readFileSync('dist/igc2kmz_spa.html', { encoding: 'utf8', flag: 'r' }));
-    ['igc2kmz.html', 'README.md', 'LICENSE'].forEach(f => zip.file(f, fs.readFileSync(f, { encoding: 'utf8', flag: 'r' })));
     zip
       .generateNodeStream({ type: 'nodebuffer', streamFiles: true })
       .pipe(fs.createWriteStream(zipname))
@@ -104,6 +104,7 @@ async function buildAction(buildmode) {
     let htmli2k = fs.readFileSync('./igc2kmz.html', { encoding: 'utf8', flag: 'r' });
     let matches = null;
     let count = 0;
+    htmli2k = htmli2k.replace(/useSW\s*=\s*true/g, 'useSW = false').replaceAll(/<link\s+[^>]+>/gi, '');
     while ((matches = htmli2k.match(regminifyjs)) != null && count++ < 10) {
       if (matches.length < 2) continue;
       const minifiedjs = await esbuild.transform(matches[1], { loader: 'js', minify: true });

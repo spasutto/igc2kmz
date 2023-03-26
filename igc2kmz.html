@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <link rel="manifest" href="igc2kmz.webmanifest">
-    <link rel="icon" type="image/x-icon" href="/igc2kmz/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <title>igc2kmz</title>
     <script src="./dist/igc2kmz.min.js"></script>
     <style>
@@ -260,6 +260,7 @@ var photos = [];
 var nbrfiles = 0;
 var i2koptions = {};
 var helptimer = null;
+var useSW = true;
 
 function convertigc() {
   igc2kmz(igccontent, filename, taskcontent, photos, i2koptions).catch(err => {
@@ -598,7 +599,7 @@ let options = [
 ];
 
 // Registering Service Worker
-if ('serviceWorker' in navigator) {
+if (useSW && 'serviceWorker' in navigator) {
   navigator.serviceWorker.register('/igc2kmz/sw.js');
 }
     </script>
