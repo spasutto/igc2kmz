@@ -3,14 +3,14 @@
 // Files to cache
 const cacheName = 'igc2kmz-v1';
 const appShellFiles = [
-  '/js/igc2kmz/',
-  '/js/igc2kmz/igc2kmz.html',
-  '/js/igc2kmz/dist/igc2kmz.min.js',
-  '/js/igc2kmz/assets/googleearth-32.png',
-  '/js/igc2kmz/assets/googleearth-64.png',
-  '/js/igc2kmz/assets/googleearth-128.png',
-  '/js/igc2kmz/assets/googleearth-256.png',
-  '/js/igc2kmz/assets/googleearth-512.png',
+  '/igc2kmz/',
+  '/igc2kmz/igc2kmz.html',
+  '/igc2kmz/dist/igc2kmz.min.js',
+  '/igc2kmz/assets/googleearth-32.png',
+  '/igc2kmz/assets/googleearth-64.png',
+  '/igc2kmz/assets/googleearth-128.png',
+  '/igc2kmz/assets/googleearth-256.png',
+  '/igc2kmz/assets/googleearth-512.png',
 ];
 // const gamesImages = [];
 // for (let i = 0; i < games.length; i++) {
@@ -47,4 +47,19 @@ self.addEventListener('fetch', (e) => {
     cache.put(e.request, response.clone());
     return response;
   })());
+});
+
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys().then((keyList) => {
+      return Promise.all(
+        keyList.map((key) => {
+          if (key === cacheName) {
+            return;
+          }
+          return caches.delete(key);
+        })
+      );
+    })
+  );
 });
