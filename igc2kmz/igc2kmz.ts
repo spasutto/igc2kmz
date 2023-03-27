@@ -7,6 +7,10 @@ import { Task } from "./task";
 import { SimpleCanvas } from "./simplecanvas";
 import { Photo } from "./photo";
 
+const IGC2KMZ_VERSION: string = "__IGC2KMZ_VERSION__";
+const IGC2KMZ_BUILDDATE: string = "__IGC2KMZ_BUILDDATE__";
+const IGC2KMZ_DEFAULT_CONFIGURATION: I2KConfiguration = defaultconfig;
+export { IGC2KMZ_VERSION, IGC2KMZ_BUILDDATE, IGC2KMZ_DEFAULT_CONFIGURATION };
 export function igc2kmz(cv: SimpleCanvas, igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: [string, Buffer][], options: I2KConfiguration = defaultconfig): Promise<ArrayBuffer> {
   let config: I2KConfiguration = { ...defaultconfig, ...options };
   igccontents = Array.isArray(igccontents) ? igccontents : [igccontents ?? ''];

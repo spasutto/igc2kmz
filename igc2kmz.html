@@ -12,6 +12,7 @@
         font-family: sans-serif;
         margin: 2px;
         padding: 2px;
+        user-select: none;
       }
       label {
         display: inline-block;
@@ -25,8 +26,11 @@
         margin: 0;
         padding: 0;
       }
+      #buttons {
+        display: flex;
+        justify-content: flex-end
+      }
       .button {
-        float:right;
         cursor: pointer;
         border: solid 1px white;
         color: white;
@@ -208,7 +212,6 @@
         display: table-cell;
         vertical-align: middle;
         cursor:pointer;
-        user-select: none;
       }
       #nofile:hover {
         text-decoration: underline;
@@ -247,6 +250,18 @@
           position: relative;
           margin-left: -50vw;
         }
+      }
+      #footer {
+        font-size: 8pt;
+        text-align: center;
+        margin: 20px 0;
+        color: #bababa;
+      }
+      #footer a, a:visited {
+        color: #9f9f9f;
+      }
+      #footer a:hover {
+        color: #dadada;
       }
     </style>
 
@@ -381,19 +396,19 @@ function loadfile(file, name, json) {
       if (idx > -1) {
         ext = ext.substring(idx+1);
       } else ext = '';
-      if (ext == 'igc') {
+      if (['xctsk'].includes(ext)) {
+        let textresult = (new TextDecoder()).decode(reader.result);
+        taskcontent = textresult;
+        taskfilename = name;
+      } else if (['jpg','jpeg','png','gif','tiff','tif','webp','bmp'].includes(ext)) {
+        photos.push([name, reader.result]);
+      } else {
         let textresult = (new TextDecoder()).decode(reader.result);
         if (igccontent.indexOf(textresult) > -1) {
           return;
         }
         igccontent.push(textresult);
         filename.push(name);
-      } else if (['jpg','jpeg','png','gif','tiff','tif','webp','bmp'].includes(ext)) {
-        photos.push([name, reader.result]);
-      } else {
-        let textresult = (new TextDecoder()).decode(reader.result);
-        taskcontent = textresult;
-        taskfilename = name;
       }
       nbrfiles++;
       updateListFiles();
@@ -579,7 +594,13 @@ window.onload = function() {
       inpt.after(span);
     });
   }
-  $('buttons').style.display = 'block';
+  let build_date = IGC2KMZ_BUILDDATE;
+  $('buttons').style.display = 'flex';
+  $('version').innerHTML = IGC2KMZ_VERSION;
+  $('build_year').innerHTML = build_date.getFullYear();
+  let fbdate = build_date.toISOString();
+  fbdate = `${fbdate.substring(0, 10)} ${fbdate.substring(11,19)}`;
+  $('version').title = `built on ${fbdate}`;
 }
 let optgroups = ['Global', 'Animation', 'Miscellaneous', 'Score', 'Debug'];
 let options = [
@@ -613,10 +634,11 @@ if (useSW && 'serviceWorker' in navigator) {
       <ul id="lblfile" title="click to add files"></ul>
     </div>
     <div id="buttons">
-      <input id="btnConvert" type="button" class="button" title="convert selected files" onclick="convertigc()" value="Convert" style="display:none;">
-      <input id="btnClear" type="button" class="button red" title="clear current files" onclick="clearFiles()" value="Clear" style="display:none;">
       <input id="btnOptions" type="button" class="button small green" title="configuration" onclick="showOptions()" value="&#x1F527;">
+      <input id="btnClear" type="button" class="button red" title="clear current files" onclick="clearFiles()" value="Clear" style="display:none;">
+      <input id="btnConvert" type="button" class="button" title="convert selected files" onclick="convertigc()" value="Convert" style="display:none;">
     </div>
+  <div id="footer">igc2kmz version <span id="version">?.?.?</span> copyright <a href="https://github.com/spasutto/igc2kmz">Sylvain Pasutto</a> <span id="build_year">2023</span></div>
   </div>
   <div id="popup_overlay" class="overlay">
     <div id="popup_options" class="popup">

@@ -2,10 +2,15 @@
 import { defaultconfig, I2KConfiguration } from "./init";
 import { SimpleCanvas } from './simplecanvas';
 import { saveAs } from 'file-saver';
-import { igc2kmz } from "./igc2kmz";
+import { igc2kmz, IGC2KMZ_BUILDDATE, IGC2KMZ_DEFAULT_CONFIGURATION, IGC2KMZ_VERSION } from "./igc2kmz";
 
 declare global {
-  interface Window { igc2kmz: any; DEFAULT_IGC2KMZ_CONFIGURATION: any; }
+  interface Window {
+    igc2kmz: any;
+    DEFAULT_IGC2KMZ_CONFIGURATION: any;
+    IGC2KMZ_VERSION: string;
+    IGC2KMZ_BUILDDATE: Date;
+  }
 }
 
 class WebCanvas implements SimpleCanvas {
@@ -47,5 +52,7 @@ if (typeof window === 'object') {
   }
 
   window.igc2kmz = igc2kmzwrapper;
-  window.DEFAULT_IGC2KMZ_CONFIGURATION = defaultconfig;
+  window.DEFAULT_IGC2KMZ_CONFIGURATION = IGC2KMZ_DEFAULT_CONFIGURATION;
+  window.IGC2KMZ_VERSION = IGC2KMZ_VERSION;
+  window.IGC2KMZ_BUILDDATE = new Date(parseInt(IGC2KMZ_BUILDDATE));
 }

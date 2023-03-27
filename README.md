@@ -49,14 +49,14 @@ npm run buildweb # for web (development)
 #### Extruded path :
 [![Visualisation example](doc/extruded_path.jpg?raw=true)](doc/extruded_path.jpg?raw=true)
 #### Task visualization :
+> *XC Track file format (.xctsk)*
+
 [![Visualisation example](doc/task.jpg?raw=true)](doc/task.jpg?raw=true)
 
 ## Bugs/todo
  - tests
  - versioning
  - worker for web version
- - command line usage
  - others tasks formats
  - warnings on fonts via pureimage
  - warning on Buffer() (outdated pngjs of pureimage)
- - [version insertion](https://github.com/naecoo/esbuild-plugin-replace)

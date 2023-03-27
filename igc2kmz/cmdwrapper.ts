@@ -14,7 +14,7 @@ import concat from 'concat-stream';
 import { Bitmap } from "pureimage/types/bitmap";
 import { SimpleCanvas } from "./simplecanvas";
 import { defaultconfig, I2KConfiguration } from './init';
-import { igc2kmz } from './igc2kmz';
+import { igc2kmz, IGC2KMZ_BUILDDATE, IGC2KMZ_VERSION } from './igc2kmz';
 import sourcesanspro_font from '../assets/OpenSans-Regular.ttf'
 import * as Path from 'path';
 
@@ -101,6 +101,10 @@ class ArgParser {
         }
       }
     }
+    if (this.curparam) {
+      this.setParamValue(this.curparam, '');
+      this.curparam = null;
+    }
   }
 }
 
@@ -137,6 +141,10 @@ ap.params.forEach(p => {
     case 'debug':
       options.dbg_serialize = true;
       break;
+    case 'v':
+    case 'version':
+      console.log(`v${IGC2KMZ_VERSION} built on ${new Date(parseInt(IGC2KMZ_BUILDDATE)).toISOString()}`);
+      process.exit(0);
   }
 });
 
@@ -151,6 +159,7 @@ if (ap.files.length <= 0 && !taskfile) {
   console.log('  -t|--task      : set task file');
   console.log('  -p|--photo     : add photo');
   console.log('  -d|--debug     : set debug mode (serialize KML)');
+  console.log('  -v|--version   : display build version/date');
   process.exit(1);
 }
 
