@@ -9,6 +9,7 @@ import JSZip from 'jszip';
 
 var version = '?.?.?';
 var newrelease = false;
+var usegit = true;
 
 var defaultconfig = {
   loader: {
@@ -25,9 +26,11 @@ function getLastVersion() {
   console.log(`Getting tags...`);
   return new Promise(res => {
     simpleGit().tags().then(tags => {
+      usegit = tags && typeof tags.latest === 'string';
+      let latesttag = usegit ? tags.latest : fs.readFileSync("VERSION", { encoding: 'utf8', flag: 'r' });
       const regversion = /v(\d+)\.(\d+)\.(\d+)/i;
       let matches = null;
-      if (!tags || !(matches = tags.latest.match(regversion)) || matches.length < 4) throw new Error('No valid version found');
+      if (!(matches = latesttag.match(regversion)) || matches.length < 4) throw new Error('No valid version found');
       res({ 'major': parseInt(matches[1]), 'minor': parseInt(matches[2]), 'revision': parseInt(matches[3]) });
     });
   });
@@ -46,9 +49,12 @@ function buildRelease(newversion = false) {
     .on('finish', function () {
       console.log(zipname + " written.");
       if (newversion) {
-        simpleGit().addTag('v' + version).then(tag => {
-          console.log(`tag '${tag.name}' created.`);
-        });
+        if (usegit) {
+          simpleGit().addTag('v' + version).then(tag => {
+            console.log(`tag '${tag.name}' created.`);
+          });
+        }
+        fs.writeFileSync('VERSION', 'v' + version);
       }
     });
 }
