@@ -7,8 +7,6 @@ import JSZip from 'jszip';
 //const path = require('path')
 
 var version = '?.?.?';
-var newrelease = false;
-var minor = false;
 var usegit = true;
 
 var defaultconfig = {
@@ -50,23 +48,21 @@ function buildRelease() {
     .pipe(fs.createWriteStream(zipname))
     .on('finish', function () {
       console.log(zipname + " written.");
-      if (newrelease) {
-        if (usegit) {
-          simpleGit().addTag('v' + version).then(tag => {
-            console.log(`tag '${tag.name}' created.`);
-          });
-        }
-        fs.writeFileSync('VERSION', 'v' + version);
-      }
     });
 }
+
 async function buildAction(buildmode) {
   let build = true, bundle = false, release = false;
   let config = {};
 
   switch (buildmode) {
-    case 'newminorrelease':
-    case 'newrelease':
+    case 'newminorversion':
+    case 'newversion':
+      // don't do anything on version upgrade (build already done)
+      release = false;
+      build = false;
+      bundle = false;
+      break;
     case 'release':
       release = true;
       build = false;
@@ -175,22 +171,35 @@ async function buildAction(buildmode) {
   }
 }
 
-let allargs = ['cmd', 'web', 'minify', 'bundle'];
-let argv = process.argv.slice(2).map(v => v.trim().toLowerCase());
+function distinct(value, index, array) {
+  return array.indexOf(value) === index;
+}
+
+var allargs = ['cmd', 'web', 'minify', 'bundle'];
+var argv = process.argv.slice(2).map(v => v.trim().toLowerCase());
 if (argv.length <= 0) {
   argv = allargs;
-} else if (argv.includes('release')) {
-  argv = [...allargs, 'release'];
-} else if (argv.includes('newrelease')) {
-  newrelease = true;
-  argv = [...allargs, 'newrelease'];
-} else if (argv.includes('newminorrelease')) {
-  newrelease = true;
-  minor = true;
-  argv = [...allargs, 'newminorrelease'];
 }
+var newversion = false;
+var minor = false;
+var release = false;
+if (argv.includes('release')) {
+  release = true;
+  argv = [...allargs, ...argv];
+}
+if (argv.includes('newminorversion')) {
+  newversion = true;
+  minor = true;
+  argv = [...allargs, ...argv];
+}
+if (argv.includes('newversion')) {
+  newversion = true;
+  argv = [...allargs, ...argv];
+}
+if (release) argv.push('release');
+argv = argv.filter(distinct);
 getLastVersion().then(async v => {
-  if (newrelease) {
+  if (newversion) {
     if (minor) {
       v.build = v.build ?? 0;
       v.build++;
@@ -204,4 +213,12 @@ getLastVersion().then(async v => {
     version += `.${v.build}`;
   }
   argv.forEach(await buildAction);
+  if (newversion) {
+    if (usegit) {
+      simpleGit().addTag('v' + version).then(tag => {
+        console.log(`tag '${tag.name}' created.`);
+      });
+    }
+    fs.writeFileSync('VERSION', 'v' + version);
+  }
 });
