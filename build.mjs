@@ -33,7 +33,7 @@ function getLastVersion() {
       let matches = null;
       if (!(matches = latesttag.match(regversion)) || matches.length < 4) throw new Error('No valid version found');
       let v = { 'major': parseInt(matches[1]), 'minor': parseInt(matches[2]), 'revision': parseInt(matches[3]) };
-      if (matches.length > 4) v.build = matches[4];
+      if (matches.length > 4) v.build = parseInt(matches[4]);
       res(v);
     });
   });
