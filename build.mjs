@@ -9,6 +9,7 @@ import JSZip from 'jszip';
 
 var version = '?.?.?';
 var newrelease = false;
+var minor = false;
 var usegit = true;
 
 var defaultconfig = {
@@ -28,15 +29,17 @@ function getLastVersion() {
     simpleGit().tags().then(tags => {
       usegit = tags && typeof tags.latest === 'string';
       let latesttag = usegit ? tags.latest : fs.readFileSync("VERSION", { encoding: 'utf8', flag: 'r' });
-      const regversion = /v(\d+)\.(\d+)\.(\d+)/i;
+      const regversion = /v(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/i;
       let matches = null;
       if (!(matches = latesttag.match(regversion)) || matches.length < 4) throw new Error('No valid version found');
-      res({ 'major': parseInt(matches[1]), 'minor': parseInt(matches[2]), 'revision': parseInt(matches[3]) });
+      let v = { 'major': parseInt(matches[1]), 'minor': parseInt(matches[2]), 'revision': parseInt(matches[3]) };
+      if (matches.length > 4) v.build = matches[4];
+      res(v);
     });
   });
 }
 
-function buildRelease(newversion = false) {
+function buildRelease() {
   console.log(`Releasing '${version}.'...`);
   let zipname = `igc2kmz-${version}.zip`;
   let zip = new JSZip();
@@ -48,7 +51,7 @@ function buildRelease(newversion = false) {
     .pipe(fs.createWriteStream(zipname))
     .on('finish', function () {
       console.log(zipname + " written.");
-      if (newversion) {
+      if (newrelease) {
         if (usegit) {
           simpleGit().addTag('v' + version).then(tag => {
             console.log(`tag '${tag.name}' created.`);
@@ -63,6 +66,7 @@ async function buildAction(buildmode) {
   let config = {};
 
   switch (buildmode) {
+    case 'newminorrelease':
     case 'newrelease':
     case 'release':
       release = true;
@@ -166,7 +170,7 @@ async function buildAction(buildmode) {
       fs.writeFileSync('./dist/igc2kmz_spa.html', htmli2k);
     }
     if (release) {
-      buildRelease(newrelease);
+      buildRelease();
     }
 }
 
@@ -179,9 +183,24 @@ if (argv.length <= 0) {
 } else if (argv.includes('newrelease')) {
   newrelease = true;
   argv = [...allargs, 'newrelease'];
+} else if (argv.includes('newminorrelease')) {
+  newrelease = true;
+  minor = true;
+  argv = [...allargs, 'newminorrelease'];
 }
 getLastVersion().then(async v => {
-  if (newrelease) v.revision++;
+  if (newrelease) {
+    if (minor) {
+      v.build = v.build ?? 0;
+      v.build++;
+    } else {
+      v.build = null;
+      v.revision++;
+    }
+  }
   version = `${v.major}.${v.minor}.${v.revision}`;
+  if (v.build) {
+    version += `.${v.build}`;
+  }
   argv.forEach(await buildAction);
 });

@@ -600,7 +600,7 @@ window.onload = function() {
   $('build_year').innerHTML = build_date.getFullYear();
   let fbdate = build_date.toISOString();
   fbdate = `${fbdate.substring(0, 10)} ${fbdate.substring(11,19)}`;
-  $('version').title = `built on ${fbdate}`;
+  $('version').title = `built on ${fbdate} (UTC)`;
 }
 let optgroups = ['Global', 'Animation', 'Miscellaneous', 'Score', 'Debug'];
 let options = [
