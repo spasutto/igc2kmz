@@ -108,20 +108,20 @@ async function buildAction(buildmode) {
   if (build) {
     console.log(`Building '${buildmode}'...`);
     await esbuild.build(config).catch(() => process.exit(1));
-    // contournement de l'utilisation de l'objet global dans collections.js utilisée par igc-xc-score ;
+    // version web : contournement de l'utilisation de l'objet global dans collections.js utilisée par igc-xc-score ;
     // dans le fichier generic-collections.js est référencé directement l'objet global. Fonctionne avec webpack
+    let builtjs = fs.readFileSync(config.outfile, { encoding: 'utf8', flag: 'r' });
     if (buildmode != 'cmd') {
-      let builtjs = fs.readFileSync(config.outfile, { encoding: 'utf8', flag: 'r' });
       const usestrict = '"use strict";';
       let startofjs = builtjs.indexOf(usestrict);
       if (startofjs > -1) {
         builtjs = usestrict + 'window.global=window;' + builtjs.substring(startofjs + usestrict.length);
       }
-      for (let repkey in replacements) {
-        builtjs = builtjs.replaceAll(repkey, replacements[repkey]);
-      }
-      fs.writeFileSync(config.outfile, builtjs);
     }
+    for (let repkey in replacements) {
+      builtjs = builtjs.replaceAll(repkey, replacements[repkey]);
+    }
+    fs.writeFileSync(config.outfile, builtjs);
   }
   if (bundle) {
     console.log(`Bundling igc2html_spa.html...`);
