@@ -122,7 +122,7 @@ async function buildAction(buildmode) {
         builtjs = usestrict + 'window.global=window;' + builtjs.substring(startofjs + usestrict.length);
       }
       for (let repkey in replacements) {
-        builtjs = builtjs.replace(repkey, replacements[repkey]);
+        builtjs = builtjs.replaceAll(repkey, replacements[repkey]);
       }
       fs.writeFileSync(config.outfile, builtjs);
     }
