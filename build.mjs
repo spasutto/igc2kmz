@@ -215,8 +215,12 @@ getLastVersion().then(async v => {
   argv.forEach(await buildAction);
   if (newversion) {
     fs.writeFileSync('VERSION', 'v' + version);
+    let swjs = fs.readFileSync('sw.js', { encoding: 'utf8', flag: 'r' });
+    const regversion = /(currentVersion\s*=\s*)'(v\d+\.\d+\.\d+(?:\.\d+)?)'/gi;
+    debugger;
+    fs.writeFileSync('sw.js', swjs.replace(regversion, `$1'v${version}'`));
     if (usegit) {
-      simpleGit().commit('Version : ' + version, ['VERSION']).then(cr => {
+      simpleGit().commit('Version : ' + version, ['VERSION', 'sw.js']).then(cr => {
         simpleGit().addTag('v' + version).then(tag => {
           console.log(`tag '${tag.name}' created.`);
         });

@@ -1,7 +1,8 @@
 //self.importScripts('data/games.js');
 
 // Files to cache
-const cacheName = 'igc2kmz-v1';
+const currentVersion = 'v1.0.3.6';
+const cacheName = 'igc2kmz-' + currentVersion;
 const appShellFiles = [
   '/igc2kmz/',
   '/igc2kmz/igc2kmz.html',
