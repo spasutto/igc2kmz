@@ -1,8 +1,7 @@
 import * as esbuild from 'esbuild'
 //import inlineWorkerPlugin from 'esbuild-plugin-inline-worker';
-import { replace } from 'esbuild-plugin-replace';
 import * as fs from 'fs';
-import { simpleGit, CleanOptions } from 'simple-git';
+import { simpleGit } from 'simple-git';
 import JSZip from 'jszip';
 
 //const path = require('path')
@@ -105,73 +104,75 @@ async function buildAction(buildmode) {
       throw new Error(`unknow action '${buildmode}'`);
   }
 
-    config.plugins = [
-      replace({
-        '__IGC2KMZ_VERSION__': `${version}`,
-        '__IGC2KMZ_BUILDDATE__': Date.now().toString()
-      })
-    ];
-    if (build) {
-      console.log(`Building '${buildmode}'...`);
-      await esbuild.build(config).catch(() => process.exit(1));
-      // contournement de l'utilisation de l'objet global dans collections.js utilisée par igc-xc-score ;
-      // dans le fichier generic-collections.js est référencé directement l'objet global. Fonctionne avec webpack
-      if (buildmode != 'cmd') {
-        let builtjs = fs.readFileSync(config.outfile, { encoding: 'utf8', flag: 'r' });
-        const usestrict = '"use strict";';
-        let startofjs = builtjs.indexOf(usestrict);
-        if (startofjs > -1) {
-          builtjs = usestrict + 'window.global=window;' + builtjs.substring(startofjs + usestrict.length);
-          fs.writeFileSync(config.outfile, builtjs);
-        }
+  let replacements = {
+    '__IGC2KMZ_VERSION__': `${version}`,
+    '__IGC2KMZ_BUILDDATE__': Date.now().toString()
+  };
+
+  if (build) {
+    console.log(`Building '${buildmode}'...`);
+    await esbuild.build(config).catch(() => process.exit(1));
+    // contournement de l'utilisation de l'objet global dans collections.js utilisée par igc-xc-score ;
+    // dans le fichier generic-collections.js est référencé directement l'objet global. Fonctionne avec webpack
+    if (buildmode != 'cmd') {
+      let builtjs = fs.readFileSync(config.outfile, { encoding: 'utf8', flag: 'r' });
+      const usestrict = '"use strict";';
+      let startofjs = builtjs.indexOf(usestrict);
+      if (startofjs > -1) {
+        builtjs = usestrict + 'window.global=window;' + builtjs.substring(startofjs + usestrict.length);
+      }
+      for (let repkey in replacements) {
+        builtjs = builtjs.replace(repkey, replacements[repkey]);
+      }
+      fs.writeFileSync(config.outfile, builtjs);
+    }
+  }
+  if (bundle) {
+    console.log(`Bundling igc2html_spa.html...`);
+    // BUNDLE
+    const reginsert = /<script[\s\r\n]+src\s*=\s*(?:"|')([^"']+)(?:"|')[\s\r\n]*>/i;
+    const regminifyjs = /<script>((?:.|[\r\n])*)<\/script>/i;
+    const regminifycss = /<style>((?:.|[\r\n])*)<\/style>/i;
+    let htmli2k = fs.readFileSync('./igc2kmz.html', { encoding: 'utf8', flag: 'r' });
+    let matches = null;
+    let count = 0;
+    htmli2k = htmli2k.replace(/useSW\s*=\s*true/g, 'useSW = false').replaceAll(/<link\s+[^>]+>/gi, '');
+    while ((matches = htmli2k.match(regminifyjs)) != null && count++ < 10) {
+      if (matches.length < 2) continue;
+      const minifiedjs = await esbuild.transform(matches[1], { loader: 'js', minify: true });
+      if (typeof minifiedjs.code === 'string') {
+        //https://stackoverflow.com/a/34040529
+        //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
+        htmli2k = htmli2k.replace(regminifyjs, () => ('<script>' + minifiedjs.code + '</script>'));
       }
     }
-    if (bundle) {
-      console.log(`Bundling igc2html_spa.html...`);
-      // BUNDLE
-      const reginsert = /<script[\s\r\n]+src\s*=\s*(?:"|')([^"']+)(?:"|')[\s\r\n]*>/i;
-      const regminifyjs = /<script>((?:.|[\r\n])*)<\/script>/i;
-      const regminifycss = /<style>((?:.|[\r\n])*)<\/style>/i;
-      let htmli2k = fs.readFileSync('./igc2kmz.html', { encoding: 'utf8', flag: 'r' });
-      let matches = null;
-      let count = 0;
-      htmli2k = htmli2k.replace(/useSW\s*=\s*true/g, 'useSW = false').replaceAll(/<link\s+[^>]+>/gi, '');
-      while ((matches = htmli2k.match(regminifyjs)) != null && count++ < 10) {
-        if (matches.length < 2) continue;
-        const minifiedjs = await esbuild.transform(matches[1], { loader: 'js', minify: true });
-        if (typeof minifiedjs.code === 'string') {
-          //https://stackoverflow.com/a/34040529
-          //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
-          htmli2k = htmli2k.replace(regminifyjs, () => ('<script>' + minifiedjs.code + '</script>'));
-        }
+    count = 0;
+    while ((matches = htmli2k.match(regminifycss)) != null && count++ < 10) {
+      if (matches.length < 2) continue;
+      const minifiedjs = await esbuild.transform(matches[1], { loader: 'css', minify: true });
+      if (typeof minifiedjs.code === 'string') {
+        //https://stackoverflow.com/a/34040529
+        //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
+        htmli2k = htmli2k.replace(regminifycss, () => ('<style>' + minifiedjs.code + '</style>'));
       }
+    }
+    if (!reginsert.test(htmli2k)) {
+      throw new Error('Unable to find igc2kmz script tag in HTML!!!');
+    } else {
       count = 0;
-      while ((matches = htmli2k.match(regminifycss)) != null && count++ < 10) {
+      while ((matches = htmli2k.match(reginsert)) != null && count++ < 10) {
         if (matches.length < 2) continue;
-        const minifiedjs = await esbuild.transform(matches[1], { loader: 'css', minify: true });
-        if (typeof minifiedjs.code === 'string') {
-          //https://stackoverflow.com/a/34040529
-          //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
-          htmli2k = htmli2k.replace(regminifycss, () => ('<style>' + minifiedjs.code + '</style>'));
-        }
+        const minifiedjs = fs.readFileSync(matches[1], { encoding: 'utf8', flag: 'r' });
+        //https://stackoverflow.com/a/34040529
+        //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
+        htmli2k = htmli2k.replace(reginsert, () => ('<script>' + minifiedjs));
       }
-      if (!reginsert.test(htmli2k)) {
-        throw new Error('Unable to find igc2kmz script tag in HTML!!!');
-      } else {
-        count = 0;
-        while ((matches = htmli2k.match(reginsert)) != null && count++ < 10) {
-          if (matches.length < 2) continue;
-          const minifiedjs = fs.readFileSync(matches[1], { encoding: 'utf8', flag: 'r' });
-          //https://stackoverflow.com/a/34040529
-          //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
-          htmli2k = htmli2k.replace(reginsert, () => ('<script>' + minifiedjs));
-        }
-      }
-      fs.writeFileSync('./dist/igc2kmz_spa.html', htmli2k);
     }
-    if (release) {
-      buildRelease();
-    }
+    fs.writeFileSync('./dist/igc2kmz_spa.html', htmli2k);
+  }
+  if (release) {
+    buildRelease();
+  }
 }
 
 let allargs = ['cmd', 'web', 'minify', 'bundle'];
