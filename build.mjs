@@ -214,11 +214,13 @@ getLastVersion().then(async v => {
   }
   argv.forEach(await buildAction);
   if (newversion) {
+    fs.writeFileSync('VERSION', 'v' + version);
     if (usegit) {
-      simpleGit().addTag('v' + version).then(tag => {
-        console.log(`tag '${tag.name}' created.`);
+      simpleGit().commit('Version : ' + version, ['VERSION']).then(cr => {
+        simpleGit().addTag('v' + version).then(tag => {
+          console.log(`tag '${tag.name}' created.`);
+        });
       });
     }
-    fs.writeFileSync('VERSION', 'v' + version);
   }
 });
