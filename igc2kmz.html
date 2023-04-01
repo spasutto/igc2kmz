@@ -48,6 +48,12 @@
       .button:hover {
         border-color: #474747;
       }
+      .button:disabled {
+        background: #dddddd;
+      }
+      .button:hover:disabled {
+        border-color: initial;
+      }
       .red {
         background-color: #df1313;
       }
@@ -278,9 +284,13 @@ var helptimer = null;
 var useSW = true;
 
 function convertigc() {
+  let allbtns = [...document.querySelectorAll('.button')];
+  allbtns.forEach(btn => btn.disabled = true);
   igc2kmz(igccontent, filename, taskcontent, photos, i2koptions).catch(err => {
     alert(err);
     throw err;
+  }).finally(n => {
+    allbtns.forEach(btn => btn.disabled = false);
   });
 }
 function $(id) { return document.getElementById(id); }

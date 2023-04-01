@@ -2,8 +2,9 @@ import { IGCFile, RecordExtensions } from "igc-parser";
 import { Coord } from "./coord";
 import { Bounds, BoundSet, Utils, Slice } from "./util";
 import { Task } from "./task";
-import { solver, Solution, scoringRules as scoring } from 'igc-xc-score';
+import { solver, scoringRules as scoring } from 'igc-xc-score';
 import { defaultconfig, I2KConfiguration } from "./init";
+import { XC } from "./xc";
 
 enum FlyingState {
   UNKNOWN = 0,
@@ -36,7 +37,7 @@ export class Track {
   glides: Slice[] = [];
   dives: Slice[] = [];
   declaration: Task | null = null;
-  xc_score: Solution | null = null;
+  xc_score: XC | null = null;
 
   //extensions: Record<string, string[]> = {};
   constructor(flight: IGCFile, filename?: string, options: I2KConfiguration = defaultconfig) {
@@ -253,7 +254,7 @@ export class Track {
         }
       } while (!newbest.done);
       if (best) {
-        this.xc_score = best;
+        this.xc_score = new XC(best, this.options);
       }
     }
   }
