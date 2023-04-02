@@ -2,7 +2,7 @@
 import { defaultconfig, I2KConfiguration } from "./init";
 import { SimpleCanvas } from './simplecanvas';
 import { saveAs } from 'file-saver';
-import { igc2kmz, IGC2KMZ_BUILDDATE, IGC2KMZ_DEFAULT_CONFIGURATION, IGC2KMZ_VERSION } from "./igc2kmz";
+import { IGC2KMZ, IGC2KMZ_BUILDDATE, IGC2KMZ_DEFAULT_CONFIGURATION, IGC2KMZ_VERSION } from "./igc2kmz";
 
 declare global {
   interface Window {
@@ -32,17 +32,33 @@ class WebCanvas implements SimpleCanvas {
 }
 
 if (typeof window === 'object') {
-  function igc2kmzwrapper(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: [string, Buffer][], options?:I2KConfiguration) {
+  function igc2kmzwrapper(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: [string, Buffer][], options?: I2KConfiguration) {
     let cv = new WebCanvas();
+    let converter = new IGC2KMZ(cv, options);
+    igccontents = Array.isArray(igccontents) ? igccontents : [igccontents ?? ''];
     infilenames = Array.isArray(infilenames) ? infilenames : [infilenames ?? ''];
+    if (infilenames.length < igccontents.length) {
+      for (let i = infilenames.length; i < igccontents.length; i++) {
+        infilenames.push(`track${i + 1}.igc`);
+      }
+    }
     let outfilename = infilenames.length > 0 && infilenames[0].trim().length > 0 ? infilenames[0] : 'track.igc';
     let i = outfilename.lastIndexOf('.');
     if (i >= 0) {
       outfilename = outfilename.substring(0, i);
     }
     outfilename += '.kmz';
+    igccontents.forEach((igc, i) => converter.addIGC(igc, (infilenames && infilenames[i]) || ''));
+    if (taskcontent) {
+      converter.addTask(taskcontent);
+    }
+    if (photos) {
+      photos.forEach(photo => {
+        converter.addPhoto(photo[1], photo[0]);
+      });
+    }
     return new Promise<string>(res => {
-      igc2kmz(cv, igccontents, infilenames, taskcontent, photos, options).then(kmz => {
+      converter.toKMZ().then(kmz => {
         if (kmz) {
           saveAs(new Blob([kmz]), outfilename);
           res(outfilename);

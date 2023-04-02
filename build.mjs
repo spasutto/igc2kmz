@@ -74,8 +74,16 @@ async function buildAction(buildmode) {
       break;
     case 'cmd':
       config = {
-        entryPoints: ["igc2kmz/cmdwrapper.ts"],
+        entryPoints: ["igc2kmz/cli.ts"],
         outfile: 'dist/igc2kmz.cmd.js',
+        platform: 'node',
+        ...defaultconfig,
+      }
+      break;
+    case 'node':
+      config = {
+        entryPoints: ["igc2kmz/nodewrapper.ts"],
+        outfile: 'dist/igc2kmz.js',
         platform: 'node',
         ...defaultconfig,
       }
@@ -111,7 +119,7 @@ async function buildAction(buildmode) {
     // version web : contournement de l'utilisation de l'objet global dans collections.js utilisée par igc-xc-score ;
     // dans le fichier generic-collections.js est référencé directement l'objet global. Fonctionne avec webpack
     let builtjs = fs.readFileSync(config.outfile, { encoding: 'utf8', flag: 'r' });
-    if (buildmode != 'cmd') {
+    if (!['cmd', 'node'].includes(buildmode)) {
       const usestrict = '"use strict";';
       let startofjs = builtjs.indexOf(usestrict);
       if (startofjs > -1) {
@@ -215,12 +223,17 @@ getLastVersion().then(async v => {
   argv.forEach(await buildAction);
   if (newversion) {
     fs.writeFileSync('VERSION', 'v' + version);
-    let swjs = fs.readFileSync('sw.js', { encoding: 'utf8', flag: 'r' });
-    const regversion = /(currentVersion\s*=\s*)'(v\d+\.\d+\.\d+(?:\.\d+)?)'/gi;
-    debugger;
-    fs.writeFileSync('sw.js', swjs.replace(regversion, `$1'v${version}'`));
+    //sw.js
+    let filetomod = fs.readFileSync('sw.js', { encoding: 'utf8', flag: 'r' });
+    let regversion = /(currentVersion\s*=\s*)'(v\d+\.\d+\.\d+(?:\.\d+)?)'/gi;
+    fs.writeFileSync('sw.js', filetomod.replace(regversion, `$1'v${version}'`));
+    //package.json
+    filetomod = fs.readFileSync('package.json', { encoding: 'utf8', flag: 'r' });
+    regversion = /("version"\s*:\s*)"(\d+\.\d+\.\d+(?:\.\d+)?)"'/gi;
+    fs.writeFileSync('package.json', filetomod.replace(regversion, `$1"${version}"`));
+    // commit changes
     if (usegit) {
-      simpleGit().commit('Version : ' + version, ['VERSION', 'sw.js']).then(cr => {
+      simpleGit().commit('Version : ' + version, ['VERSION', 'sw.js', 'package.json']).then(cr => {
         simpleGit().addTag('v' + version).then(tag => {
           console.log(`tag '${tag.name}' created.`);
         });
