@@ -229,7 +229,7 @@ getLastVersion().then(async v => {
     fs.writeFileSync('sw.js', filetomod.replace(regversion, `$1'v${version}'`));
     //package.json
     filetomod = fs.readFileSync('package.json', { encoding: 'utf8', flag: 'r' });
-    regversion = /("version"\s*:\s*)"(\d+\.\d+\.\d+(?:\.\d+)?)"'/gi;
+    regversion = /("version"\s*:\s*)"(\d+\.\d+\.\d+(?:\.\d+)?)"/gi;
     fs.writeFileSync('package.json', filetomod.replace(regversion, `$1"${version}"`));
     // commit changes
     if (usegit) {
