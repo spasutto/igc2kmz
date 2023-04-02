@@ -209,7 +209,7 @@ argv = argv.filter(distinct);
 getLastVersion().then(async v => {
   if (newversion) {
     if (minor) {
-      v.build = v.build ?? 0;
+      v.build = (typeof v.build !== 'number' || isNaN(v.build)) ? 0 : v.build;
       v.build++;
     } else {
       v.build = null;
@@ -222,6 +222,7 @@ getLastVersion().then(async v => {
   }
   argv.forEach(await buildAction);
   if (newversion) {
+    console.log('Writting version ' + version);
     fs.writeFileSync('VERSION', 'v' + version);
     //sw.js
     let filetomod = fs.readFileSync('sw.js', { encoding: 'utf8', flag: 'r' });
@@ -229,7 +230,7 @@ getLastVersion().then(async v => {
     fs.writeFileSync('sw.js', filetomod.replace(regversion, `$1'v${version}'`));
     //package.json
     filetomod = fs.readFileSync('package.json', { encoding: 'utf8', flag: 'r' });
-    regversion = /("version"\s*:\s*)"(\d+\.\d+\.\d+(?:\.\d+)?)"'/gi;
+    regversion = /("version"\s*:\s*)"(\d+\.\d+\.\d+(?:\.\d+)?)"/gi;
     fs.writeFileSync('package.json', filetomod.replace(regversion, `$1"${version}"`));
     // commit changes
     if (usegit) {
