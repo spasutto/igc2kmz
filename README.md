@@ -58,7 +58,7 @@ npm run buildnode # for use as library
 ## Reusing
 ### web
 
-[build web/minify version first](#build), then see [examples/example.html]https://github.com/spasutto/igc2kmz/blob/master/examples/example.html)
+[build web/minify version first](#build), then see [examples/example.html](https://github.com/spasutto/igc2kmz/blob/master/examples/example.html)
 
 ### node
 [build node version first](#build), copy `dist/igc2kmz.js` then in a new javascript file :
