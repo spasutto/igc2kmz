@@ -1,6 +1,6 @@
 {
     "name": "igc2kmz",
-    "version": "1.0.5.1",
+    "version": "1.0.5.2",
     "author": "Sylvain Pasutto <sylvainpasutto@gmail.com>",
     "dependencies": {
         "@rgrove/parse-xml": "^4.1.0",

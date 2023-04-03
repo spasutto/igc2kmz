@@ -56,7 +56,7 @@ async function buildAction(buildmode) {
   let config = {};
 
   switch (buildmode) {
-    case 'newminorversion':
+    case 'newbuild':
     case 'newversion':
       // don't do anything on version upgrade (build already done)
       release = false;
@@ -195,7 +195,7 @@ if (argv.includes('release')) {
   release = true;
   argv = [...allargs, ...argv];
 }
-if (argv.includes('newminorversion')) {
+if (argv.includes('newbuild')) {
   newversion = true;
   minor = true;
   argv = [...allargs, ...argv];
