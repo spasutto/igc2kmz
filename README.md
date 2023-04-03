@@ -20,21 +20,6 @@ Upload to [Google Earth](https://earth.google.com/web/), voilà!
 
 :information_source: *Note* : animations doesn't seem to work on web version of earth, but are ok on desktop version...
 
-## Build
-Get [sources from the repository](https://github.com/spasutto/igc2kmz) and install npm dependencies
-```
-git clone https://github.com/spasutto/igc2kmz.git
-cd igc2kmz
-npm install
-```
-then
-```
-npm run build    # for command line usage
-#  or
-npm run minify   # for web
-npm run buildweb # for web (development)
-```
-
 ## Features
 #### Animation
 [![Visualisation example](doc/animation.webp?raw=true)](doc/animation.webp?raw=true)
@@ -52,6 +37,39 @@ npm run buildweb # for web (development)
 > *XC Track file format (.xctsk)*
 
 [![Visualisation example](doc/task.jpg?raw=true)](doc/task.jpg?raw=true)
+
+## Build
+Get [sources from the repository](https://github.com/spasutto/igc2kmz) and install npm dependencies
+```
+git clone https://github.com/spasutto/igc2kmz.git
+cd igc2kmz
+npm install
+```
+then
+```
+npm run build     # for command line usage
+#  or
+npm run minify    # for web
+npm run buildweb  # for web (development)
+#  or
+npm run buildnode # for use as library
+```
+
+## Reusing
+[build node version first](#build), copy `dist/igc2kmz.js` then in a new javascript file :
+```javascript
+var igc2kmz = require('igc2kmz');
+const fs = require('fs');
+
+var igccontent = fs.readFileSync('examples/flight.igc', { encoding: 'utf8', flag: 'r' });
+var outfilename = "output.kmz";
+igc2kmz.igc2kmz(igccontent).catch(err => console.log(err)).then(kmz => {
+  if (kmz) {
+    fs.writeFileSync(outfilename, Buffer.from(kmz), 'binary');
+    console.log("output to " + outfilename);
+  }
+});
+```
 
 ## Bugs/todo
  - tests
