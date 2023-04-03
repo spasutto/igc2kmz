@@ -56,6 +56,11 @@ npm run buildnode # for use as library
 ```
 
 ## Reusing
+### web
+
+[build web/minify version first](#build), then see [https://github.com/spasutto/igc2kmz/blob/master/examples/example.html](examples/example.html)
+
+### node
 [build node version first](#build), copy `dist/igc2kmz.js` then in a new javascript file :
 ```javascript
 var igc2kmz = require('igc2kmz');
