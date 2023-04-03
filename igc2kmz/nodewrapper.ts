@@ -64,7 +64,7 @@ class HeadlessCanvas implements SimpleCanvas {
   }
 }
 
-export function igc2kmz(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: [string, Buffer][], options: I2KConfiguration = defaultconfig): Promise<ArrayBuffer> {
+function createconverter(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: [string, Buffer][], options: I2KConfiguration = defaultconfig): IGC2KMZ {
   igccontents = Array.isArray(igccontents) ? igccontents : [igccontents ?? ''];
   infilenames = Array.isArray(infilenames) ? infilenames : [infilenames ?? ''];
   if (infilenames.length < igccontents.length) {
@@ -84,5 +84,15 @@ export function igc2kmz(igccontents: string[] | string, infilenames?: string[] |
       converter.addPhoto(photo[1], photo[0]);
     });
   }
-  return converter.toKMZ();
+  return converter;
 }
+
+export function igc2kmz(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: [string, Buffer][], options: I2KConfiguration = defaultconfig): Promise<ArrayBuffer> {
+  return createconverter(igccontents, infilenames, taskcontent, photos, options).toKMZ();
+}
+
+
+export function igc2kml(igccontents: string[] | string, infilenames?: string[] | string, taskcontent?: string, photos?: [string, Buffer][], options: I2KConfiguration = defaultconfig): Promise<string> {
+  return createconverter(igccontents, infilenames, taskcontent, photos, options).toKML();
+}
+

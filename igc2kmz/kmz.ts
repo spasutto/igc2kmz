@@ -72,14 +72,21 @@ export class KMZ {
     return this;
   }
 
-  get_data(version: number, serialize: boolean = false): Promise<ArrayBuffer> {
-    return new Promise<ArrayBuffer>(res => {
+  get_data(version: number, retkml: boolean = false, serialize: boolean = false): Promise<ArrayBuffer|string> {
+    return new Promise<ArrayBuffer|string>(res => {
       const j: JSZip = new (<any>JSZip).default();
       let document = new KML.Document();
       this.roots.forEach(root => document.add(root));
       this.elements.forEach(elm => document.add(elm));
       let kml = new KML.KML(version, document);
-      if (serialize) console.log(kml.serialize(true));
+      if (retkml || serialize) {
+        let kmlstring = kml.serialize(true);
+        if (serialize) console.log(kmlstring);
+        if (retkml) {
+          res(kmlstring);
+          return;
+        }
+      }
       //console.log(kml);
       j.file('doc.kml', kml.serialize());
       for (let i = 0; i < this.files.length; i++) {

@@ -40,7 +40,7 @@ export class IGC2KMZ {
     this.taskcontent = null;
   }
 
-  toKMZ(): Promise<ArrayBuffer> {
+  #convert(kml:boolean = false):Promise<ArrayBuffer|string> {
     let flights: Flight[] = [];
     let firstlaunch = -1;
     for (let i = 0; i < this.igccontents.length; i++) {
@@ -66,15 +66,23 @@ export class IGC2KMZ {
         promises.push(Photo.parse(photo[0], photo[1]));
       });
     }
-    return new Promise<ArrayBuffer>(res => {
+    return new Promise<ArrayBuffer|string>(res => {
       Promise.all(promises).then(photos => {
         if (flights.length > 0 && photos.length > 0) {
           flights[flights.length - 1].photos.push(...photos);
         }
         let fcv = new FlightConvert(this.cv);
         // TODO root KML
-        fcv.flights2kmz(flights, this.options, task).then(res);
+        fcv.convert(flights, this.options, task, kml).then(res);
       });
     });
+  }
+
+  toKMZ(): Promise<ArrayBuffer> {
+    return this.#convert() as Promise<ArrayBuffer>;
+  }
+
+  toKML() {
+    return this.#convert(true) as Promise<string>;
   }
 }

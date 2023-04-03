@@ -94,7 +94,7 @@ export class FlightConvert {
     }
   }
 
-  flights2kmz(flights: Flight[], options: I2KConfiguration = defaultconfig, task?: Task | null): Promise<ArrayBuffer> {
+  convert(flights: Flight[], options: I2KConfiguration = defaultconfig, task?: Task | null, kml: boolean = false) {
     this.flights = flights;
     this.options = options;
     this.bounds = {};
@@ -161,7 +161,7 @@ export class FlightConvert {
       }
     }
 
-    return new Promise<ArrayBuffer>(res => {
+    return new Promise<ArrayBuffer|string>(res => {
       let kmz: KMZ = new KMZ();
       kmz.add_siblings([this.stock.kmz]);
       //TODO ROOTS result.add_roots()
@@ -171,8 +171,21 @@ export class FlightConvert {
       Promise.all(flights.map(f => f.to_kmz(this))).then(kmzs => {
         kmz.add_siblings(kmzs);
       }).then(() => {
-        kmz.get_data(2.2, this.options.dbg_serialize).then(res);
+        if (kml) {
+          kmz.get_data(2.1, true).then(res);
+        }
+        else {
+          kmz.get_data(2.1, false, this.options.dbg_serialize).then(res);
+        }
       });
     });
+  }
+
+  flights2kml(flights: Flight[], options: I2KConfiguration = defaultconfig, task?: Task | null): Promise<string> {
+    return this.convert(flights, options, task) as Promise<string>;
+  }
+
+  flights2kmz(flights: Flight[], options: I2KConfiguration = defaultconfig, task?: Task | null): Promise<ArrayBuffer> {
+    return this.convert(flights, options, task) as Promise<ArrayBuffer>;
   }
 }

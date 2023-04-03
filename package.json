@@ -24,13 +24,14 @@
         "minify": "node ./build.mjs minify",
         "bundleweb": "node ./build.mjs bundle",
         "buildall": "npm run build && npm run buildweb && npm run minify && npm run bundleweb",
-        "test": "mocha"
+        "test": "npm run buildnode && mocha"
     },
     "devDependencies": {
         "@types/base64-stream": "^1.0.2",
         "@types/concat-stream": "^2.0.0",
         "@types/google-polyline": "^1.0.0",
         "@types/node": "^18.14.2",
+        "libxmljs": "^1.0.6",
         "mocha": "^10.2.0",
         "simple-git": "^3.17.0"
     }

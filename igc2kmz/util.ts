@@ -361,6 +361,6 @@ export class RandomIdGenerator {
     }
     this.ids.push(id);
 
-    return id;
+    return '_' + id; // les attributs ID XML ne doivent pas commencer par un digit
   }
 }
