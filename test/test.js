@@ -16,7 +16,7 @@ describe('Simple structure test', function () {
   this.timeout(25000);
   it('should have necessary files inside KMZ', function (done) {
     let igccontent = fs.readFileSync('examples/flight.igc', { encoding: 'utf8', flag: 'r' });
-    igc2kmz.igc2kmz(igccontent).catch(err => console.log(err)).then(kmz => {
+    igc2kmz.igc2kmz(igccontent).catch(err => assert.fail(err)).then(kmz => {
       JSZip.loadAsync(kmz).then(zip => {
         Promise.all([file_exists_in_zip(zip, "doc.kml"), file_exists_in_zip(zip, "images/paraglider.png"), file_exists_in_zip(zip, "images/pixel.png")]).then(res => {
           let errors = res.filter(r => !r.valid);
@@ -34,7 +34,7 @@ describe('KML validation', function () {
   this.timeout(25000);
   it('Should be valid', function (done) {
     let igccontent = fs.readFileSync('examples/flight.igc', { encoding: 'utf8', flag: 'r' });
-    igc2kmz.igc2kml(igccontent).catch(err => console.log(err)).then(kml => {
+    igc2kmz.igc2kml(igccontent).catch(err => assert.fail(err)).then(kml => {
       var xsd = x.parseXml(fs.readFileSync("test/kml21.xsd"));
       //var xsd = x.parseXml(fs.readFileSync("test/ogckml22.xsd"));
       //var xsd = x.parseXml(fs.readFileSync("test/kml22.xsd"));
