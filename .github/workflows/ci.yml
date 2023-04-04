@@ -42,8 +42,9 @@ jobs:
         run: npm install
       - run: npm ci
       - name: Test
-        run: npm run buildnode
-        run: npm test
+        run: |
+          npm run buildnode
+          npm test
       - name: Build
         run: npm run buildall --if-present
       - name: Build with Jekyll
