@@ -24,7 +24,7 @@
         "minify": "node ./build.mjs minify",
         "bundleweb": "node ./build.mjs bundle",
         "buildall": "npm run build && npm run buildweb && npm run minify && npm run bundleweb",
-        "test": "npm run buildnode && mocha"
+        "test": "mocha"
     },
     "devDependencies": {
         "@types/base64-stream": "^1.0.2",
