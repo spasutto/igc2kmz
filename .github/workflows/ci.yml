@@ -42,10 +42,10 @@ jobs:
         run: npm install
       - run: npm ci
       - name: Test
-      - run: npm run buildnode
+        run: npm run buildnode
       - run: npm test
       - name: Build
-      - run: npm run buildall --if-present
+        run: npm run buildall --if-present
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
