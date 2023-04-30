@@ -1,4 +1,5 @@
-import { Coord } from "./coord";
+
+const SEALEVEL_QNH: number = 101325;
 
 export class Bounds {
   min: any;
@@ -197,6 +198,11 @@ export class Utils {
     }
     return indexes;
   }
+
+  // calculate altitude from given pressure and pressure at sea level
+  static getAltitude(pressure: number, seaLevelPressure: number=SEALEVEL_QNH) { return 44330.0 * (1.0 - Math.pow(pressure / seaLevelPressure, 0.1902949)); }
+  // Calculate sea level from Pressure given on specific altitude
+  static getSeaLevel(pressure: number, altitude: number) { return pressure / Math.pow(1.0 - (altitude / 44330.0), 5.255); }
 
   static hashcode(value: string): number {
     for (var i = 0, h = 0; i < value.length; i++)

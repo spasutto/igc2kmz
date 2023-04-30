@@ -83,3 +83,5 @@ igc2kmz.igc2kmz(igccontent).catch(err => console.log(err)).then(kmz => {
  - others tasks formats
  - warnings on fonts via pureimage
  - warning on Buffer() (outdated pngjs of pureimage)
+ - get real altitude and correct IGC or convert from QFE
+

@@ -16,6 +16,10 @@ export interface I2KConfiguration {
    */
   tz_offset: number;
   /**
+   * Use GPS altitude instead of pressure
+   */
+  gps_altitude: boolean;
+  /**
    * set to true to apply launch time to subsequent flights
    */
   same_start: boolean;
@@ -61,6 +65,7 @@ export interface I2KConfiguration {
 
 export const defaultconfig: I2KConfiguration = {
   tz_offset: 0,
+  gps_altitude: false,
   same_start: false,
   solid_color: '#ff0000',
   anim_tail: true,
