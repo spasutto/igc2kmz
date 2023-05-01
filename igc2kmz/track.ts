@@ -44,7 +44,8 @@ export class Track {
     this.options = options;
     this.flight = flight;
     this.filename = filename ?? "flight.igc"; //TODO
-    this.coords = Track.filter(flight.fixes.map(f => Coord.deg(f.latitude, f.longitude, (this.options.gps_altitude || f.pressureAltitude === null ? f.gpsAltitude : f.pressureAltitude) || 0, new Date(f.timestamp))));
+    let pressure_altitude = this.options.pressure_altitude && flight.fixes.length > 0 && flight.fixes[0].pressureAltitude !== null;
+    this.coords = Track.filter(flight.fixes.map(f => Coord.deg(f.latitude, f.longitude, (pressure_altitude ? f.pressureAltitude : f.gpsAltitude) || 0, new Date(f.timestamp))));
     this.t = this.coords.map(c => c.dt.getTime() / 1000);
     if (this.t.length <= 0) {
       throw new Error('No valid records in ' + this.filename);
