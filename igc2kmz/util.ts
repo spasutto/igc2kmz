@@ -1,5 +1,5 @@
 
-const SEALEVEL_QNH: number = 101325;
+export const SEALEVEL_QNH: number = 1013.25;
 
 export class Bounds {
   min: any;
@@ -200,9 +200,12 @@ export class Utils {
   }
 
   // calculate altitude from given pressure and pressure at sea level
-  static getAltitude(pressure: number, seaLevelPressure: number=SEALEVEL_QNH) { return 44330.0 * (1.0 - Math.pow(pressure / seaLevelPressure, 0.1902949)); }
+  static getAltitude(pressure: number, seaLevelPressure: number = SEALEVEL_QNH) { return 44330.0 * (1.0 - Math.pow(pressure / seaLevelPressure, 0.1902949)); }
+  // calculate pressure from given altitude and pressure at sea level
+  static getPressure(altitude: number, seaLevelPressure: number = SEALEVEL_QNH) { return seaLevelPressure * Math.pow(1.0 - altitude / 44330.0, 5.2550015); }
+
   // Calculate sea level from Pressure given on specific altitude
-  static getSeaLevel(pressure: number, altitude: number) { return pressure / Math.pow(1.0 - (altitude / 44330.0), 5.255); }
+  static getSeaLevel(pressure: number, altitude: number) { return pressure / Math.pow(1.0 - (altitude / 44330.0), 5.2550016); }
 
   static hashcode(value: string): number {
     for (var i = 0, h = 0; i < value.length; i++)

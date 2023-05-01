@@ -1,6 +1,6 @@
 import { IGCFile, RecordExtensions } from "igc-parser";
 import { Coord } from "./coord";
-import { Bounds, BoundSet, Utils, Slice } from "./util";
+import { Bounds, BoundSet, Utils, Slice, SEALEVEL_QNH } from "./util";
 import { Task } from "./task";
 import { solver, scoringRules as scoring } from 'igc-xc-score';
 import { defaultconfig, I2KConfiguration } from "./init";
@@ -45,7 +45,9 @@ export class Track {
     this.flight = flight;
     this.filename = filename ?? "flight.igc"; //TODO
     let pressure_altitude = this.options.pressure_altitude && flight.fixes.length > 0 && flight.fixes[0].pressureAltitude !== null;
-    this.coords = Track.filter(flight.fixes.map(f => Coord.deg(f.latitude, f.longitude, (pressure_altitude ? f.pressureAltitude : f.gpsAltitude) || 0, new Date(f.timestamp))));
+    // calcul de l'altitude rapportée au QNH du jour
+    let getRealAltitude = (alt: number) => Utils.getAltitude(Utils.getPressure(alt, SEALEVEL_QNH), options.qnh);
+    this.coords = Track.filter(flight.fixes.map(f => Coord.deg(f.latitude, f.longitude, (pressure_altitude ? getRealAltitude(f.pressureAltitude ?? 0) : f.gpsAltitude) || 0, new Date(f.timestamp))));
     this.t = this.coords.map(c => c.dt.getTime() / 1000);
     if (this.t.length <= 0) {
       throw new Error('No valid records in ' + this.filename);

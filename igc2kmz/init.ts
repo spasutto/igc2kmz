@@ -5,7 +5,7 @@ import { KMZ } from "./kmz";
 import { Scale, TimeScale, ZeroCenteredScale } from "./scale";
 import { Flight } from "./flight";
 import { Task } from "./task";
-import { BoundSet, bsupdate, OpenStruct } from "./util";
+import { BoundSet, bsupdate, OpenStruct, SEALEVEL_QNH } from "./util";
 import { Stock } from "./stock";
 
 import { SimpleCanvas } from "./simplecanvas";
@@ -19,6 +19,10 @@ export interface I2KConfiguration {
    * Use barometric altitude instead of GPS
    */
   pressure_altitude: boolean;
+  /**
+   * QNH for barometric altitude
+   */
+  qnh: number;
   /**
    * set to true to apply launch time to subsequent flights
    */
@@ -66,6 +70,7 @@ export interface I2KConfiguration {
 export const defaultconfig: I2KConfiguration = {
   tz_offset: 0,
   pressure_altitude: false,
+  qnh: SEALEVEL_QNH,
   same_start: false,
   solid_color: '#ff0000',
   anim_tail: true,
