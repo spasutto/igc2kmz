@@ -585,6 +585,9 @@ window.onload = function() {
   let default_config = DEFAULT_IGC2KMZ_CONFIGURATION;
   try {
     let config = JSON.parse(localStorage.getItem('options'));
+    // suppression des clées inexistantes dans la config
+    // (évite les messages de warning à la sortie sans sauver de la fenêtre d'options lorsqu'un paramètre a été supprimé d'une version)
+    Object.keys(config).filter(k => !options.some(o => o[1] == k)).forEach(k => delete config[k]);
     if (typeof config === 'object' && typeof config.tz_offset === 'number') {
       default_config = {...default_config, ...config};
     }
