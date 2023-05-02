@@ -114,7 +114,7 @@ async function buildAction(buildmode) {
     '__IGC2KMZ_BUILDDATE__': Date.now().toString()
   };
 
-  if (build) {
+  if (build || bundle) {
     console.log(`Building '${buildmode}'...`);
     await esbuild.build(config).catch(() => process.exit(1));
     // version web : contournement de l'utilisation de l'objet global dans collections.js utilisée par igc-xc-score ;
@@ -132,7 +132,7 @@ async function buildAction(buildmode) {
     }
     fs.writeFileSync(config.outfile, builtjs);
 
-    if (['web', 'minify'].includes(buildmode)) {
+    if (bundle || ['web', 'minify'].includes(buildmode)) {
       let igc2kmzhtml = fs.readFileSync('igc2kmz.html', { encoding: 'utf8', flag: 'r' });
       for (let repkey in replacements) {
         igc2kmzhtml = igc2kmzhtml.replaceAll(repkey, replacements[repkey]);
@@ -146,7 +146,7 @@ async function buildAction(buildmode) {
     const reginsert = /<script[\s\r\n]+src\s*=\s*(?:"|')([^"'?]+)\??[^"']*(?:"|')[\s\r\n]*>/i;
     const regminifyjs = /<script>((?:.|[\r\n])*)<\/script>/i;
     const regminifycss = /<style>((?:.|[\r\n])*)<\/style>/i;
-    let htmli2k = fs.readFileSync('./igc2kmz.html', { encoding: 'utf8', flag: 'r' });
+    let htmli2k = fs.readFileSync('./dist/igc2kmz.html', { encoding: 'utf8', flag: 'r' });
     let matches = null;
     let count = 0;
     htmli2k = htmli2k.replace(/useSW\s*=\s*true/g, 'useSW = false').replaceAll(/<link\s+[^>]+>/gi, '');
