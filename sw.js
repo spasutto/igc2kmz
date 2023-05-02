@@ -1,11 +1,11 @@
 //self.importScripts('data/games.js');
 
 // Files to cache
-const currentVersion = 'v1.0.5.5';
+const currentVersion = 'v1.0.5.4';
 const cacheName = 'igc2kmz-' + currentVersion;
 const appShellFiles = [
   '/igc2kmz/',
-  '/igc2kmz/dist/igc2kmz.html',
+  '/igc2kmz/igc2kmz.html',
   '/igc2kmz/dist/igc2kmz.min.js',
   '/igc2kmz/assets/googleearth-32.png',
   '/igc2kmz/assets/googleearth-64.png',

@@ -41,8 +41,7 @@ function buildRelease() {
   let zipname = `igc2kmz-${version}.zip`;
   let zip = new JSZip();
   ['igc2kmz.cmd.js', 'igc2kmz.min.js', 'igc2kmz.js'].forEach(f => zip.file('dist/' + f, fs.readFileSync('dist/' + f, { encoding: 'utf8', flag: 'r' })));
-  ['README.md', 'LICENSE', 'sw.js', 'igc2kmz.webmanifest', 'favicon.ico', 'assets/googleearth-32.png', 'assets/googleearth-64.png', 'assets/googleearth-128.png', 'assets/googleearth-256.png', 'assets/googleearth-512.png'].forEach(f => zip.file(f, fs.readFileSync(f, { encoding: 'utf8', flag: 'r' })));
-  zip.file('igc2kmz_spa.html', fs.readFileSync('dist/igc2kmz.html', { encoding: 'utf8', flag: 'r' }));
+  ['igc2kmz.html', 'README.md', 'LICENSE', 'sw.js', 'igc2kmz.webmanifest', 'favicon.ico', 'assets/googleearth-32.png', 'assets/googleearth-64.png', 'assets/googleearth-128.png', 'assets/googleearth-256.png', 'assets/googleearth-512.png'].forEach(f => zip.file(f, fs.readFileSync(f, { encoding: 'utf8', flag: 'r' })));
   zip.file('igc2kmz_spa.html', fs.readFileSync('dist/igc2kmz_spa.html', { encoding: 'utf8', flag: 'r' }));
   zip
     .generateNodeStream({ type: 'nodebuffer', streamFiles: true })
@@ -69,6 +68,10 @@ async function buildAction(buildmode) {
       build = false;
       bundle = false;
       break;
+    case 'bundle':
+      build = false;
+      bundle = true;
+      break;
     case 'cmd':
       config = {
         entryPoints: ["igc2kmz/cli.ts"],
@@ -85,9 +88,6 @@ async function buildAction(buildmode) {
         ...defaultconfig,
       }
       break;
-    case 'bundle':
-      build = true;
-      bundle = true;
     case 'minify':
       config = {
         outfile: 'dist/igc2kmz.min.js',
@@ -130,22 +130,14 @@ async function buildAction(buildmode) {
       builtjs = builtjs.replaceAll(repkey, replacements[repkey]);
     }
     fs.writeFileSync(config.outfile, builtjs);
-
-    if (bundle || ['web', 'minify'].includes(buildmode)) {
-      let igc2kmzhtml = fs.readFileSync('igc2kmz.html', { encoding: 'utf8', flag: 'r' });
-      for (let repkey in replacements) {
-        igc2kmzhtml = igc2kmzhtml.replaceAll(repkey, replacements[repkey]);
-      }
-      fs.writeFileSync('./dist/igc2kmz.html', igc2kmzhtml);
-    }
   }
   if (bundle) {
     console.log(`Bundling igc2html_spa.html...`);
     // BUNDLE
-    const reginsert = /<script[\s\r\n]+src\s*=\s*(?:"|')([^"'?]+)\??[^"']*(?:"|')[\s\r\n]*>/i;
+    const reginsert = /<script[\s\r\n]+src\s*=\s*(?:"|')([^"']+)(?:"|')[\s\r\n]*>/i;
     const regminifyjs = /<script>((?:.|[\r\n])*)<\/script>/i;
     const regminifycss = /<style>((?:.|[\r\n])*)<\/style>/i;
-    let htmli2k = fs.readFileSync('./dist/igc2kmz.html', { encoding: 'utf8', flag: 'r' });
+    let htmli2k = fs.readFileSync('./igc2kmz.html', { encoding: 'utf8', flag: 'r' });
     let matches = null;
     let count = 0;
     htmli2k = htmli2k.replace(/useSW\s*=\s*true/g, 'useSW = false').replaceAll(/<link\s+[^>]+>/gi, '');
@@ -174,7 +166,7 @@ async function buildAction(buildmode) {
       count = 0;
       while ((matches = htmli2k.match(reginsert)) != null && count++ < 10) {
         if (matches.length < 2) continue;
-        const minifiedjs = fs.readFileSync('./dist/'+matches[1], { encoding: 'utf8', flag: 'r' });
+        const minifiedjs = fs.readFileSync(matches[1], { encoding: 'utf8', flag: 'r' });
         //https://stackoverflow.com/a/34040529
         //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
         htmli2k = htmli2k.replace(reginsert, () => ('<script>' + minifiedjs));
