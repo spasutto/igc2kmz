@@ -41,7 +41,8 @@ function buildRelease() {
   let zipname = `igc2kmz-${version}.zip`;
   let zip = new JSZip();
   ['igc2kmz.cmd.js', 'igc2kmz.min.js', 'igc2kmz.js'].forEach(f => zip.file('dist/' + f, fs.readFileSync('dist/' + f, { encoding: 'utf8', flag: 'r' })));
-  ['igc2kmz.html', 'README.md', 'LICENSE', 'sw.js', 'igc2kmz.webmanifest', 'favicon.ico', 'assets/googleearth-32.png', 'assets/googleearth-64.png', 'assets/googleearth-128.png', 'assets/googleearth-256.png', 'assets/googleearth-512.png'].forEach(f => zip.file(f, fs.readFileSync(f, { encoding: 'utf8', flag: 'r' })));
+  ['README.md', 'LICENSE', 'sw.js', 'igc2kmz.webmanifest', 'favicon.ico', 'assets/googleearth-32.png', 'assets/googleearth-64.png', 'assets/googleearth-128.png', 'assets/googleearth-256.png', 'assets/googleearth-512.png'].forEach(f => zip.file(f, fs.readFileSync(f, { encoding: 'utf8', flag: 'r' })));
+  zip.file('igc2kmz_spa.html', fs.readFileSync('dist/igc2kmz.html', { encoding: 'utf8', flag: 'r' }));
   zip.file('igc2kmz_spa.html', fs.readFileSync('dist/igc2kmz_spa.html', { encoding: 'utf8', flag: 'r' }));
   zip
     .generateNodeStream({ type: 'nodebuffer', streamFiles: true })
@@ -130,11 +131,19 @@ async function buildAction(buildmode) {
       builtjs = builtjs.replaceAll(repkey, replacements[repkey]);
     }
     fs.writeFileSync(config.outfile, builtjs);
+
+    if (['web', 'minify'].includes(buildmode)) {
+      let igc2kmzhtml = fs.readFileSync('igc2kmz.html', { encoding: 'utf8', flag: 'r' });
+      for (let repkey in replacements) {
+        igc2kmzhtml = igc2kmzhtml.replaceAll(repkey, replacements[repkey]);
+      }
+      fs.writeFileSync('./dist/igc2kmz.html', igc2kmzhtml);
+    }
   }
   if (bundle) {
     console.log(`Bundling igc2html_spa.html...`);
     // BUNDLE
-    const reginsert = /<script[\s\r\n]+src\s*=\s*(?:"|')([^"']+)(?:"|')[\s\r\n]*>/i;
+    const reginsert = /<script[\s\r\n]+src\s*=\s*(?:"|')([^"'?]+)\??[^"']*(?:"|')[\s\r\n]*>/i;
     const regminifyjs = /<script>((?:.|[\r\n])*)<\/script>/i;
     const regminifycss = /<style>((?:.|[\r\n])*)<\/style>/i;
     let htmli2k = fs.readFileSync('./igc2kmz.html', { encoding: 'utf8', flag: 'r' });
