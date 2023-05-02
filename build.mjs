@@ -69,10 +69,6 @@ async function buildAction(buildmode) {
       build = false;
       bundle = false;
       break;
-    case 'bundle':
-      build = false;
-      bundle = true;
-      break;
     case 'cmd':
       config = {
         entryPoints: ["igc2kmz/cli.ts"],
@@ -89,6 +85,9 @@ async function buildAction(buildmode) {
         ...defaultconfig,
       }
       break;
+    case 'bundle':
+      build = true;
+      bundle = true;
     case 'minify':
       config = {
         outfile: 'dist/igc2kmz.min.js',
@@ -114,7 +113,7 @@ async function buildAction(buildmode) {
     '__IGC2KMZ_BUILDDATE__': Date.now().toString()
   };
 
-  if (build || bundle) {
+  if (build) {
     console.log(`Building '${buildmode}'...`);
     await esbuild.build(config).catch(() => process.exit(1));
     // version web : contournement de l'utilisation de l'objet global dans collections.js utilisée par igc-xc-score ;
@@ -175,7 +174,7 @@ async function buildAction(buildmode) {
       count = 0;
       while ((matches = htmli2k.match(reginsert)) != null && count++ < 10) {
         if (matches.length < 2) continue;
-        const minifiedjs = fs.readFileSync(matches[1], { encoding: 'utf8', flag: 'r' });
+        const minifiedjs = fs.readFileSync('./dist/'+matches[1], { encoding: 'utf8', flag: 'r' });
         //https://stackoverflow.com/a/34040529
         //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
         htmli2k = htmli2k.replace(reginsert, () => ('<script>' + minifiedjs));
