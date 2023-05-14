@@ -46,6 +46,10 @@ export interface I2KConfiguration {
    */
   anim_tail_color: string;
   /**
+   * Use Pilot name color for tail animation color
+   */
+  anim_tail_use_pilot_color: boolean;
+  /**
    * Extrude section color
    */
   extrude_color: string;
@@ -76,6 +80,7 @@ export const defaultconfig: I2KConfiguration = {
   anim_tail: true,
   anim_tail_duration: 60,
   anim_tail_color: '#ff9b00',
+  anim_tail_use_pilot_color: true,
   extrude_color: '#000000',
   xc_score: true,
   xc_score_rules: 'FFVL',

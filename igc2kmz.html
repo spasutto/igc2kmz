@@ -284,12 +284,15 @@ var helptimer = null;
 var useSW = true;
 
 function convertigc() {
+  if (window.convertingigc) return;
+  window.convertingigc = true;
   let allbtns = [...document.querySelectorAll('.button')];
   allbtns.forEach(btn => btn.disabled = true);
   igc2kmz(igccontent, filename, taskcontent, photos, i2koptions).catch(err => {
     alert(err);
     throw err;
   }).finally(n => {
+    window.convertingigc = false;
     allbtns.forEach(btn => btn.disabled = false);
   });
 }
@@ -626,6 +629,7 @@ let options = [
   ['Animation', 'anim_tail', 'checkbox', 'Show tail', 'Show colored tail following paraglider\'s path'],
   ['Animation', 'anim_tail_duration', 'number', 'Tail duration', 'Length in seconds for the colored tail. -1 for infinity (till launch)', [0]],
   ['Animation', 'anim_tail_color', 'color', 'Tail color', 'Color of the tail following paraglider\'s path'],
+  ['Animation', 'anim_tail_use_pilot_color', 'checkbox', 'Use pilot name color', 'Multiple flights : use pilot\s name color for tail\'s color (override \'tail color\')'],
   ['Miscellaneous', 'solid_color', 'color', 'Solid color', 'Solid track color'],
   ['Miscellaneous', 'extrude_color', 'color', 'Extrude color', 'Color of the extruded path (solid track)'],
   ['Score', 'xc_score', 'checkbox', 'Score flights', 'Score distance/circuit of flights'],

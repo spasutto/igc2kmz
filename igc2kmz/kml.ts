@@ -315,8 +315,8 @@ export namespace KML {
     }
   }
   export class LineStyle extends CompoundElement {
-    constructor(color: string, width: string) {
-      super([new SimpleElement('color', color), new SimpleElement('width', width.toString())]);
+    constructor(colorval: string | RGBA, width: string) {
+      super([new color(colorval), new SimpleElement('width', width.toString())]);
     }
   }
   export class ListStyle extends CompoundElement {

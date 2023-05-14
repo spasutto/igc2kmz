@@ -203,7 +203,7 @@ export class Flight {
       return new KMZ();
     }
     let folder = new KML.Folder('Colored by ' + scale.title, globals.stock.check_hide_children_style.url, [], null, visibility);
-    let styles = scale.colors().map(c => new KML.Style([new KML.LineStyle(c.toHexString(), this.width.toString())])) ?? [];
+    let styles = scale.colors().map(c => new KML.Style([new KML.LineStyle(c, this.width.toString())])) ?? [];
     let discrete_values: number[] = values.map(v => scale.discretize(v));
     let indexes = Utils.runs(discrete_values);
     for (let i = 0, sl = indexes[0]; i < indexes.length; i++, sl = indexes[i]) {
@@ -374,7 +374,7 @@ export class Flight {
       return new KMZ();
     }
     let style_url = globals.stock.radio_folder_style.url;
-    let folder = new KMZ([new KML.Folder('Shadow', style_url, [], false)]);
+    let folder = new KMZ([new KML.Folder('Shadow', style_url, [], false, globals.flights.length <= 1)]);
     folder.add([globals.stock.invisible_none_folder]);
     let style = new KML.Style([new KML.LineStyle('ff000000', '1')]);
     folder.add([this.make_solid_track(globals, style, 'clampToGround', 'Normal')]);
@@ -422,14 +422,17 @@ export class Flight {
   make_animation(globals: FlightConvert): KMZ {
     let icon_style = new KML.IconStyle([globals.stock.animation_icon, new KML.color(this.color), new KML.scale(globals.stock.icon_scales[0].toString())]);
     let list_style = new KML.ListStyle('checkHideChildren');
-    let line_color = RGBA.fromRGBAHexString(globals.options.anim_tail_color);
-    if (!line_color) {
-      line_color = new RGBA(0xff / 255, 0x9b / 255, 0x00 / 255, 0x9f / 255);
-    } else {
-      line_color.a = 0x9f / 255;
-    }
-    let line_style = new KML.LineStyle(line_color.toHexString(), this.width.toString());
     let label_color = new RGBA(Math.random(), Math.random(), Math.random(), 1);
+    let line_color: RGBA | null = label_color;
+    if (!globals.options.anim_tail_use_pilot_color) {
+      line_color = RGBA.fromRGBAHexString(globals.options.anim_tail_color);
+      if (!line_color) {
+        line_color = new RGBA(0xff / 255, 0x9b / 255, 0x00 / 255, 0x9f / 255);
+      } else {
+        line_color.a = 0x9f / 255;
+      }
+    }
+    let line_style = new KML.LineStyle(line_color, this.width.toString());
     let label_style = new KML.LabelStyle(label_color, 1);
     let style = new KML.Style([icon_style, list_style, line_style, label_style]);
     let folder = new KML.Folder('Animation', null, [style], null, false);
@@ -519,7 +522,7 @@ export class Flight {
     let table = Utils.make_table(rows);
     let snippet = `${this.track.xc_score.solution.opt.scoring.name} ${score.score}pts`;
     let style_url = globals.stock.check_hide_children_style.url;
-    let folder = new KML.Folder('Score', style_url, [new KML.CDATA('description', table), new KML.Snippet(snippet)]);
+    let folder = new KML.Folder('Score', style_url, [new KML.CDATA('description', table), new KML.Snippet(snippet)], null, globals.flights.length <= 1);
     let line_style = new KML.Style([new KML.LineStyle('cc00FF00', '1')]);
     folder.add(line_style);
     let line_style1 = new KML.Style([new KML.LineStyle('ccFFFFFF', '1')]);
