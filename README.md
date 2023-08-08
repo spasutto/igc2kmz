@@ -10,6 +10,15 @@ igc2kmz is a PWA (Progessive Web App) wich means you can install it and use it o
 [![Visualisation example](doc/output_MtBlanc.jpg?raw=true)](doc/output_MtBlanc.jpg?raw=true)
 
 ## Usage
+Just go to [https://spasutto.github.io/igc2kmz/igc2kmz.html](https://spasutto.github.io/igc2kmz/igc2kmz.html) and select an IGC file or drag/drop it in the yellow/greenish zone.
+
+You can also drop :
+- images ; they will be incorporated in the KMZ at the right time (if time coded in EXIF).
+- tasks ('.xctsk' XCTrack format, see http://xctrack.org/Competition_Interfaces.html)
+
+Click 'Convert' and there it is. The 'tool' icon 🔧 open the options in wich you can customize the behaviours of the KMZ generation. Interactive help is provided in the popup.
+
+## Code
 **For the web** : See [igc2kmz.html](igc2kmz.html) or [example.html](examples/example.html) ('*hello world*' code), Single Page Application [available here](https://spasutto.github.io/igc2kmz/dist/igc2kmz_spa.html) (right click and save it to computer/phone)
 
 :warning: As of now, web version runs on the UI thread and on slow machines or with big flight it can block the page for some time :boom:
