@@ -5,6 +5,8 @@ igc2kmz is a tool to convert IGC (flight recorder) to KMZ/KML (Google Earth).
 
 **The resulting tool is available online here : [&#x2192; igc2kmz.html &#x2190;](https://spasutto.github.io/igc2kmz/igc2kmz.html)** (it can also be used in command line, see [below](#usage))
 
+igc2kmz is a PWA (Progessive Web App) wich means you can install it and use it offline just like any app on your smartphone (at least on modern android). Just click 'install' in your browser's menu
+
 [![Visualisation example](doc/output_MtBlanc.jpg?raw=true)](doc/output_MtBlanc.jpg?raw=true)
 
 ## Usage
