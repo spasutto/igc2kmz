@@ -31,8 +31,9 @@ export class Flight {
   pcount: number = 0;
   protected id: string = '';
   endconv: ((value: KMZ) => void) | null = null;
+  pilot_color: RGBA;
 
-  constructor(track: Track) {
+  constructor(track: Track, multi: boolean = false) {
     this.track = track;
     this.root = new KMZ([new KML.Folder(this.track.filename, null, [], true)]);
     if (track.elevation_data) {
@@ -40,7 +41,11 @@ export class Flight {
     } else {
       this.altitude_mode = 'clampToGround';
     }
-    let solid_color = RGBA.fromRGBAHexString(track.options.solid_color);
+    this.pilot_color = new RGBA(Math.random(), Math.random(), Math.random(), 1);
+    let solid_color: RGBA | null = this.pilot_color;
+    if (!multi || !track.options.color_use_pilot_color) {
+      solid_color = RGBA.fromRGBAHexString(track.options.solid_color);
+    }
     if (!solid_color) {
       solid_color = new RGBA(0, 0, 0, 0xff / 255);
     } else {
@@ -422,8 +427,7 @@ export class Flight {
   make_animation(globals: FlightConvert): KMZ {
     let icon_style = new KML.IconStyle([globals.stock.animation_icon, new KML.color(this.color), new KML.scale(globals.stock.icon_scales[0].toString())]);
     let list_style = new KML.ListStyle('checkHideChildren');
-    let label_color = new RGBA(Math.random(), Math.random(), Math.random(), 1);
-    let line_color: RGBA | null = label_color;
+    let line_color: RGBA | null = this.pilot_color;
     if (!globals.options.anim_tail_use_pilot_color) {
       line_color = RGBA.fromRGBAHexString(globals.options.anim_tail_color);
       if (!line_color) {
@@ -433,7 +437,7 @@ export class Flight {
       }
     }
     let line_style = new KML.LineStyle(line_color, this.width.toString());
-    let label_style = new KML.LabelStyle(label_color, 1);
+    let label_style = new KML.LabelStyle(this.pilot_color, 1);
     let style = new KML.Style([icon_style, list_style, line_style, label_style]);
     let folder = new KML.Folder('Animation', null, [style], null, false);
     let point = new KML.Point(this.track.coords[0], this.altitude_mode);

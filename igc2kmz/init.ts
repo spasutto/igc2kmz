@@ -32,6 +32,10 @@ export interface I2KConfiguration {
    */
   solid_color: string;
   /**
+   * Use pilot name color
+   */
+  color_use_pilot_color: boolean;
+  /**
    * Paraglider tail animation.
    * false if no tail (just icon)
    */
@@ -77,6 +81,7 @@ export const defaultconfig: I2KConfiguration = {
   qnh: SEALEVEL_QNH,
   same_start: false,
   solid_color: '#ff0000',
+  color_use_pilot_color: true,
   anim_tail: true,
   anim_tail_duration: 60,
   anim_tail_color: '#ff9b00',

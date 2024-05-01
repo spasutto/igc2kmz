@@ -53,9 +53,8 @@ export class IGC2KMZ {
           igc.fixes.forEach(f => f.timestamp += offset);
         }
       }
-      flights.push(new Flight(new Track(igc, this.igccontents[i][0], this.options)));
+      flights.push(new Flight(new Track(igc, this.igccontents[i][0], this.options), this.igccontents.length > 1));
     }
-    //console.log(flight);
     let task: Task | null = null;
     if (this.taskcontent) {
       task = Task.loadTask(this.taskcontent);
