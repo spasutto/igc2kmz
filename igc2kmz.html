@@ -516,6 +516,7 @@ function buildOptions() {
     }
     node.setAttribute('id', id);
     node.setAttribute('type', opt[2]);
+    node.setAttribute('title', opt[4]);
     if (opt.length > 5 && Array.isArray(opt[5])) {
       if (opt[2]=='number') {
         if (typeof opt[5][0] === 'number') node.setAttribute('min', opt[5][0]);
