@@ -29,7 +29,7 @@
         "type": "image/png"
     }
   ],
-  "start_url": "/igc2kmz/igc2kmz.html",
+  "start_url": "./igc2kmz.html",
   "display": "fullscreen",
   "theme_color": "#FAFAFA",
   "background_color": "#FAFAFA"
